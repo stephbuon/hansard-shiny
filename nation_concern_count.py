@@ -9,10 +9,13 @@ import pandas as pd
 
 def cooccurance_count(row, nation, concern):
 
+    row = str(row)
+    
     nation = re.compile(r'\b%s\b' % nation, re.I)
     concern = re.compile(r'\b%s\b' % concern, re.I)
 
     count = 0
+
     if (re.search(nation, row)) and (re.search(concern, row)):
         count += 1
     else:
@@ -33,6 +36,8 @@ def read_kw_list(kw):
 def data_process(df, nations, concerns):
     for nation in nations:
         for concern in concerns:
+
+            print('Working on ' + nation + ' and ' + concern)
         
             df['bool'] = df['debate'].apply(cooccurance_count, args = (nation, concern))
             total = df['bool'].sum()
@@ -50,16 +55,19 @@ def data_process(df, nations, concerns):
 
 if __name__ == '__main__':
     try:
+        print('Importing main data set.')
         input_file = sys.argv[1]
     except IndexError:
         exit('Missing input file argument')
 
     try:
+        print('Importing keyword set 1/2.')
         input_kw1 = sys.argv[2]
     except IndexError:
         exit('Missing kw1. Must provide two')
     
     try:
+        print('Importing keyword set 2/2.')
         input_kw2 = sys.argv[3]
     except IndexError:
         exit('Missing kw2. Must provide two')
