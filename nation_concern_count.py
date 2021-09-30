@@ -7,18 +7,13 @@ import pandas as pd
 #data = {'debate':['Engl likes fishing.', 'Then England went fishing', 'After, England watched fishing.', 'Then England is eating.'],
 #        'Age':[20, 21, 19, 18]}
 
-import re
-import sys
-import os
-import csv
-import pandas as pd
+# I should have pre-processed this to make sure the data I am going through even has a concern to begin with 
 
-#data = {'debate':['Engl likes fishing.', 'Then England went fishing', 'After, England watched fishing.', 'Then England is eating.'],
-#        'Age':[20, 21, 19, 18]}
 
 def cooccurance_count(row, nation, concern):
 
     row = str(row)
+    row = row.lower()
     
     nation = re.compile(r'\b%s\b' % nation, re.I)
     concern = re.compile(r'\b%s\b' % concern, re.I)
@@ -53,8 +48,10 @@ def data_process(df, nations, concerns):
             df['bool'] = df['debate'].apply(cooccurance_count, args = (nation, concern))
             total = df['bool'].sum()
 
+            decade = df.iloc[0]['decade']
+
             save_path = '/users/sbuongiorno'
-            file_name = 'nation_concern_count.txt'
+            file_name = 'nation_concern_count_' + str(decade) + '.txt'
             
             export_file = os.path.join(save_path, file_name)
 

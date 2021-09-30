@@ -146,6 +146,11 @@ ui <- fluidPage(
                       #titlePanel("How many times was each nation pair named in Hansard debate titles?"),
                       sidebarLayout(
                         sidebarPanel(
+                          helpText("This page visualizes the nation pairs that occured most frequently in debate titles. 
+                                   Click on a nation pair to view how the top concern associated with each nation changed over time."),
+                          
+                          tags$hr(style="border-color: black;"),
+                          
                           helpText("Slide the dial to change decades."),
                           
                           sliderTextInput(
