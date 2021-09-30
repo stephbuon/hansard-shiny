@@ -7,6 +7,15 @@ import pandas as pd
 #data = {'debate':['Engl likes fishing.', 'Then England went fishing', 'After, England watched fishing.', 'Then England is eating.'],
 #        'Age':[20, 21, 19, 18]}
 
+import re
+import sys
+import os
+import csv
+import pandas as pd
+
+#data = {'debate':['Engl likes fishing.', 'Then England went fishing', 'After, England watched fishing.', 'Then England is eating.'],
+#        'Age':[20, 21, 19, 18]}
+
 def cooccurance_count(row, nation, concern):
 
     row = str(row)
@@ -17,6 +26,7 @@ def cooccurance_count(row, nation, concern):
     count = 0
 
     if (re.search(nation, row)) and (re.search(concern, row)):
+        print('Found coocurance: ' + nation + ' and ' + concern)
         count += 1
     else:
         count = count
@@ -27,6 +37,7 @@ def read_kw_list(kw):
     kw_list = []
     with open(kw, 'r') as csv_file:
         reader = csv.reader(csv_file)
+        next(reader) 
         for row in reader:
             for item in row:
                 kw_list.append(item)

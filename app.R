@@ -89,6 +89,7 @@ n1 <- nodes
 
 ui <- fluidPage(
   theme = shinytheme("flatly"),
+  #theme = shinytheme("slate"),
   
   navbarPage("The Hansard Parliamentary Debates",
              
