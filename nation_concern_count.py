@@ -57,12 +57,12 @@ if __name__ == '__main__':
     try:
         input_kw1 = sys.argv[2]
     except IndexError:
-        exit('Missing set of keywords. Must provide two')
+        exit('Missing kw1. Must provide two')
     
     try:
         input_kw2 = sys.argv[3]
     except IndexError:
-        exit('Missing set of keywords. Must provide two')
+        exit('Missing kw2. Must provide two')
     
     output_folder = '/users/sbuongiorno' + '/co_occurance_keywords'
 
