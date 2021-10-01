@@ -7,9 +7,14 @@ stopwords <- read_csv("~/stopwords.csv") %>%
   rename(word = stop_word)
 
 speaker_names <- read_csv("~/projects/hansard-shiny/data/speakers/top_speakers.csv")
-speaker_names <- gsub("\\*", "", speaker_names$speaker)
-speaker_names_list <- speaker_names$speaker
+speaker_names$speaker <- gsub("\\*", "", speaker_names$speaker)
 
+speaker_names$speaker <- str_replace_all(speaker_names$speaker, "\\[", "")
+speaker_names$speaker <- str_replace_all(speaker_names$speaker, "\\]", "")
+speaker_names$speaker <- str_replace_all(speaker_names$speaker, "\\(", "")
+speaker_names$speaker <- str_replace_all(speaker_names$speaker, "\\)", "")
+
+speaker_names_list <- speaker_names$speaker
 
 output <- data.frame()
 

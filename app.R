@@ -180,20 +180,23 @@ ui <- fluidPage(
                         sidebarPanel(
                           helpText("Say something meaningful"),
                           
+                          tags$hr(style="border-color: black;"),
+                          
+                          radioButtons("special_vocabulary", 
+                                       "Special Vocabulary:",
+                                       c("Property" = "property",
+                                         "Concerns" = "concerns",
+                                         "Offices" = "offices",
+                                         "Nations" = "nations",
+                                         "Cities" = "cities")),
                           width = 2),
                         
                         mainPanel())),
              
              
              tabPanel("Speakers",
-                      sidebarLayout(
-                        sidebarPanel(
-                          helpText("Say something meaningful"),
-                          
-                          width = 2),
-                        
                         mainPanel(plotlyOutput("top_speakers"),
-                                  dataTableOutput('tbl4')))),
+                                  dataTableOutput('tbl4'))),#),
              
              
              tabPanel("Word Embeddings",
