@@ -28,7 +28,6 @@ edges$to_name <- str_replace_all(edges$to_name, "\\)", "")
 nodes <- unique(nodes) # wont need when I fix decade stuff at source
 
 
-
 nodes <- nodes %>%
   filter(decade == 1820)
 

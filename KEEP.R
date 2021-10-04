@@ -3,6 +3,8 @@
 
 # Q for when I run static data: why does graph get smaller with more nodes? I think bc I am then selecting nodes with, say, London AND Lymric. Not 100% sure.
 
+# https://docs.google.com/document/d/1DN5xy1WlA_nqW0xUtG0ErJbhqSfuURB3G5HSr9Swnxc/edit
+
 # connections is the number of word pairs in which the node appears
 # total weight -- IDK
 
@@ -26,28 +28,29 @@ library(visNetwork)
 library(plotly)
 library(tidyverse)
 library(DT)
+library(tidytext)
 
 search_svo <- function(df, s, v, o) {
   if(s == "" & v == "" & o == "") {
     return(df) } else if (s != "" & (v == "" & o == "")) {
       
-    df <- df %>%
-      filter(str_detect(to_name, paste0("^", s)))
-    
-    return(df) } else if (s == "" & v != "" & o == "") { 
-      print("take 2")
+      df <- df %>%
+        filter(str_detect(to_name, paste0("^", s)))
       
-    } else if(s == "" & v == "" & o != ""){
-      print("take 3")
-    } else if(s != "" & v != "" & o == ""){
-      print("take 4")
-    } else if(s == "" & v != "" & o != ""){
-      print("take 5")
-    } else if(s != "" & v == "" & o != ""){
-      print("take 6")
-    } else if(s != "" & v != "" & o != ""){
-      print("take 7")
-    } 
+      return(df) } else if (s == "" & v != "" & o == "") { 
+        print("take 2")
+        
+      } else if(s == "" & v == "" & o != ""){
+        print("take 3")
+      } else if(s != "" & v != "" & o == ""){
+        print("take 4")
+      } else if(s == "" & v != "" & o != ""){
+        print("take 5")
+      } else if(s != "" & v == "" & o != ""){
+        print("take 6")
+      } else if(s != "" & v != "" & o != ""){
+        print("take 7")
+      } 
 }
 
 
@@ -85,14 +88,10 @@ n1 <- nodes
 
 
 
-
-
 ui <- fluidPage(
   theme = shinytheme("flatly"),
-  #theme = shinytheme("slate"),
   
   navbarPage("The Hansard Parliamentary Debates",
-             
              
              tabPanel("Triples Network", 
                       sidebarLayout(
@@ -173,14 +172,12 @@ ui <- fluidPage(
                         
                         mainPanel(
                           plotlyOutput("plot_2")))),
-
+             
              
              tabPanel("Collocates",
                       sidebarLayout(
                         sidebarPanel(
                           helpText("This page visualizes sentiment laden collocates."),
-                          
-                          tags$hr(style="border-color: black;"),
                           
                           radioButtons("special_vocabulary", 
                                        "Special Vocabulary:",
@@ -190,9 +187,11 @@ ui <- fluidPage(
                                          "Nations" = "nations",
                                          "Cities" = "cities")),
                           
+                          #tags$hr(style="border-color: black;"),
+                          
                           sliderTextInput(
                             inputId = "decade_collocates_top", 
-                            label = "Decade: ", 
+                            label = "Decade (Top): ", 
                             grid = TRUE, 
                             force_edges = TRUE,
                             choices = c("1800",
@@ -208,7 +207,7 @@ ui <- fluidPage(
                           
                           sliderTextInput(
                             inputId = "decade_collocates_bottom", 
-                            label = "Decade: ", 
+                            label = "Decade (Bottom): ", 
                             grid = TRUE, 
                             force_edges = TRUE,
                             choices = c("1800",
@@ -222,21 +221,23 @@ ui <- fluidPage(
                                         "1880",
                                         "1890")),
                           
-                          tags$hr(style="border-color: black;"),
+                          #tags$hr(style="border-color: black;"),
                           
-                          selectInput("noun", "Keyword:",
-                                      c("Select" = "All",
-                                        "Evict" = "evict",
-                                        "Inclosure" = "inclosure",
-                                        "Land" = "land$",
-                                        "Landhold" = "landhold",
-                                        "Landlord" = "landlord",
-                                        "Lease" = "lease",
-                                        "Lessee" = "lessee",
-                                        "Rent" = "rent",
-                                        "Tenant" = "tenan")),
+                          selectInput("noun", 
+                                      "Keyword:",
+                                      choices = NULL),
+                                      #c("Select" = "All",
+                                      #  "Evict" = "evict",
+                                      #  "Inclosure" = "inclosure",
+                                      #  "Land" = "land$",
+                                      #  "Landhold" = "landhold",
+                                      #  "Landlord" = "landlord",
+                                      #  "Lease" = "lease",
+                                      #  "Lessee" = "lessee",
+                                      #  "Rent" = "rent",
+                                      #  "Tenant" = "tenan")),
                           
-                          tags$hr(style="border-color: black;"),
+                          #tags$hr(style="border-color: black;"),
                           
                           sliderTextInput(
                             inputId = "sentiment", 
@@ -247,6 +248,9 @@ ui <- fluidPage(
                                         "Positive", 
                                         "Negative")),
                           
+                          radioButtons("collocate_measure", "Measure:", 
+                                       list("count", "tf-idf", "jsd"), inline = TRUE, selected = "count"),
+                          
                           width = 2),
                         
                         mainPanel(plotlyOutput("collocates_top"),
@@ -255,14 +259,17 @@ ui <- fluidPage(
              navbarMenu("Speakers",
                         tabPanel("Top Speakers",
                                  mainPanel(plotlyOutput("top_speakers"),
-                                           dataTableOutput('tbl4'))),
+                                           br(),
+                                           br(),
+                                           plotlyOutput("tbl4",
+                                                        height = "580"))),
                         tabPanel("Longest Speeches",
                                  mainPanel(plotlyOutput("longest_speeches"),
                                            dataTableOutput('tbl5')))),
              
              tabPanel("Debates",
-                        mainPanel(plotlyOutput("longest_debates"),
-                                  dataTableOutput('tbl6'))),
+                      mainPanel(plotlyOutput("longest_debates"),
+                                dataTableOutput('tbl6'))),
              
              
              tabPanel("Word Embeddings",
@@ -278,7 +285,6 @@ ui <- fluidPage(
              tabPanel("About", 
                       "Placeholder text")
   ))
-
 
 
 server <- function(input, output, session) {
@@ -321,7 +327,7 @@ server <- function(input, output, session) {
     
     
     out <- left_join(out, c, by = 'label')
-      
+    
     out <- unique(out) 
     
     print(out) })
@@ -366,8 +372,8 @@ server <- function(input, output, session) {
   output$tbl <- renderDT(
     if (!(is.null(input$current_node_selection))) {
       
-     # e1 <- e1 %>%
-    #    filter(from_name %in% input$subreddit | to_name %in% input$subreddit)
+      # e1 <- e1 %>%
+      #    filter(from_name %in% input$subreddit | to_name %in% input$subreddit)
       
       print("currentNodeSection")
       print(input$current_node_selection)
@@ -375,7 +381,7 @@ server <- function(input, output, session) {
       # This dt might not reflect the correct count -- I need that count function 
       e1 <- e1 %>% 
         filter(from %in% input$current_node_selection | to %in% input$current_node_selection)# %>%
-        #select(!(c("to_name", "from")))
+      #select(!(c("to_name", "from")))
       
       print("dt test")
       print(e1)
@@ -404,9 +410,25 @@ server <- function(input, output, session) {
                                      width = 1.5))) %>% 
       layout(xaxis = list(title ="Frequency"),
              yaxis = list(title = "")) %>%
-                          #tickangle = 330)) %>%
+      #tickangle = 330)) %>%
       config(displayModeBar = F) })
   
+  
+  speaker_favorite_words_count <- read_csv("~/projects/hansard-shiny/data/speakers/clean_speaker_favorite_words_by_decade.csv")
+  
+  layout_ggplotly <- function(gg, x = -0.02, y = -0.08){
+    # The 1 and 2 goes into the list that contains the options for the x and y axis labels respectively
+    gg[['x']][['layout']][['annotations']][[1]][['y']] <- x
+    gg[['x']][['layout']][['annotations']][[2]][['x']] <- y
+    gg
+  }
+  
+  top_speaker_title <- function(input, output) {
+      output$top_speaker_title <- renderText({
+        
+        paste("You have chosen a range that goes from",
+                                        input$range[1], "to", input$range[2])})
+    }
   
   output$top_speakers <- renderPlotly({ 
     top_speakers <- read_csv("~/projects/hansard-shiny/data/speakers/top_speakers.csv")
@@ -425,21 +447,61 @@ server <- function(input, output, session) {
                 color = 'black',
                 width = 1 )),
             text = ~paste0('Name: ', speaker, '\n',
-                          'Speech Date: ', speechdate, '\n',
-                          'Word Count ', words_per_day),
+                           'Speech Date: ', speechdate, '\n',
+                           'Word Count ', words_per_day),
             hoverinfo = 'text') %>%
       layout(xaxis = list(title = "Year"),
              yaxis = list(title = "Word Count")) %>%
       config(displayModeBar = F) })
   
   render_value = function(NN){
-    output$tbl4 <- renderDataTable({
+    output$tbl4 <- renderPlotly({#renderPlot({
       s <- event_data("plotly_click", source = "subset")
+      print('NEED THIS')
       print(s)
       print(NN)
-      return(datatable(NN[NN$words_per_day==s$y,])) 
-      }) } 
+      #return(datatable(NN[NN$words_per_day==s$y,])) 
+      NN <- NN[NN$words_per_day==s$y,]
+      
+      print(NN)
+      
+      aa <- NN$speaker
+      
+      print(aa)
+      
+      # read in this df first 
+      speaker_favorite_words_count <- speaker_favorite_words_count %>%
+        filter(speaker == aa)
+      
+      print(speaker_favorite_words_count)
 
+      g <- ggplot(data = speaker_favorite_words_count) +
+        geom_col(aes(x = reorder_within(word, n, decade), 
+                     y = n),
+                 fill = "skyblue3",
+                 color = "black",
+                 size = .3) +
+                 #fill = "steel blue") +
+        labs(title = paste0(aa, "'s top words over time"),
+             subtitle = "",
+             x = "Word",
+             y = "Count") +
+        #theme(plot.title=element_text(hjust=0.5)) + # doesn't seem to be working
+        scale_x_reordered() +
+        facet_wrap(~ decade, scales = "free") + 
+        coord_flip() + 
+        theme_bw() + 
+        theme(panel.spacing.y = unit(1, "lines"))
+      
+      #  make plots same size : https://stackoverflow.com/questions/45696723/how-can-i-make-plotly-subplots-the-same-size-when-converting-from-facets-with-gg
+      ggplotly(g) %>%
+        #layout_ggplotly %>%
+        config(displayModeBar = F)
+
+      
+      
+    }) } 
+  
   
   output$longest_speeches <- renderPlotly({ 
     longest_speeches <- read_csv("~/projects/hansard-shiny/data/speakers/longest_speeches.csv")
@@ -538,9 +600,9 @@ server <- function(input, output, session) {
         df <- df %>%
           filter(sentiment == 'Positive') 
         return(df)} else if(sw == 'Negative') {
-            df <- df %>%
-              filter(sentiment == 'Negative')
-            return(df) } }
+          df <- df %>%
+            filter(sentiment == 'Negative')
+          return(df) } }
   
   filter_noun <- function(df, nnn) {
     if(nnn == 'All') {
@@ -550,30 +612,85 @@ server <- function(input, output, session) {
   
   
   
-  choices_collocates<- reactive({
-    collocates <- read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
+
+  observe({
+    if (input$special_vocabulary == "property") {
+      updateSelectInput(session = session, 
+                        inputId = "noun", 
+                        choices = c("Select" = "All", 
+                                    "Evict" = "evict",
+                                    "Inclosure" = "inclosure",
+                                    "Land" = "land$",
+                                    "Landhold" = "landhold",
+                                    "Landlord" = "landlord",
+                                    "Lease" = "lease",
+                                    "Lessee" = "lessee",
+                                    "Rent" = "rent",
+                                    "Tenant" = "tenan")) } 
     
-    collocates <- filter_sentiment(collocates, input$sentiment)
-    
-    collocates <- collocates %>%
-      filter(decade == input$decade_collocates_top)
-    
-    collocates <- filter_noun(collocates, input$noun)
-    
-    collocates <- collocates %>%
-      arrange(desc(n)) %>%
-      slice(1:20) 
+    else if (input$special_vocabulary == "concerns") {
+      updateSelectInput(session = session, 
+                      inputId = "noun", 
+                      choices = c("This", 
+                                  "test")) } 
+    else if (input$special_vocabulary == "cities") {
+      
+      
+    }
   })
   
-  observe({
-    updateSelectInput(session = session, inputId = "decade_collocates_top", choices = choices_collocates()$name)
-  })
+  
+  tf_idf_a <- function(df, dct, dcb) {
+    
+    df <- df %>%
+      filter(decade == dct | decade == dcb) 
+    
+    df <- df %>%
+      bind_tf_idf(grammatical_collocates, decade, n)
+    
+    df <- df %>%
+      #filter(decade == dct) %>%
+      select(-n) %>%
+      rename(n = tf_idf) 
+    
+    return(df)}
+  
+  
+
+  
+
+  
   
   
   
   output$collocates_top <- renderPlotly({
     
-    plot_ly(data = choices_collocates(), 
+    collocates <- read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
+    
+    collocates <- filter_sentiment(collocates, input$sentiment)
+    
+    
+    collocates <- filter_noun(collocates, input$noun)
+    
+     if (input$collocate_measure == "count") {
+       
+     } else if (input$collocate_measure == "tf-idf") {
+      
+       collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
+       
+       print(collocates)
+       #write_csv(collocates, "~/debug.csv")
+       
+     }
+    
+    collocates <- collocates %>%
+      filter(decade == input$decade_collocates_top)
+    
+    top <- collocates %>%
+      arrange(desc(n)) %>%
+      slice(1:20)
+    
+    plot_ly(data = top, 
             x = ~n, 
             y = ~reorder(grammatical_collocates, n),
             type = 'bar',
@@ -592,6 +709,18 @@ server <- function(input, output, session) {
     collocates <- read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
     
     collocates <- filter_sentiment(collocates, input$sentiment)
+    
+    if (input$collocate_measure == "count") {
+      
+    } else if (input$collocate_measure == "tf-idf") {
+      
+      collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
+      
+      print(collocates)
+      #write_csv(collocates, "~/debug.csv")
+      
+    }
+    
     
     collocates <- collocates %>%
       filter(decade == input$decade_collocates_bottom)
@@ -636,7 +765,7 @@ server <- function(input, output, session) {
     
   })
   
-
+  
   
 }
 
@@ -650,5 +779,3 @@ shinyApp(ui, server)
 #  margin = list(l = 160), xaxis = list(tickangle = 45)) %>%
 
 #config(displayModeBar = F)
-
-
