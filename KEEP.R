@@ -30,6 +30,8 @@ library(tidyverse)
 library(DT)
 library(tidytext)
 
+library(shinyBS)
+
 search_svo <- function(df, s, v, o) {
   if(s == "" & v == "" & o == "") {
     return(df) } else if (s != "" & (v == "" & o == "")) {
@@ -250,6 +252,11 @@ ui <- fluidPage(
                           
                           radioButtons("collocate_measure", "Measure:", 
                                        list("count", "tf-idf", "jsd"), inline = TRUE, selected = "count"),
+                          
+                          
+                          radioTooltip(id = "collocate_measure", choice = "count", title = "View the raw count.", placement = "right", trigger = "hover"),
+                          radioTooltip(id = "collocate_measure", choice = "tf-idf", title = "Use tf-idf to find important words.", placement = "right", trigger = "hover"),
+                          radioTooltip(id = "collocate_measure", choice = "jsd", title = "Button 3 Explanation", placement = "right", trigger = "hover"),
                           
                           width = 2),
                         
@@ -530,8 +537,6 @@ server <- function(input, output, session) {
   render_value_2 = function(NN){
     output$tbl5 <- renderDataTable({
       s <- event_data("plotly_click", source = "subset_2")
-      print(s)
-      print(NN)
       return(datatable(NN[NN$count_per_speech==s$y,])) 
     }) } 
   
@@ -568,8 +573,6 @@ server <- function(input, output, session) {
       print(NN)
       return(datatable(NN[NN$words_per_debate==s$y,])) 
     }) } 
-  
-  
   
   
   
@@ -659,6 +662,34 @@ server <- function(input, output, session) {
 
   
 
+
+  
+  radioTooltip <- function(id, choice, title, placement = "bottom", trigger = "hover", options = NULL){
+    
+    options = shinyBS:::buildTooltipOrPopoverOptionsList(title, placement, trigger, options)
+    options = paste0("{'", paste(names(options), options, sep = "': '", collapse = "', '"), "'}")
+    bsTag <- shiny::tags$script(shiny::HTML(paste0("
+    $(document).ready(function() {
+      setTimeout(function() {
+        $('input', $('#", id, "')).each(function(){
+          if(this.getAttribute('value') == '", choice, "') {
+            opts = $.extend(", options, ", {html: true});
+            $(this.parentElement).tooltip('destroy');
+            $(this.parentElement).tooltip(opts);
+          }
+        })
+      }, 500)
+    });
+  ")))
+    htmltools::attachDependencies(bsTag, shinyBS:::shinyBSDep)
+  }
+  
+  
+  
+  
+  
+  
+  
   
   
   
@@ -673,12 +704,13 @@ server <- function(input, output, session) {
     collocates <- filter_noun(collocates, input$noun)
     
      if (input$collocate_measure == "count") {
+       xlab <- list(title ="Frequency")
        
      } else if (input$collocate_measure == "tf-idf") {
       
        collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
        
-       print(collocates)
+       xlab <- list(title ="tf-idf")
        #write_csv(collocates, "~/debug.csv")
        
      }
@@ -699,7 +731,7 @@ server <- function(input, output, session) {
             marker= list(color = 'rgb(158,202,225)',
                          line = list(color = 'rgb(8,48,107)',
                                      width = 1.5))) %>% 
-      layout(xaxis = list(title ="Frequency"),
+      layout(xaxis = xlab,
              yaxis = list(title = "")) %>%
       #tickangle = 330)) %>%
       config(displayModeBar = F) })
@@ -712,11 +744,13 @@ server <- function(input, output, session) {
     
     if (input$collocate_measure == "count") {
       
+      xlab <- list(title ="Frequency")
+      
     } else if (input$collocate_measure == "tf-idf") {
       
       collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
       
-      print(collocates)
+      xlab <- list(title ="tf-idf")
       #write_csv(collocates, "~/debug.csv")
       
     }
@@ -740,7 +774,7 @@ server <- function(input, output, session) {
             marker= list(color = 'rgb(158,202,225)',
                          line = list(color = 'rgb(8,48,107)',
                                      width = 1.5))) %>% 
-      layout(xaxis = list(title ="Frequency"),
+      layout(xaxis = xlab,
              yaxis = list(title = "")) %>%
       #tickangle = 330)) %>%
       config(displayModeBar = F) })
