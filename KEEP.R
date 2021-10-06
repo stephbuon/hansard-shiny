@@ -25,10 +25,12 @@ library(shiny)
 library(shinythemes)
 library(shinyWidgets)
 library(visNetwork)
+library(viridis)
 library(plotly)
 library(tidyverse)
 library(DT)
 library(tidytext)
+library(stringi)
 
 library(shinyBS)
 
@@ -53,6 +55,26 @@ search_svo <- function(df, s, v, o) {
       } else if(s != "" & v != "" & o != ""){
         print("take 7")
       } 
+}
+
+radioTooltip <- function(id, choice, title, placement = "bottom", trigger = "hover", options = NULL){
+  
+  options = shinyBS:::buildTooltipOrPopoverOptionsList(title, placement, trigger, options)
+  options = paste0("{'", paste(names(options), options, sep = "': '", collapse = "', '"), "'}")
+  bsTag <- shiny::tags$script(shiny::HTML(paste0("
+    $(document).ready(function() {
+      setTimeout(function() {
+        $('input', $('#", id, "')).each(function(){
+          if(this.getAttribute('value') == '", choice, "') {
+            opts = $.extend(", options, ", {html: true});
+            $(this.parentElement).tooltip('destroy');
+            $(this.parentElement).tooltip(opts);
+          }
+        })
+      }, 500)
+    });
+  ")))
+  htmltools::attachDependencies(bsTag, shinyBS:::shinyBSDep)
 }
 
 
@@ -81,6 +103,7 @@ n1 <- data.frame(id, group, label)
 
 e1 <- edges
 n1 <- nodes
+
 
 
 
@@ -228,16 +251,7 @@ ui <- fluidPage(
                           selectInput("noun", 
                                       "Keyword:",
                                       choices = NULL),
-                                      #c("Select" = "All",
-                                      #  "Evict" = "evict",
-                                      #  "Inclosure" = "inclosure",
-                                      #  "Land" = "land$",
-                                      #  "Landhold" = "landhold",
-                                      #  "Landlord" = "landlord",
-                                      #  "Lease" = "lease",
-                                      #  "Lessee" = "lessee",
-                                      #  "Rent" = "rent",
-                                      #  "Tenant" = "tenan")),
+                                      
                           
                           #tags$hr(style="border-color: black;"),
                           
@@ -274,9 +288,33 @@ ui <- fluidPage(
                                  mainPanel(plotlyOutput("longest_speeches"),
                                            dataTableOutput('tbl5')))),
              
-             tabPanel("Debates",
-                      mainPanel(plotlyOutput("longest_debates"),
-                                dataTableOutput('tbl6'))),
+             
+             
+             navbarMenu("Debates",
+                        tabPanel("Debate Titles",
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     helpText("Say something meaningful"),
+                                     selectInput("kw_list", 
+                                                 "Keyword List:",
+                                                 list(`Special Vocabulary` = list("Property" = "property",
+                                                      "Transportation" = "transportation",
+                                                      "Resources" = "resources"),
+                                                      `Custom Vocabulary` = list("Blank Plot" = "custom"))),
+                                     
+                                     
+                                     
+                                     textInput("keyword_addition", "Search Words:", ""),
+                                     textInput("keyword_addition_word_2", "", ""),
+                                     textInput("keyword_addition_word_3", "", ""),
+                                     textInput("keyword_addition_word_4", "", ""),
+                                     textInput("keyword_addition_word_5", "", ""),
+                                     textInput("keyword_addition_word_6", "", ""),
+                                     width = 2),
+                                     mainPanel(plotlyOutput("debate_titles")))),
+                        tabPanel("Longest Debates",
+                                 mainPanel(plotlyOutput("longest_debates"),
+                                           dataTableOutput('tbl6')))),
              
              
              tabPanel("Word Embeddings",
@@ -288,9 +326,23 @@ ui <- fluidPage(
                         
                         mainPanel(plotlyOutput("word_embeddings")))),
              
-             
-             tabPanel("About", 
-                      "Placeholder text")
+             navbarMenu("About",
+                        tabPanel("Code", 
+                                 h3("Code"),
+                                 br(), 
+                                 p(),
+                                 "Transparency.
+                                 For the source code, enter",
+                                 HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
+                                 HTML("<ul><li>...text...</li><li>...more text...</li></ul>"),
+                                 ),
+                        tabPanel("Data",
+                                 "Placeholder text.",
+                                 br(),
+                                 strong("Nations:"),
+                                 "placeholder description",
+                                 br(),
+                                 strong("Stop Words:")))
   ))
 
 
@@ -324,8 +376,6 @@ server <- function(input, output, session) {
       
       out <- rbind(out, filtered_nodes) }
     
-    print(out)
-    
     # count the number of times the word was mentioned 
     c <- e2 %>%
       count(to_name) %>%
@@ -336,8 +386,7 @@ server <- function(input, output, session) {
     out <- left_join(out, c, by = 'label')
     
     out <- unique(out) 
-    
-    print(out) })
+    })
   
   
   reactive_edges <- reactive({
@@ -382,16 +431,16 @@ server <- function(input, output, session) {
       # e1 <- e1 %>%
       #    filter(from_name %in% input$subreddit | to_name %in% input$subreddit)
       
-      print("currentNodeSection")
-      print(input$current_node_selection)
+      #print("currentNodeSection")
+      #print(input$current_node_selection)
       
       # This dt might not reflect the correct count -- I need that count function 
       e1 <- e1 %>% 
         filter(from %in% input$current_node_selection | to %in% input$current_node_selection)# %>%
       #select(!(c("to_name", "from")))
       
-      print("dt test")
-      print(e1)
+      #print("dt test")
+      #print(e1)
       
       # I could return KWIC-like text
       
@@ -464,23 +513,23 @@ server <- function(input, output, session) {
   render_value = function(NN){
     output$tbl4 <- renderPlotly({#renderPlot({
       s <- event_data("plotly_click", source = "subset")
-      print('NEED THIS')
-      print(s)
-      print(NN)
+      #print('NEED THIS')
+      #print(s)
+      #print(NN)
       #return(datatable(NN[NN$words_per_day==s$y,])) 
       NN <- NN[NN$words_per_day==s$y,]
       
-      print(NN)
+      #print(NN)
       
       aa <- NN$speaker
       
-      print(aa)
+      #print(aa)
       
       # read in this df first 
       speaker_favorite_words_count <- speaker_favorite_words_count %>%
         filter(speaker == aa)
       
-      print(speaker_favorite_words_count)
+      #print(speaker_favorite_words_count)
 
       g <- ggplot(data = speaker_favorite_words_count) +
         geom_col(aes(x = reorder_within(word, n, decade), 
@@ -569,8 +618,6 @@ server <- function(input, output, session) {
   render_value_3 = function(NN){
     output$tbl6 <- renderDataTable({
       s <- event_data("plotly_click", source = "subset_3")
-      print(s)
-      print(NN)
       return(datatable(NN[NN$words_per_debate==s$y,])) 
     }) } 
   
@@ -652,37 +699,11 @@ server <- function(input, output, session) {
       bind_tf_idf(grammatical_collocates, decade, n)
     
     df <- df %>%
-      #filter(decade == dct) %>%
       select(-n) %>%
       rename(n = tf_idf) 
     
     return(df)}
   
-  
-
-  
-
-
-  
-  radioTooltip <- function(id, choice, title, placement = "bottom", trigger = "hover", options = NULL){
-    
-    options = shinyBS:::buildTooltipOrPopoverOptionsList(title, placement, trigger, options)
-    options = paste0("{'", paste(names(options), options, sep = "': '", collapse = "', '"), "'}")
-    bsTag <- shiny::tags$script(shiny::HTML(paste0("
-    $(document).ready(function() {
-      setTimeout(function() {
-        $('input', $('#", id, "')).each(function(){
-          if(this.getAttribute('value') == '", choice, "') {
-            opts = $.extend(", options, ", {html: true});
-            $(this.parentElement).tooltip('destroy');
-            $(this.parentElement).tooltip(opts);
-          }
-        })
-      }, 500)
-    });
-  ")))
-    htmltools::attachDependencies(bsTag, shinyBS:::shinyBSDep)
-  }
   
   
   
@@ -798,6 +819,84 @@ server <- function(input, output, session) {
     
     
   })
+  
+  #################### Debate Titles
+  
+  import_debate_titles_data <- reactive( {
+    
+    if (input$kw_list != "custom") {
+      kw_data <- read_csv(paste0("~/projects/hansard-shiny/kw_list_", input$kw_list, ".csv")) } 
+    else { 
+      kw_data <- data.frame() } })
+  
+  keyword_addition <- function(d, input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6){
+    
+   keywords <- stri_remove_empty(c(input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6), TRUE)
+    
+    if (length(keywords != 0)) {
+      
+      words_per_year <- read_csv("~/projects/hansard-shiny/words_per_year.csv")
+      debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
+      
+      if (input$kw_list != "custom") {
+        all_year_counts <- read_csv(paste0("~/projects/hansard-shiny/all_year_counts_", input$kw_list, ".csv")) } 
+      else {
+        all_year_counts <- data.frame()
+      }
+    
+      # if all year counts has data 
+      
+    for(i in 1:length(keywords)){
+      
+      keyword <- keywords[i]
+      
+      debate_titles_w_keyword <- debate_title_year_counts %>%
+        filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b"), ignore_case = TRUE)))
+      
+      # if input keyword does not exist, else: 
+      #if (identical(debate_titles_w_keyword, debate_title_year_counts))
+      
+      year_count <- debate_titles_w_keyword %>%
+        group_by(year) %>%
+        summarise(debates_per_year = n()) %>%
+        arrange(year) %>%
+        #mutate(keywords = input_keyword_addition)
+        mutate(keywords = keyword)
+      
+      all_year_counts <- bind_rows(all_year_counts, year_count) }
+    
+    all_year_counts <- all_year_counts %>%
+      left_join(words_per_year, by = "year") %>%
+      mutate(proportion = debates_per_year/words_per_year)
+    
+    return(all_year_counts) } else {
+      return(d)
+    }
+    
+    
+  }
+  
+  output$debate_titles <- renderPlotly({
+    
+    d <- import_debate_titles_data()
+    
+    d <- keyword_addition(d, input$keyword_addition, input$keyword_addition_word_2, input$keyword_addition_word_3, input$keyword_addition_word_4, input$keyword_addition_word_5, input$keyword_addition_word_6)
+    
+    debate_titles_ggplot <- ggplot(data = d) +
+      geom_col(aes(x = year, 
+                   y = proportion,
+                   fill=reorder(keywords, debates_per_year))) + 
+      scale_fill_viridis(discrete = TRUE, option = "C")+
+      guides(fill = guide_legend(title = "Keywords")) +
+      scale_y_continuous(labels = function(x) paste0(x, "%")) +
+      labs(y = "debates per year as proportion", 
+           title = "Proportion of Debate Titles That Include Keywords")
+  
+  ggplotly(debate_titles_ggplot) %>%
+    config(displayModeBar = F)})
+  
+  
+  
   
   
   
