@@ -58,3 +58,30 @@ str_repare <- function(vctr, args_1, args_2){
 tt$nation <- str_repare(tt$nation, args_1, args_2)
 
 write_csv(tt, "~/nations_concerns_count_09052021.csv")
+
+
+
+ncc <- read_csv("~/nations_concerns_09052021.csv")
+
+cn <- read_csv("~/collaborative_nations.csv") %>%
+  select(Nation_Base) %>%
+  rename(nation = Nation_Base)
+
+geo <- read_csv("~/collaborative_nations.csv") %>%
+  select(Geography) %>%
+  rename(geograpthy = Geography)
+
+cn$sentence_id <- seq.int(nrow(cn))
+geo$sentence_id <- seq.int(nrow(geo))
+
+cn <- cn %>%
+  distinct(nation, .keep_all= T) %>%
+  drop_na()
+
+cleaned <- left_join(cn, geo, on = sentence_id)
+
+
+out <- left_join(ncc, cleaned, on = nation)
+
+write_csv(out, "~/nations_concerns_counts_10072021.csv")
+

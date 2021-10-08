@@ -1,6 +1,8 @@
 # remember to add cache stuff 
 # If I want to see the full network, I can pass VisNetwork the static edges data (e1) instead of the reactive expression (reactive_edges()). 
 
+# keep from recalculating: https://shiny.rstudio.com/tutorial/written-tutorial/lesson5/
+
 # Q for when I run static data: why does graph get smaller with more nodes? I think bc I am then selecting nodes with, say, London AND Lymric. Not 100% sure.
 
 # https://docs.google.com/document/d/1DN5xy1WlA_nqW0xUtG0ErJbhqSfuURB3G5HSr9Swnxc/edit
@@ -118,6 +120,24 @@ ui <- fluidPage(
   
   navbarPage("The Hansard Parliamentary Debates",
              
+             tabPanel("Introduction",
+                      fluidRow(column(width = 11, 
+                                      offset = 1,
+                      
+                      
+                      
+                        mainPanel("Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
+                                  p(),
+                                  "For seven years Democracy Lab has been operating at the juncture of political, historical, and textual analysis of democratic debates, publishing articles and collaborating with the builders of infrastructure to make text mining accessible to the public.",
+                                  br(),
+                                  p(),
+                                  "This app belongs to a preliminary series of public-facing web apps. 
+                                  Users of our prototype app can use an array of data-mining and statistical approaches which can provide new insights into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts.")))),
+             
+ 
+ 
+             
+             
              tabPanel("Triples Network", 
                       sidebarLayout(
                         sidebarPanel(
@@ -166,23 +186,32 @@ ui <- fluidPage(
                                   DTOutput('tbl')))),
              
              
-             tabPanel("Nations",
-                      #titlePanel("How many times was each nation pair named in Hansard debate titles?"),
-                      sidebarLayout(
-                        sidebarPanel(
-                          helpText("This page visualizes the nation pairs that occured most frequently in debate titles. 
-                                   Click on a nation pair to view how the top concern associated with each nation changed over time."),
+             navbarMenu("Nations",
+                        tabPanel("Nation Concerns",
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     width = 2), 
+                                   
+                                   mainPanel(plotlyOutput("treemap")))),
+                                 
+                        
+                        tabPanel("Nation Pairs",
+                        #titlePanel("How many times was each nation pair named in Hansard debate titles?"),
+                        sidebarLayout(
+                          sidebarPanel(
+                            helpText("This page visualizes the nation pairs that occured most frequently in debate titles. 
+                                     Click on a nation pair to view how the top concern associated with each nation changed over time."),
                           
-                          tags$hr(style="border-color: black;"),
+                            tags$hr(style="border-color: black;"),
                           
-                          helpText("Slide the dial to change decades."),
+                            helpText("Slide the dial to change decades."),
                           
-                          sliderTextInput(
-                            inputId = "decade_2", 
-                            label = "Decade: ", 
-                            grid = TRUE, 
-                            force_edges = TRUE,
-                            choices = c("1800",
+                            sliderTextInput(
+                              inputId = "decade_2", 
+                              label = "Decade: ", 
+                              grid = TRUE, 
+                              force_edges = TRUE,
+                              choices = c("1800",
                                         "1810", 
                                         "1820", 
                                         "1830", 
@@ -196,7 +225,8 @@ ui <- fluidPage(
                           width = 2), 
                         
                         mainPanel(
-                          plotlyOutput("plot_2")))),
+                          plotlyOutput("plot_2"),
+                          plotlyOutput("ut"))))),
              
              
              tabPanel("Collocates",
@@ -299,7 +329,8 @@ ui <- fluidPage(
                                                  "Keyword List:",
                                                  list(`Special Vocabulary` = list("Property" = "property",
                                                       "Transportation" = "transportation",
-                                                      "Resources" = "resources"),
+                                                      "Resources" = "resources",
+                                                      "Industry" = "industry"),
                                                       `Custom Vocabulary` = list("Blank Plot" = "custom"))),
                                      
                                      
@@ -327,22 +358,52 @@ ui <- fluidPage(
                         mainPanel(plotlyOutput("word_embeddings")))),
              
              navbarMenu("About",
+                        tabPanel("Purpose",
+                                 h3("The Hansard Viewer"),
+                                 br(),
+                                 p(),
+                                 "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
+                                 p(),
+                                 "For seven years, our lab, Democracy Lab, has been operating at the juncture of political, historical, and textual analysis of democratic debates, publishing numerous articles, collaborating with the builders of infrastructure to make text mining accessible to the public, and building a preliminary series of public-facing apps. 
+                                 Users of our prototype web application can use an array of data-mining and statistical approaches which can provide new insights into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts. 
+                                 Citizens using our toolset can navigate from an overview showing change over time, to a depiction of how different candidates talk about the same issue, to the in-text mentions of word use that a computer has used to produce the visualizations in question.",
+                                 p(),
+                                 "The usefulness of any application for citizens to understand democracy depends upon how much they can trust the data and its analysis. 
+                                 For users to trust the analysis, an app must cut a line between transparency, precision, and innovation. 
+                                 Our tool does this by employing methods such as word counts, tf-idf measures, topic models, word embeddings, and triples analysis. 
+                                 
+                                 
+                                 In general, our app’s design will try to compensate for user mistrust of algorithm- and algebra- dependent measures by linking visualizations to the citations that explain each algorithm or measure and links in lay language. We will also privilege certain measures -- for instance triples analysis, a tool that is simultaneously transparent, precise, and sensitive. 
+
+                                 
+                                 
+                                 "),
+                        
                         tabPanel("Code", 
                                  h3("Code"),
                                  br(), 
                                  p(),
-                                 "Transparency.
-                                 For the source code, enter",
-                                 HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
-                                 HTML("<ul><li>...text...</li><li>...more text...</li></ul>"),
-                                 ),
+                                 HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
+                                 "Transparency.",
+                                 br(),
+                                 p(),
+                                 "For the source code, enter",
+                                 HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository.")),
+
                         tabPanel("Data",
                                  "Placeholder text.",
                                  br(),
+                                 p(),
+                                 strong("Hansard:"),
+                                 "SMU version of the Hansard data with improved speaker names.",
+                                 br(),
+                                 p(),
                                  strong("Nations:"),
                                  "placeholder description",
                                  br(),
-                                 strong("Stop Words:")))
+                                 p(),
+                                 strong("Stop Words:"),
+                                 ""))
   ))
 
 
@@ -447,6 +508,21 @@ server <- function(input, output, session) {
     } else { directions }) 
   
   
+  ####################### Nation Pairs
+  
+  
+  
+
+  
+  nations_count <- read_csv("~/projects/hansard-shiny/hansard_c19_debate_title_nation_count.csv")
+  
+  nations_count$decade <- as.character(nations_count$decade)
+  
+  
+  
+  
+  
+  
   output$plot_2 <- renderPlotly({
     nation_pairs <- read_csv("~/projects/hansard-shiny/data/nations/clean_nation_pairs_in_titles.csv")
     
@@ -455,36 +531,121 @@ server <- function(input, output, session) {
       arrange(desc(n)) %>%
       slice(1:20)
     
+    render_value_np(nation_pairs)
+    
     plot_ly(data = nation_pairs, 
             x = ~n, 
             y = ~reorder(nation_pair, n),
             type = 'bar',
             text = n, 
             orientation = 'h',
+            source = "np",
             marker= list(color = 'rgb(158,202,225)',
                          line = list(color = 'rgb(8,48,107)',
                                      width = 1.5))) %>% 
       layout(xaxis = list(title ="Frequency"),
              yaxis = list(title = "")) %>%
-      #tickangle = 330)) %>%
       config(displayModeBar = F) })
   
   
+  
+  render_value_np = function(NN){
+    output$ut <- renderPlotly({
+    s <- event_data("plotly_click", source = "np")
+    
+    if(!is.null(s)) {
+    hh <- separate(s, y, into = c("left", "right"), sep = "-")
+    
+    print(hh)
+    
+    left_nation <- hh$left
+    right_nation <- hh$right
+    
+    left_nation <- str_to_title(left_nation)
+    right_nation <- str_to_title(right_nation)
+    
+    ln <- nations_count %>%
+      filter(debate == left_nation) %>%
+      rename(lcount = n)
+    
+    ln$debate <- "left_nation_1"
+    
+    ln <- dcast(ln, decade ~ debate)
+    
+    
+    
+    rn <- nations_count %>%
+      filter(debate == right_nation) %>%
+      rename(rcount = n)
+    
+    rn$debate <- "right_nation_1"
+    
+    rn <- dcast(rn, decade ~ debate)
+    
+    
+    all <- left_join(ln, rn, on = "decade")
+    
+
+    plot_ly(all, 
+                   x = ~decade, 
+                   y = ~left_nation_1, 
+                   type = 'bar',
+                   marker= list(color = 'rgb(158,202,225)',
+                                line = list(color = 'rgb(8,48,107)',
+                                            width = 1.5)), 
+                   name = left_nation) %>% 
+      add_trace(y = ~right_nation_1, 
+                marker= list(color = 'rgb(58,200,225)',
+                             line = list(color = 'rgb(8,48,107)',
+                                         width = 1.5)),
+                name = right_nation) %>% 
+      layout(yaxis = list(title = 'Count'), barmode = 'group') %>%
+      config(displayModeBar = F)
+    
+    
+    }
+  }) } 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #############################################################
+  
   speaker_favorite_words_count <- read_csv("~/projects/hansard-shiny/data/speakers/clean_speaker_favorite_words_by_decade.csv")
   
-  layout_ggplotly <- function(gg, x = -0.02, y = -0.08){
+  #layout_ggplotly <- function(gg, x = -0.02, y = -0.08){
     # The 1 and 2 goes into the list that contains the options for the x and y axis labels respectively
-    gg[['x']][['layout']][['annotations']][[1]][['y']] <- x
-    gg[['x']][['layout']][['annotations']][[2]][['x']] <- y
-    gg
-  }
+    #gg[['x']][['layout']][['annotations']][[1]][['y']] <- x
+    #gg[['x']][['layout']][['annotations']][[2]][['x']] <- y
+    #gg
+  #}
   
-  top_speaker_title <- function(input, output) {
-      output$top_speaker_title <- renderText({
+  #top_speaker_title <- function(input, output) {
+  #    output$top_speaker_title <- renderText({
         
-        paste("You have chosen a range that goes from",
-                                        input$range[1], "to", input$range[2])})
-    }
+   #     paste("You have chosen a range that goes from",
+  #                                      input$range[1], "to", input$range[2])})
+   # }
   
   output$top_speakers <- renderPlotly({ 
     top_speakers <- read_csv("~/projects/hansard-shiny/data/speakers/top_speakers.csv")
@@ -538,7 +699,7 @@ server <- function(input, output, session) {
                  color = "black",
                  size = .3) +
                  #fill = "steel blue") +
-        labs(title = paste0(aa, "'s top words over time"),
+        labs(title = paste0(aa, "'s Top Words Over Time"),
              subtitle = "",
              x = "Word",
              y = "Count") +
@@ -642,6 +803,33 @@ server <- function(input, output, session) {
   })
   
   
+  
+  output$treemap <- renderPlotly({
+    
+    c <- read_csv("~/projects/hansard-shiny/treemap_1880.csv")
+    
+    
+    a <- c$a
+    b <- c$b
+    values <- c$d
+    
+    
+    plot_ly(
+    type="treemap",
+    labels = a,
+    parents = b,
+    values = values) %>%
+      layout(height = 600, width = 1000, treemapcolorway=c("3CBB75FF","2D708EFF", "FDE725FF", "481567FF", "1F968BFF")) %>%
+      config(displayModeBar = F)})
+
+  
+
+  
+  
+  
+  
+  
+  
   # Collocates
   
   filter_sentiment <- function(df, sw){
@@ -681,8 +869,8 @@ server <- function(input, output, session) {
     else if (input$special_vocabulary == "concerns") {
       updateSelectInput(session = session, 
                       inputId = "noun", 
-                      choices = c("This", 
-                                  "test")) } 
+                      choices = c("Select" = "All", 
+                                  "Poor" = "poor")) } 
     else if (input$special_vocabulary == "cities") {
       
       
@@ -708,17 +896,18 @@ server <- function(input, output, session) {
   
   
   
+  ##################### collocates
   
-  
-  
-  
+  import_collocates_data <- reactive({
+    
+      collocates_data <- read_csv(paste0("~/projects/hansard-shiny/data/collocates/", input$special_vocabulary, "_collocates.csv")) })
   
   
   
   output$collocates_top <- renderPlotly({
     
-    collocates <- read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
-    
+    collocates <- import_collocates_data() #read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
+
     collocates <- filter_sentiment(collocates, input$sentiment)
     
     
@@ -758,8 +947,11 @@ server <- function(input, output, session) {
       config(displayModeBar = F) })
   
   
+  
+  
   output$collocates_bottom <- renderPlotly({
-    collocates <- read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
+    
+    collocates <- import_collocates_data()
     
     collocates <- filter_sentiment(collocates, input$sentiment)
     
@@ -801,6 +993,10 @@ server <- function(input, output, session) {
       config(displayModeBar = F) })
   
   
+  
+  
+  
+  
   #################### Word Embeddings
   
   output$word_embeddings <- renderPlotly({
@@ -819,6 +1015,11 @@ server <- function(input, output, session) {
     
     
   })
+  
+  
+  
+  
+  
   
   #################### Debate Titles
   
