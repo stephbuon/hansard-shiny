@@ -33,6 +33,7 @@ library(tidyverse)
 library(DT)
 library(tidytext)
 library(stringi)
+library(reshape2)
 
 library(shinyBS)
 
@@ -112,29 +113,43 @@ n1 <- nodes
 
 ######################
 
-
+counts <- "<h4>Counts</h4>"
+str1 <- "<h4>Debates: 173,275</h4>"
+str2 <- "<h4>Speakers: X</h4>"
+str3 <- "<h4>Sentences: 10,979,009</h4>"
 
 
 ui <- fluidPage(
-  theme = shinytheme("flatly"),
-  
+  #theme = shinytheme("flatly"),
+  theme = shinytheme("cosmo"),
   navbarPage("The Hansard Parliamentary Debates",
              
              tabPanel("Introduction",
-                      fluidRow(column(width = 11, 
+                      splitLayout(cellWidths = c("75%", "25%"),
+                                  cellArgs = list(style = "padding: 6px"),
+                                  plotlyOutput("ndbs"),
+                                  
+                      
+                                  #textOutput("text1"))),
+                                  
+                                  
+                                  HTML(paste(counts, str1, str2, str3, sep = '<br/>'))),
+                      fluidRow(column(width = 7, 
                                       offset = 1,
-                      
-                      
-                      
-                        mainPanel("Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
-                                  p(),
-                                  "For seven years Democracy Lab has been operating at the juncture of political, historical, and textual analysis of democratic debates, publishing articles and collaborating with the builders of infrastructure to make text mining accessible to the public.",
-                                  br(),
-                                  p(),
-                                  "This app belongs to a preliminary series of public-facing web apps. 
-                                  Users of our prototype app can use an array of data-mining and statistical approaches which can provide new insights into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts.")))),
-             
- 
+                                      br(),
+                                      p(),
+                                      br(),
+                                      p(),
+                                      "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
+                                      br(),
+                                      p(),
+                                      "This protoype app belongs to a preliminary series of public-facing web apps. 
+                                      Users can apply an array of data-mining and statistical tools to gain insight into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts.",
+                                      br(),
+                                      p(),
+                                      "The navigation bar ENTER"
+                                      
+                                      ))),
  
              
              
@@ -316,7 +331,9 @@ ui <- fluidPage(
                                                         height = "580"))),
                         tabPanel("Longest Speeches",
                                  mainPanel(plotlyOutput("longest_speeches"),
-                                           dataTableOutput('tbl5')))),
+                                           dataTableOutput('tbl5'))),
+                        tabPanel("Speech Lengths",
+                                 mainPanel())),
              
              
              
@@ -383,13 +400,13 @@ ui <- fluidPage(
                                  h3("Code"),
                                  br(), 
                                  p(),
-                                 HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
+                                 "Our code is open source and can be found on our",
+                                 HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
+                                 #HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
                                  "Transparency.",
                                  br(),
                                  p(),
-                                 "For the source code, enter",
-                                 HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository.")),
-
+                                 "For the source code, enter"),
                         tabPanel("Data",
                                  "Placeholder text.",
                                  br(),
@@ -408,6 +425,66 @@ ui <- fluidPage(
 
 
 server <- function(input, output, session) {
+  
+  ################## Introduction 
+  
+  number_of_debates_from_1803_1910 <- read_csv("~/projects/hansard-shiny/number_of_debates_from_1803_1910.csv")
+  
+  output$ndbs <- renderPlotly({
+    
+    #render_value_text(number_of_debates_from_1803_1910)
+    
+    plot_ly(data=number_of_debates_from_1803_1910, 
+            x = ~decade, 
+            y = ~no_of_debates, 
+            type = 'bar', 
+            source = "texty",
+            text = ~paste0("Decade: ", decade, "\n",
+                           "Number of Debates: ", no_of_debates, "\n"),
+            hoverinfo = "text",
+            
+            marker = list(color = 'rgb(158,202,225)',
+                          line = list(color = 'rgb(8,48,107)',
+                                      width = 1.5))) %>% 
+      layout(title = "Debate Count by Decade: 1803—1910",
+             xaxis = list(title = ""),
+             yaxis = list(title = "")) %>%
+      config(displayModeBar = F)
+    
+  })
+  
+  
+  
+  
+  #text = ~paste0('Name: ', speaker, '\n',
+  #               'Speech Date: ', speechdate, '\n',
+  #               'Speech Word Count ', count_per_speech),
+  #hoverinfo = 'text') %>%
+  
+  
+  
+  
+  
+  
+  
+  
+  #render_value_text = function(NN){
+    
+   # output$text1 <- renderText({
+      #s <- event_data("plotly_click", source = "texty") 
+      #print(s)
+      str1 <- "Number of Debates: ENTER"
+      str2 <- "Number of Speakers: ENTER"
+    #  HTML(paste(str1, str2, sep = '<br/>'))
+      
+     # }) }
+  
+  
+  #######################################################3
+  
+  
+  
+  
   
   reactive_nodes <- reactive({
     
@@ -521,10 +598,8 @@ server <- function(input, output, session) {
   
   
   
-  
-  
   output$plot_2 <- renderPlotly({
-    nation_pairs <- read_csv("~/projects/hansard-shiny/data/nations/clean_nation_pairs_in_titles.csv")
+    nation_pairs <- read_csv("~/projects/hansard-shiny/data/nations/nation_pairs_in_debate_titles.csv")
     
     nation_pairs <- nation_pairs %>%
       filter(decade == input$decade_2) %>%
@@ -561,8 +636,8 @@ server <- function(input, output, session) {
     left_nation <- hh$left
     right_nation <- hh$right
     
-    left_nation <- str_to_title(left_nation)
-    right_nation <- str_to_title(right_nation)
+    #left_nation <- str_to_title(left_nation)
+    #right_nation <- str_to_title(right_nation)
     
     ln <- nations_count %>%
       filter(debate == left_nation) %>%
