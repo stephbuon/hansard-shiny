@@ -3,8 +3,8 @@ library(tidyverse)
 stopwords <- read_csv("~/stopwords.csv") %>%
   rename(ngrams = stop_word)
 
-tokenized_hansard <- read_csv("~/hansard_samples/tokenized_hansard_sample.csv") %>%
-  select(debate, debate_id, speechdate, ngrams) #("/scratch/group/pract-txt-mine/tokenized_hansard.csv")
+tokenized_hansard <- read_csv("/scratch/group/pract-txt-mine/tokenized_hansard.csv") %>%
+  select(debate, debate_id, speechdate, ngrams)
 
 longest_debates <- read_csv("~/longest_debates.csv")
 
@@ -18,6 +18,6 @@ longest_debates <- longest_debates %>%
   group_by(speechdate, debate_id, debate, ngrams) %>%
   count(speechdate, debate_id, debate, ngrams) %>%
   rename(token_count = n) %>%
-  slice_max(order_by = token_count, n = 20)
+  slice(order_by = token_count, n = 20)
 
 write_csv(longest_debates, "~/longest_debates_wordcloud.csv")
