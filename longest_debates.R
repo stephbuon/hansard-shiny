@@ -7,12 +7,12 @@ d = 5
 tokenized_hansard <- read_csv("/scratch/group/pract-txt-mine/tokenized_hansard.csv")
 
 metadata <- tokenized_hansard %>%
-  select(speaker, speechdate, speech_id, debate) %>%
+  select(speaker, speechdate, speech_id, debate, sentence_id) %>%
   distinct()
 
 # what were the longest debates?
 debate_length <- tokenized_hansard %>%
-  group_by(speechdate, debate) %>%
+  group_by(speechdate, debate_id) %>% # changed this from debate
   summarize(words_per_debate = n()) %>%
   ungroup() %>%
   mutate(year = year(speechdate)) %>%
@@ -35,3 +35,4 @@ longest_debates_in_decade <- debate_length %>%
   distinct() 
 
 write_csv(longest_debates_in_decade, "longest_debates.csv")
+
