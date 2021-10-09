@@ -377,11 +377,16 @@ ui <- fluidPage(
                                      textInput("keyword_addition_word_5", "", ""),
                                      textInput("keyword_addition_word_6", "", ""),
                                      width = 2),
+                                   
                                      mainPanel(plotlyOutput("debate_titles")))),
+                                   #mainPanel(div(plotlyOutput("debate_titles", height = "100%"), align = "center"))))),
                         tabPanel("Longest Debates",
-                                 mainPanel(plotlyOutput("longest_debates"),
-                                           dataTableOutput('tbl6')))),
-             
+                                 fluidRow(column(width = 8, offset = 0,
+                                                 div(plotlyOutput("longest_debates"), align = "center"),
+                                                 dataTableOutput('tbl6'))))),
+                                 #mainPanel(plotlyOutput("longest_debates"),
+                                #           dataTableOutput('tbl6')))))),
+
              
              tabPanel("Word Embeddings",
                       sidebarLayout(
