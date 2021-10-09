@@ -388,7 +388,7 @@ ui <- fluidPage(
                                 #           dataTableOutput('tbl6')))))),
 
              
-             tabPanel("Word Embeddings",
+             tabPanel("Context",
                       sidebarLayout(
                         sidebarPanel(
                           helpText("Say something meaningful"),
