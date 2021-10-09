@@ -113,7 +113,7 @@ n1 <- nodes
 
 ######################
 
-counts <- "<h4>Counts</h4>"
+counts <- "<h3>Count Totals:</h3>"
 str1 <- "<h4>Debates: 173,275</h4>"
 str2 <- "<h4>Speakers: X</h4>"
 str3 <- "<h4>Sentences: 10,979,009</h4>"
@@ -156,7 +156,7 @@ ui <- fluidPage(
              tabPanel("Triples Network", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("Check the boxes to explore the langauge of each speaker."),
+                          helpText("Check the boxes to explore the langauge of different speakers."),
                           
                           checkboxGroupInput("subreddit", "Speaker:",
                                              
@@ -245,10 +245,24 @@ ui <- fluidPage(
              
              
              tabPanel("Collocates",
+                      
+                    #  splitLayout(cellWidths = c("95%", "5%"),
+                    #              cellArgs = list(style = "padding: 6px"),
+                                  
+                      
+                      
+                      
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("This page visualizes sentiment laden collocates."),
-                          
+                          actionButton("about_collocates", 
+                                       "About This Page",
+                                       style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       padding:4px; 
+                                       font-size:90%"),
+                          p(),
+                          #helpText("Choose a vocabulary list."),
                           radioButtons("special_vocabulary", 
                                        "Special Vocabulary:",
                                        c("Property" = "property",
@@ -258,7 +272,7 @@ ui <- fluidPage(
                                          "Cities" = "cities")),
                           
                           #tags$hr(style="border-color: black;"),
-                          
+                          #helpText("Slide the dial to change decades."),
                           sliderTextInput(
                             inputId = "decade_collocates_top", 
                             label = "Decade (Top): ", 
@@ -318,6 +332,10 @@ ui <- fluidPage(
                           radioTooltip(id = "collocate_measure", choice = "jsd", title = "Button 3 Explanation", placement = "right", trigger = "hover"),
                           
                           width = 2),
+                       # mainPanel(plotlyOutput("collocates_top"),
+                       #           plotlyOutput("collocates_bottom")
+                        
+                       # )))),
                         
                         mainPanel(plotlyOutput("collocates_top"),
                                   plotlyOutput("collocates_bottom")))),
@@ -446,7 +464,7 @@ server <- function(input, output, session) {
             marker = list(color = 'rgb(158,202,225)',
                           line = list(color = 'rgb(8,48,107)',
                                       width = 1.5))) %>% 
-      layout(title = "Debate Count by Decade: 1803—1910",
+      layout(title = paste0("The Hansard Parliamentary Debates", "\n", "Debate Count by Decade: 1803—1910"),
              xaxis = list(title = ""),
              yaxis = list(title = "")) %>%
       config(displayModeBar = F)
@@ -973,8 +991,47 @@ server <- function(input, output, session) {
   
   ##################### collocates
   
-  import_collocates_data <- reactive({
+  
+    observeEvent(input$about_collocates, {
+      showModal(modalDialog(
+        title = "Special Vocabulary: Sentiment Laden Collocates",
+        "A collocate is a series of words that co-occur in text. 
+        A grammatical collocate represents the co-occuring words that share a sentence-level grammatical relationship.",
+        br(),
+        p(),
+        strong("Controls:"),
+        "Click a radio button under \"Special Vocabulary\" to select a scholar curated vocabulary list to guide your search.",
+        br(),
+        p(),
+        "Slide the dials under \"Decade\" to change time periods",
+        br(),
+        p(),
+        "Choose a keyword from the drop down box to narrow your analysis to just collocates containing that word.
+        The keywords will update based on the selected vocabulary list.",
+        br(),
+        p(),
+        "Slide the dial under \"Sentiment\" to narrow your analysis from all sentiment laden collocates to just those with positive or negative scores.",
+        br(),
+        p(),
+        "Click a radio button under \"Measure\" to return results based on: 
+        a) a frequency count; b) term frequency - inverse document frequency (tf-idf); or c) Jenson-Shannon divergence (jsd).",
+        br(),
+        p(),
+        strong("Measurements:"),
+        "\"Count\" refers to the number of times a pair of collocates appeared in a sentence in the debate text.",
+        br(),
+        p(),
+        "\"tf-idf\" is a numerical statistic that reflects how \"important\" a word is to a corpus. 
+        The tf–idf value increases proportionally to the number of times a word appears in a decade and is offset by the other decade that contains the word, 
+        which helps to adjust the results for the fact that some words appear more frequently in general.",
+        br(),
+        p(),
+        "\"jsd\" is a "
+        
+      ))
+    })
     
+  import_collocates_data <- reactive({
       collocates_data <- read_csv(paste0("~/projects/hansard-shiny/data/collocates/", input$special_vocabulary, "_collocates.csv")) })
   
   
