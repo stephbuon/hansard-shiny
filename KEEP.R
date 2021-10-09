@@ -1,3 +1,7 @@
+# remember that rN the network data is in network/cleaning.R
+
+
+
 # remember to add cache stuff 
 # If I want to see the full network, I can pass VisNetwork the static edges data (e1) instead of the reactive expression (reactive_edges()). 
 
@@ -353,6 +357,8 @@ ui <- fluidPage(
                         tabPanel("Speech Lengths",
                                  mainPanel())),
              
+             # plotlyOutput("speech_lengths")
+             
              
              
              navbarMenu("Debates",
@@ -381,11 +387,13 @@ ui <- fluidPage(
                                      mainPanel(plotlyOutput("debate_titles")))),
                                    #mainPanel(div(plotlyOutput("debate_titles", height = "100%"), align = "center"))))),
                         tabPanel("Longest Debates",
-                                 fluidRow(column(width = 8, offset = 0,
-                                                 div(plotlyOutput("longest_debates"), align = "center"),
-                                                 dataTableOutput('tbl6'))))),
-                                 #mainPanel(plotlyOutput("longest_debates"),
-                                #           dataTableOutput('tbl6')))))),
+                                 sidebarLayout(helpText("hello"),
+                                   
+                                 #fluidRow(column(width = 8, offset = 0,
+                                #                 div(plotlyOutput("longest_debates"), align = "center"),
+                                #                 dataTableOutput('tbl6'))))),
+                                 mainPanel(plotlyOutput("longest_debates"),
+                                           dataTableOutput('tbl6'))))),
 
              
              tabPanel("Context",
@@ -423,7 +431,9 @@ ui <- fluidPage(
                                  h3("Code"),
                                  br(), 
                                  p(),
-                                 "Our code is open source and can be found on our",
+                                 "Our code is written with 
+                                 
+                                 is open source and can be found on our",
                                  HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
                                  #HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
                                  "Transparency.",
@@ -451,7 +461,7 @@ server <- function(input, output, session) {
   
   ################## Introduction 
   
-  number_of_debates_from_1803_1910 <- read_csv("~/projects/hansard-shiny/number_of_debates_from_1803_1910.csv")
+  number_of_debates_from_1803_1910 <- read_csv("~/projects/hansard-shiny/data/introduction/number_of_debates_from_1803_1910.csv")
   
   output$ndbs <- renderPlotly({
     
@@ -614,7 +624,7 @@ server <- function(input, output, session) {
   
 
   
-  nations_count <- read_csv("~/projects/hansard-shiny/hansard_c19_debate_title_nation_count.csv")
+  nations_count <- read_csv("~/projects/hansard-shiny/data/nations/hansard_c19_debate_title_nation_count.csv")
   
   nations_count$decade <- as.character(nations_count$decade)
   
@@ -831,10 +841,38 @@ server <- function(input, output, session) {
   
   
   
+  # COME BACK 
+  output$speech_lengths <- renderPlotly({
+    speech_stats <- read_csv("~/projects/hansard-shiny/data/speakers/speech_stats.csv")
+    
+    plot_ly(speech_stats, 
+                           x = ~decade, 
+                           y = ~median, 
+                           type = 'scatter', 
+                           mode = 'lines',
+                           line = list(color = 'rgb(158,202,225)',
+                                       width = 4))
+    
+    
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ######################### Debates 
+  
   output$longest_debates <- renderPlotly({ 
     longest_debates <- read_csv("~/projects/hansard-shiny/data/debates/longest_debates.csv")
     
     render_value_3(longest_debates)
+    render_value_4(longest_debates)
     
     plot_ly(data = longest_debates, 
             x = ~speechdate, 
@@ -860,6 +898,52 @@ server <- function(input, output, session) {
       s <- event_data("plotly_click", source = "subset_3")
       return(datatable(NN[NN$words_per_debate==s$y,])) 
     }) } 
+  
+  render_value_4 <- function(NN) {
+    output$tbl99 <- renderPlotly({
+      s <- event_data("plotly_click", source = "subset")
+      NN <- NN[NN$token_count==s$y,]
+      print(NN)
+      
+    })
+    
+    
+    
+  }
+      
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
@@ -1144,7 +1228,7 @@ server <- function(input, output, session) {
   import_debate_titles_data <- reactive( {
     
     if (input$kw_list != "custom") {
-      kw_data <- read_csv(paste0("~/projects/hansard-shiny/kw_list_", input$kw_list, ".csv")) } 
+      kw_data <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_list_", input$kw_list, ".csv")) } 
     else { 
       kw_data <- data.frame() } })
   
@@ -1154,11 +1238,11 @@ server <- function(input, output, session) {
     
     if (length(keywords != 0)) {
       
-      words_per_year <- read_csv("~/projects/hansard-shiny/words_per_year.csv")
+      words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
       debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
       
       if (input$kw_list != "custom") {
-        all_year_counts <- read_csv(paste0("~/projects/hansard-shiny/all_year_counts_", input$kw_list, ".csv")) } 
+        all_year_counts <- read_csv(paste0("~/projects/hansard-shiny/data/debates/all_year_counts_", input$kw_list, ".csv")) } 
       else {
         all_year_counts <- data.frame()
       }
