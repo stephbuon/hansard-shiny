@@ -1,40 +1,13 @@
 library(tidyverse)
+library(quanteda)
+library(spacyr)
+
+spacy_initialize(virtualenv="/hpc/applications/python_environments/spacy")
 
 stopwords <- read_csv("~/stopwords.csv") %>%
   rename(ngrams = stop_word)
 
 tokenized_hansard <- read_csv("/scratch/group/pract-txt-mine/tokenized_hansard.csv") %>%
-  select(debate, debate_id, speechdate, ngrams)
-
-longest_debates <- read_csv("~/longest_debates.csv")
-
-longest_debates <- left_join(longest_debates, tokenized_hansard, by = c("debate", "debate_id", "speechdate"))
-
-rm(tokenized_hansard)
-
-longest_debates <- anti_join(longest_debates, stopwords, by = "ngrams")
-
-longest_debates <- longest_debates %>%
-  group_by(speechdate, debate_id, debate, ngrams) %>%
-  count(speechdate, debate_id, debate, ngrams) %>%
-  rename(token_count = n) %>%
-  arrange(desc(token_count)) %>%
-  slice(1:20)
-
-write_csv(longest_debates, "~/longest_debates_wordcloud.csv")
-
-
-
-
-### maybe replace with this: 
-library(tidyverse)
-library(quanteda)
-library(spacyr)
-
-stopwords <- read_csv("~/stopwords.csv") %>%
-  rename(ngrams = stop_word)
-
-tokenized_hansard <- read_csv("~/hansard_samples/tokenized_hansard_sample.csv") %>% #("/scratch/group/pract-txt-mine/tokenized_hansard.csv") %>%
   select(debate, debate_id, speechdate, ngrams)
 
 longest_debates <- read_csv("~/longest_debates.csv")
@@ -68,7 +41,7 @@ out <- spacy_parse(longest_debates,
                    entity = F) %>%
   select(-sentence_id)
 
-all <- left_join(out, metadata)
+all <- left_join(out, metadata, by = "doc_id")
 
 all <- all %>%
   group_by(speechdate, debate_id, debate, lemma) %>%
@@ -78,4 +51,3 @@ all <- all %>%
   slice(1:20)
 
 write_csv(longest_debates, "~/longest_debates_wordcloud.csv")
-
