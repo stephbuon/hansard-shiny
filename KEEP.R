@@ -38,6 +38,7 @@ library(DT)
 library(tidytext)
 library(stringi)
 library(reshape2)
+library(text2vec)
 
 library(shinyBS)
 
@@ -94,22 +95,8 @@ names(directions)[1] <- " "
 
 
 
-
-from <- c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2)
-to <- c(3, 4, 5, 6, 7, 8, 8, 8, 9, 10, 11)
-from_name <- c('Mr. Gladstone', 'Mr. Gladstone', 'Mr. Gladstone', 'Mr. Gladstone', 'Mr. Gladstone', 'Mr. Gladstone', 'Dummy Name', 'Dummy Name', 'Dummy Name', 'Dummy Name', 'Dummy Name') 
-to_name <- c('corporation-discharge-duty', 'friend-be-willing', 'who-not-see-on-occasion', 'planter-be-commendable', 'what-not-occur-with-respect', 'it-be-in-opinion', 'it-be-in-opinion', 'it-be-in-opinion', 'he-talks-to-members', 'he-vote-on-bill', 'he-return-to-court')
-e1 <- data.frame(from_name, to_name, from, to)
-
-id <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
-group <- c('speaker', 'speaker', 'triple', 'triple', 'triple', 'triple', 'triple', 'triple', 'triple', 'triple', 'triple')
-label <- c('Mr. Gladstone', 'Dummy Name', 'corporation-discharge-duty', 'friend-be-willing', 'who-not-see-on-occasion', 'planter-be-commendable', 'what-not-occur-with-respect', 'it-be-in-opinion', 'he-talks-to-members', 'he-vote-on-bill', 'he-return-to-court')
-decade <- c('1800', '1800', '1800', '1800', '1800', '1800', '1800', '1800', '1800', '1800', '1800')
-n1 <- data.frame(id, group, label)
-
-
-e1 <- edges
-n1 <- nodes
+e1 <- read_csv("~/projects/hansard-shiny/edges_test_data.csv")
+n1 <- read_csv("~/projects/hansard-shiny/nodes_test_data.csv")
 
 
 
@@ -147,11 +134,15 @@ ui <- fluidPage(
                                       "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
                                       br(),
                                       p(),
-                                      "This protoype app belongs to a preliminary series of public-facing web apps. 
+                                      "This protoype app belongs to a preliminary series of public-facing web apps designed to show the language features of debates. 
                                       Users can apply an array of data-mining and statistical tools to gain insight into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts.",
                                       br(),
                                       p(),
-                                      "The navigation bar ENTER"
+                                      strong("Controls:"),
+                                      "Use the navigation bar at the top of the page to change between different views of the Hansard corpus.",
+                                      br(),
+                                      p(),
+                                      "Click on the blue \"About This Page\" button located in the top left corner of each page to learn more about ENTER."
                                       
                                       ))),
  
@@ -167,9 +158,9 @@ ui <- fluidPage(
                                              c("William E. Gladstone" = "Mr. Gladstone",
                                                "Benjamin Disraeli" = "bdisraeli",
                                                "Arthur Balfour" = "abalfour",
-                                               "Name" = "Dummy Name"),
+                                               "Mr. Placeholder" = "Mr. Placeholder"),
                                              
-                                             selected = c("Mr. Gladstone", "Dummy Name")),
+                                             selected = c("Mr. Gladstone", "Mr. Placeholder")),
                           
                           tags$hr(style="border-color: black;"),
                           helpText("Slide the dial to change decades."),
@@ -307,7 +298,8 @@ ui <- fluidPage(
                                         "1860",
                                         "1870",
                                         "1880",
-                                        "1890")),
+                                        "1890"),
+                            selected = "1840"),
                           
                           #tags$hr(style="border-color: black;"),
                           
@@ -366,6 +358,14 @@ ui <- fluidPage(
                                  sidebarLayout(
                                    sidebarPanel(
                                      helpText("Say something meaningful"),
+                                     actionButton("about_debate_titles", 
+                                                  "About This Page",
+                                                  style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       padding:4px; 
+                                       font-size:90%"),
+                                     p(),
                                      selectInput("kw_list", 
                                                  "Keyword List:",
                                                  list(`Special Vocabulary` = list("Property" = "property",
@@ -396,14 +396,24 @@ ui <- fluidPage(
                                            dataTableOutput('tbl6'))))),
 
              
-             tabPanel("Context",
-                      sidebarLayout(
-                        sidebarPanel(
-                          helpText("Say something meaningful"),
+             navbarMenu("Context",
+                        tabPanel("Try 1",
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     helpText("Say something meaningful"),
                           
-                          width = 2),
-                        
-                        mainPanel(plotlyOutput("word_embeddings")))),
+                                     width = 2),
+                                   mainPanel(plotlyOutput("word_embeddings")))),
+                        tabPanel("Similarity",
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     helpText("Say something meaningful"),
+                                     textInput("search_similarity", "Keyword:", ""),
+                                     width = 2),
+                                   mainPanel(plotlyOutput("most_similar"))
+                                   )
+                                 )),
+             
              
              navbarMenu("About",
                         tabPanel("Purpose",
@@ -475,7 +485,6 @@ server <- function(input, output, session) {
             text = ~paste0("Decade: ", decade, "\n",
                            "Number of Debates: ", no_of_debates, "\n"),
             hoverinfo = "text",
-            
             marker = list(color = 'rgb(158,202,225)',
                           line = list(color = 'rgb(8,48,107)',
                                       width = 1.5))) %>% 
@@ -912,7 +921,22 @@ server <- function(input, output, session) {
   }
       
 
-  
+  observeEvent(input$about_debate_titles, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "The \"Keywords List\" drop down box ",
+      "The text boxes enter",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"
+      
+    ))
+  })
   
   
   
@@ -1220,7 +1244,55 @@ server <- function(input, output, session) {
   
   
   
+  #word_vectors <- as.matrix(read.table("~/projects/hansard-shiny/hansard_word_vectors_1800.txt", as.is = TRUE))
   
+  output$most_similar <- renderPlotly({
+    
+    
+    out <- data.frame()
+    
+    decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
+    
+    for(d in 1:length(decades)) {
+      
+      fdecade <- decades[d] 
+      
+      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+      
+      word_vectors <- as.matrix(read.table(table, as.is = TRUE))
+      
+      kw = word_vectors[input$search_similarity, , drop = F]
+      
+      cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+      
+      forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:21])
+      
+      colnames(forplot)[1] <- "similarity"
+      
+      forplot$word <- rownames(forplot)
+      
+      forplot <- forplot %>%
+        mutate(decade = fdecade)
+      
+      out <- bind_rows(out, forplot)
+    }
+    
+  
+    plot_ly(data = out, 
+                   x = ~decade, 
+                   y = ~jitter(similarity),
+                   mode = "markers+text",
+                   text = ~word,
+                   type = "scatter",
+                   marker = list(color = 'rgb(158,202,225)',
+                                 size = 15,
+                                 line = list(color = 'rgb(8,48,107)',
+                                             width = 1.5)),
+                   textposition = "center right",
+                   height=600) %>%
+      config(displayModeBar = F) })
+  
+    
   
   
   #################### Debate Titles

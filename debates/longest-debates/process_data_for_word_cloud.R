@@ -50,4 +50,4 @@ all <- all %>%
   arrange(desc(token_count)) %>%
   slice(1:20)
 
-write_csv(longest_debates, "~/longest_debates_wordcloud.csv")
+write_csv(all, "~/longest_debates_wordcloud.csv")
