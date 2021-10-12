@@ -29,7 +29,7 @@ for(i in 1:length(keywords)){
   keyword <- keywords[i]
   
   debate_titles_w_keyword <- a %>%
-    filter(str_detect(debate, regex(test, ignore_case = TRUE)))
+    filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b"), ignore_case = TRUE))) # took "test" out of string argument and added the paste 0 stuff 
   
   m <- debate_titles_w_keyword %>%
     select(debate, year) %>%
@@ -62,7 +62,7 @@ all_year_counts <- all_year_counts %>%
 
 #test_2 <- left_join(all_year_counts, metadata, by = c("keywords", "year")) # just added
 
-write_csv(metadata, "~/kw_property_metadata.csv") # just added
+#write_csv(metadata, "~/kw_property_metadata.csv") # just added
 
 write_csv(all_year_counts, "~/kw_list_industry.csv")
 

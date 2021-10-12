@@ -1410,6 +1410,8 @@ server <- function(input, output, session) {
     output$debate_titles_DT <- renderDT({
       s <- event_data("plotly_click", source = "TEST")
       
+      print(s)
+      
       
       if (input$kw_list != "custom") {
         metadata <- read_csv(paste0("~/projects/hansard-shiny/kw_metadata_", input$kw_list, ".csv")) } 
@@ -1417,9 +1419,9 @@ server <- function(input, output, session) {
         metadata <- data.frame()
       }
       
-      print(metadata)
-      
+      print(NN)
       test_2 <- left_join(metadata, NN, by = c("keywords", "year"))
+      datatable(test_2[test_2$year==s$x,])
       
       #print(test_2)
      # print(datatable(NN[NN$words_per_day==s$y,])) 
