@@ -7,7 +7,7 @@ d = 5
 tokenized_hansard <- read_csv("/scratch/group/pract-txt-mine/tokenized_hansard.csv")
 
 metadata <- tokenized_hansard %>%
-  select(speaker, speechdate, speech_id) %>%
+  select(speaker, speechdate, speech_id, debate) %>%
   distinct()
 
 # what were the longest debates?

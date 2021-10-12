@@ -142,7 +142,7 @@ ui <- fluidPage(
                                       "Use the navigation bar at the top of the page to change between different views of the Hansard corpus.",
                                       br(),
                                       p(),
-                                      "Click on the blue \"About This Page\" button located in the top left corner of each page to learn more about ENTER."
+                                      "Click on the blue button found in the top left corner of the following pages to learn more about the data and the methods of measurement used to produce a visualization."
                                       
                                       ))),
  
@@ -209,6 +209,14 @@ ui <- fluidPage(
                         #titlePanel("How many times was each nation pair named in Hansard debate titles?"),
                         sidebarLayout(
                           sidebarPanel(
+                            actionButton("about_nation_pairs", 
+                                         "About This Page",
+                                         style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       padding:4px; 
+                                       font-size:90%"),
+                            p(),
                             helpText("This page visualizes the nation pairs that occured most frequently in debate titles. 
                                      Click on a nation pair to view how the top concern associated with each nation changed over time."),
                           
@@ -376,7 +384,7 @@ ui <- fluidPage(
                                      
                                      
                                      
-                                     textInput("keyword_addition", "Search Words:", ""),
+                                     textInput("keyword_addition", "Search Terms:", ""),
                                      textInput("keyword_addition_word_2", "", ""),
                                      textInput("keyword_addition_word_3", "", ""),
                                      textInput("keyword_addition_word_4", "", ""),
@@ -384,7 +392,8 @@ ui <- fluidPage(
                                      textInput("keyword_addition_word_6", "", ""),
                                      width = 2),
                                    
-                                     mainPanel(plotlyOutput("debate_titles")))),
+                                     mainPanel(plotlyOutput("debate_titles"),
+                                               DTOutput('debate_titles_DT')))),
                                    #mainPanel(div(plotlyOutput("debate_titles", height = "100%"), align = "center"))))),
                         tabPanel("Longest Debates",
                                  sidebarLayout(helpText("hello"),
@@ -928,8 +937,8 @@ server <- function(input, output, session) {
       br(),
       p(),
       strong("Controls:"),
-      "The \"Keywords List\" drop down box ",
-      "The text boxes enter",
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
       br(),
       p(),
       strong("Measurement:"),
@@ -938,8 +947,22 @@ server <- function(input, output, session) {
     ))
   })
   
-  
-  
+  observeEvent(input$about_nation_pairs, {
+    showModal(modalDialog(
+      title = "Raw Count of Nations and Nation Pairs",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Slide the dial under \"Decade\" to change time periods",
+      "Click on a bar to visualize the raw count for each nation in the pair over the course of the 19th-century.",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Raw count"
+      
+    ))
+  })
   
   
   
@@ -1351,11 +1374,22 @@ server <- function(input, output, session) {
     
   }
   
+  
+
+  
+  
+  
+  
+  
+  
+  
   output$debate_titles <- renderPlotly({
     
     d <- import_debate_titles_data()
     
     d <- keyword_addition(d, input$keyword_addition, input$keyword_addition_word_2, input$keyword_addition_word_3, input$keyword_addition_word_4, input$keyword_addition_word_5, input$keyword_addition_word_6)
+    
+    render_value_debate_titles(d)
     
     debate_titles_ggplot <- ggplot(data = d) +
       geom_col(aes(x = year, 
@@ -1367,8 +1401,47 @@ server <- function(input, output, session) {
       labs(y = "debates per year as proportion", 
            title = "Proportion of Debate Titles That Include Keywords")
   
-  ggplotly(debate_titles_ggplot) %>%
+  ggplotly(debate_titles_ggplot,
+           source = "TEST") %>%
     config(displayModeBar = F)})
+  
+  
+  render_value_debate_titles = function(NN){
+    output$debate_titles_DT <- renderDT({
+      s <- event_data("plotly_click", source = "TEST")
+      
+      
+      if (input$kw_list != "custom") {
+        metadata <- read_csv(paste0("~/projects/hansard-shiny/kw_metadata_", input$kw_list, ".csv")) } 
+      else {
+        metadata <- data.frame()
+      }
+      
+      print(metadata)
+      
+      test_2 <- left_join(metadata, NN, by = c("keywords", "year"))
+      
+      #print(test_2)
+     # print(datatable(NN[NN$words_per_day==s$y,])) 
+      
+      #NN <- NN[NN$words_per_day==s$y,]
+      
+      #print(NN)
+      
+      #aa <- NN$speaker
+      
+      #test_2 <- left_join(all_year_counts, metadata, by = c("keywords", "year"))
+      
+      
+      #print(aa)
+      
+      # read in this df first 
+     # speaker_favorite_words_count <- speaker_favorite_words_count %>%
+       # filter(speaker == aa) 
+      }) }
+    
+    
+    
   
   
   

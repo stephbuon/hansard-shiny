@@ -1,12 +1,12 @@
 library(tidyverse)
 
-a <- read_csv("~/hansard_justnine_debate_titles_w_year.csv") %>%
+a <- read_csv("~/hansard_c19_debate_titles_w_year.csv") %>%
   select(-decade, -group_count)
 
 a <- a %>%
   count(debate, year)
 
-write_csv(a, "~/debate_title_year_counts.csv")
+#write_csv(a, "~/debate_title_year_counts.csv")
 
 
 keywords <- c("croft", "ejectment", "enclosure", "estate", "evict", "inclosure", "landlord", "landown", "property", " rent", "tenant", "tenure")
@@ -22,12 +22,20 @@ test <- paste0(test_2, collapse='|' )
 
 all_year_counts <- data.frame()
 
+metadata <- data.frame()
+
 for(i in 1:length(keywords)){
   
   keyword <- keywords[i]
   
   debate_titles_w_keyword <- a %>%
     filter(str_detect(debate, regex(test, ignore_case = TRUE)))
+  
+  m <- debate_titles_w_keyword %>%
+    select(debate, year) %>%
+    mutate(keywords = keyword)
+  
+  metadata <- bind_rows(metadata, m)
   
   year_count <- debate_titles_w_keyword %>%
     group_by(year) %>%
@@ -38,8 +46,7 @@ for(i in 1:length(keywords)){
   all_year_counts <- rbind(all_year_counts, year_count)
 }
 
-
-write_csv(all_year_counts, "~/all_year_counts_industry.csv")
+write_csv(all_year_counts, "~/all_year_counts_property.csv")
 
 words_per_year <- a %>%
   group_by(year) %>%
@@ -51,6 +58,11 @@ words_per_year <- a %>%
 all_year_counts <- all_year_counts %>%
   left_join(words_per_year, by = "year") %>%
   mutate(proportion = debates_per_year/words_per_year)
+
+
+#test_2 <- left_join(all_year_counts, metadata, by = c("keywords", "year")) # just added
+
+write_csv(metadata, "~/kw_property_metadata.csv") # just added
 
 write_csv(all_year_counts, "~/kw_list_industry.csv")
 
