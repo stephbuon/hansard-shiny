@@ -142,8 +142,10 @@ ui <- fluidPage(
                                       "Use the navigation bar at the top of the page to change between different views of the Hansard corpus.",
                                       br(),
                                       p(),
-                                      "Click on the blue button found in the top left corner of the following pages to learn more about the data and the methods of measurement used to produce a visualization."
-                                      
+                                      "Click on the blue button found in the top left corner of the following pages to learn more about the data and the methods of measurement used to produce a visualization.",
+                                      br(),
+                                      p(),
+                                      p()
                                       ))),
  
              
@@ -346,11 +348,15 @@ ui <- fluidPage(
              
              navbarMenu("Speakers",
                         tabPanel("Top Speakers",
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     width =2),
+                                 
                                  mainPanel(plotlyOutput("top_speakers"),
                                            br(),
                                            br(),
                                            plotlyOutput("tbl4",
-                                                        height = "580"))),
+                                                        height = "580")))),
                         tabPanel("Longest Speeches",
                                  mainPanel(plotlyOutput("longest_speeches"),
                                            dataTableOutput('tbl5'))),
@@ -396,7 +402,10 @@ ui <- fluidPage(
                                                DTOutput('debate_titles_DT')))),
                                    #mainPanel(div(plotlyOutput("debate_titles", height = "100%"), align = "center"))))),
                         tabPanel("Longest Debates",
-                                 sidebarLayout(helpText("hello"),
+                                 
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     width =2),
                                    
                                  #fluidRow(column(width = 8, offset = 0,
                                 #                 div(plotlyOutput("longest_debates"), align = "center"),
