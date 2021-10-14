@@ -440,9 +440,31 @@ ui <- fluidPage(
                                      width = 2),
                                   # mainPanel(plotOutput("most_similar"))
                                    mainPanel(plotlyOutput("most_similar"))
-                                 )
-                        )),
+                                 )),
+                        tabPanel("Try 2",
+                         sidebarLayout(
+                           sidebarPanel(
+                             textInput("wv_textbox", "Keyword:", ""),
+                            # actionButton("wv_action_button", "hi",
+                            #              onclick = "Shiny.setInputValue('btnLabel', this.innerText);"
+                            #              ),
+                             uiOutput("wv_action_button",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             
+                             #actionButton("wv_action_button", 
+                            #              "TEST"),
+                            
+                             
+                             width = 2),
+                           mainPanel(verbatimTextOutput("wv_test"))
+                             
+                             
+                           )
+                         )        
+                        
+                        ),
              
+
              
              navbarMenu("About",
                         tabPanel("Purpose",
@@ -1464,28 +1486,22 @@ server <- function(input, output, session) {
   
   
   
-  output$test <- renderPlotly({
+  #output$test <- renderPlotly({
+  
+  output$wv_action_button <- renderUI({
+  
+  #ntext <- eventReactive(input$wv_action_button, {
     
-    out <- data.frame()
-    
-    decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
-    
-    for(d in 1:length(decades)) {
-      
-      fdecade <- decades[d] 
-      
-      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+
+      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
       
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
-      
-      
-      
+ 
       rn <- rownames(word_vectors)
       
-      if(input$search_similarity %in% rn) {
+      if(input$wv_textbox %in% rn) {
         
-        kw = word_vectors[input$search_similarity, , drop = F]
-        
+        kw = word_vectors[input$wv_textbox, , drop = F]
         
         cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
         
@@ -1495,26 +1511,63 @@ server <- function(input, output, session) {
         
         forplot$word <- rownames(forplot)
         
-        print(forplot[1,1])
+
         
-        forplot <- forplot %>%
-          mutate(decade = fdecade)
-        
-        
-        out <- bind_rows(out, forplot)
-        
-      }
-      
-      
-      
     }
     
-    print(out[1,2])
-    print(out[2,2])
-    print(out[3,2])
-    print(out[4,2])
+    print(forplot[1,2])
+    print(forplot[2,2])
+    print(forplot[3,2])
+    print(forplot[4,2])
+    
+ # })
+  
+  
+  
+  a <- forplot[1,2]
+  
+
+  actionButton("wv_action_button", label = a)
+  })
+  
+  output$wv_test <- renderText({
+    
+    
+    #print(str(ntext()))
+   # ntext()
+    input$btnLabel
+
+    #print(input$wv_action_button)
+    
+    
+    
     
   })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
