@@ -29,6 +29,7 @@
 
 library(shiny)
 library(shinythemes)
+#library(bslib)
 library(shinyWidgets)
 library(visNetwork)
 library(viridis)
@@ -114,8 +115,8 @@ str3 <- "<h4>Sentences: 10,979,009</h4>"
 
 
 ui <- fluidPage(
-  theme = shinytheme("cosmo"),
-  #theme = shinytheme("paper"),
+  theme = shinytheme("yeti"),
+  #theme = bs_theme(bootswatch = "litera"),
   navbarPage("The Hansard Parliamentary Debates",
              
              tabPanel("Introduction",
@@ -445,11 +446,20 @@ ui <- fluidPage(
                                      
                                      width = 2),
                                    mainPanel(plotlyOutput("word_embeddings")))),
+                        
                         tabPanel("Similarity",
                                  sidebarLayout(
                                    sidebarPanel(
-                                     helpText("Say something meaningful"),
-                                     textInput("search_similarity", "Keyword:", ""),
+                                     actionButton("about_we_similarity", 
+                                                  "About This Page",
+                                                  style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       width: 179px;
+                                       padding:4px; 
+                                       font-size:90%"),
+                                     p(),
+                                     textInput("search_similarity", "Keyword:", value = "democracy"),
                                      width = 2),
                                   # mainPanel(plotOutput("most_similar"))
                                    mainPanel(plotlyOutput("most_similar"))
@@ -490,11 +500,23 @@ ui <- fluidPage(
                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
                              #actionButton("wv_action_button", 
                             #              "TEST"),
+                            br(),
+                            uiOutput("wv_action_button_7",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
                             
+                            br(),
+                            uiOutput("wv_action_button_8",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                            br(),
+                            tags$style("#wv_text_box_1 {background-color:#E8E8E8;}"),
+                            textInput("wv_text_box_1", 
+                                      "Type:", ""),
+
+
                              
                              width = 2),
                           # mainPanel(verbatimTextOutput("wv_test"))
-                           mainPanel(plotlyOutput("wv_test"))
+                           mainPanel(plotlyOutput("wv_test", height = "650"))
                              
                              
                            )
@@ -1146,9 +1168,20 @@ server <- function(input, output, session) {
       "Here we are using proportion instead of ENTER"))
   })
   
-  
-  
-  
+  observeEvent(input$about_we_similarity, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"))
+  })
   
   
   
@@ -1427,7 +1460,10 @@ server <- function(input, output, session) {
   
   
   
-  #################### Word Embeddings
+  #################### Word Embeddings ###################################################################################
+  ########################################################################################################################
+  
+  #################### Try 1 
   
   output$word_embeddings <- renderPlotly({
     forplot <- read_csv("~/projects/hansard-shiny/data/word_embeddings/for_plot.csv")
@@ -1441,10 +1477,7 @@ server <- function(input, output, session) {
       layout(#autosize = F,
         xaxis = list(title = "Placeholder"),
         yaxis = list(title = "Placeholder")) %>%
-      config(displayModeBar = F)
-    
-    
-  })
+      config(displayModeBar = F) })
   
   
   
@@ -1516,7 +1549,7 @@ server <- function(input, output, session) {
                           line = list(color = 'rgb(8,48,107)',
                                       width = 1.5)),
             textposition = "center right",
-            height=700) %>%
+            height=650) %>%
       config(displayModeBar = F) #%>%
      # add_annotations(x = out$decade,
     #                  y = out$similarity,
@@ -1542,60 +1575,153 @@ server <- function(input, output, session) {
   
   
   
+  input_loop <- function(input, decades, first_range, second_range, make_m, make_decade, ...) {
+    
+    out <- data.frame()
+    il_decades <- decades
+    
+    for(d in 1:length(il_decades)) {
+      fdecade <- il_decades[d] 
+      
+      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+      word_vectors <- as.matrix(read.table(table, as.is = TRUE))
+      
+      rn <- rownames(word_vectors)
+      if(input %in% rn) {
+        kw = word_vectors[input, , drop = F]
+        cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+        forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[first_range:second_range])
+        colnames(forplot)[1] <- paste0("similarity")
+        
+        forplot$word <- rownames(forplot)
+        
+        if (make_decade == TRUE) {
+          
+          forplot <- forplot %>%
+            mutate(decade = fdecade) %>%
+            filter(word == ...) } 
+        
+        if (make_m == TRUE) {
+          rownames(forplot) <- NULL
+          
+          forplot <- forplot %>%
+            select(word) }
+        
+        out <- bind_rows(out, forplot) } }
+    
+    if (make_m == TRUE) {
+      out <- dplyr::distinct(out)
+    }
+    
+    
+    return(out) }
   
   
- # data$C <- (data$A - data$B)
   
   
   get_button <- function() {
     
 
-    table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
+ #   table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
     
-    word_vectors <- as.matrix(read.table(table, as.is = TRUE))
+#    word_vectors <- as.matrix(read.table(table, as.is = TRUE))
     
-    rn <- rownames(word_vectors)
+ #   rn <- rownames(word_vectors)
     
-    if(input$wv_textbox %in% rn) {
+  #  if(input$wv_textbox %in% rn) {
       
-      kw = word_vectors[input$wv_textbox, , drop = F]
+  #    kw = word_vectors[input$wv_textbox, , drop = F]
       
-      cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+  #    cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
       
       
-      forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:7])#[2:21])
+  #    forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:7])#[2:21])
       
-      colnames(forplot)[1] <- "similarity"
+  #    colnames(forplot)[1] <- "similarity"
       
-      forplot$word <- rownames(forplot)
+    
+   #   forplot$word <- rownames(forplot)
       
-      return (forplot)
+    #  return (forplot)
       
-    } else {
+    
+    decades <- c(1800, 1850)
+    
+    
+    out <- input_loop(input$wv_textbox, decades, 2, 201, make_m = TRUE, make_decade = FALSE)
+    
+    
+    
+    cycle = 0
+    
+    for(d in 1:length(decades)) {
       
-      df <- data.frame(decade=integer(),
-                       similarity=integer())
+      cycle = cycle + 1
       
-      return (df)
+      fdecade <- decades[d] 
       
-       
+      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+      # table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
+      
+      word_vectors <- as.matrix(read.table(table, as.is = TRUE))
+      
+      rn <- rownames(word_vectors)
+      
+      if(input$wv_textbox %in% rn) {
+        
+        kw = word_vectors[input$wv_textbox, , drop = F]
+        
+        cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+        
+        
+        forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:101])#[2:21])
+        
+        colnames(forplot)[1] <- paste0("similarity", cycle)
+        
+        forplot$word <- rownames(forplot)
+        
+        # forplot <- forplot %>%
+        #    mutate(decade = fdecade)
+        
+        rownames(forplot) <- NULL
+        
+        
+        
+        out <- left_join(out, forplot, by = "word") }}
+    
+    
+    if (ncol(out) == 3) {
+    
+    
+    
+      out$all_sim <- (out$similarity1 - out$similarity2)
+      
+      out <- out %>%
+        drop_na()
+      
+      out$all_sim <- abs(out$all_sim)   
+      
+      out <- out %>%
+        arrange(desc(all_sim))
+      
+      return(out) } else {
+        
+        return(out)
+        
+      }
+    
       
     }
     
-  #  }
-    
-    
-    
-    
-  }
-  
+      
+     
   
   
   
   output$wv_action_button <- renderUI({
     forplot <- get_button() 
       if (nrow(forplot) > 0) {
-    actionButton("wv_action_button", label = forplot[1,2], style = "width: 179px;") } else {
+    actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } else { # 1,2
       return()
       
     } })
@@ -1603,7 +1729,7 @@ server <- function(input, output, session) {
   output$wv_action_button_2 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_2", label = forplot_2[2,2], style = "width: 179px;") } else {
+    actionButton("wv_action_button_2", label = forplot_2[2,1], style = "width: 179px;") } else { # 2,2
       return() }
       
       })
@@ -1611,29 +1737,47 @@ server <- function(input, output, session) {
   output$wv_action_button_3 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_3", label = forplot_2[3,2], style = "width: 179px;") } else
+    actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else # 3,2
       return() } )
   
   output$wv_action_button_4 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_4", label = forplot_2[4,2], style = "width: 179px;") } else {
+    actionButton("wv_action_button_4", label = forplot_2[4,1], style = "width: 179px;") } else { # 4,2
       return() }
     })
   
   output$wv_action_button_5 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_5", label = forplot_2[5,2], style = "width: 179px;") } else {
+    actionButton("wv_action_button_5", label = forplot_2[5,1], style = "width: 179px;") } else { # 5,2 
       return() } })
   
   output$wv_action_button_6 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_6", label = forplot_2[6,2], style = "width: 179px;") } else {
+    actionButton("wv_action_button_6", label = forplot_2[6,1], style = "width: 179px;") } else { # 6,2 
       return() }
     })
   
+  output$wv_action_button_7 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_7", label = forplot_2[7,1], style = "width: 179px;") } else { 
+        return() }
+  })
+  
+  
+  output$wv_action_button_8 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_8", label = forplot_2[8,1], style = "width: 179px;") } else { 
+        return() }
+  })
+  
+
+  
+  #tags$style("#select2 {background-color:blue;}"),
   
   
   #output$wv_test <- renderText({
@@ -1648,59 +1792,39 @@ server <- function(input, output, session) {
     
     
     req(input$btnLabel)
-    out <- data.frame()
    
     
     decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
     
+    # if button was selected: 
+    out <- input_loop(input$wv_textbox, decades, 2, 201, make_decade = TRUE, input_button_label = input$btnLabel, make_m = FALSE)
+    # else if textbox is typed in:
+    
+    #write_csv(out, "~/test_out.csv")
+    
     for(d in 1:length(decades)) {
       
-      fdecade <- decades[d] 
-      
-      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
-      
-      word_vectors <- as.matrix(read.table(table, as.is = TRUE))
-      
-      
-      
-      rn <- rownames(word_vectors)
-      
-      if(input$wv_textbox %in% rn) {
+      aad <- decades[d] 
+      if (!aad %in% out$decade) {
         
-        kw = word_vectors[input$wv_textbox, , drop = F]
+        similarity <- 0
+        word <- input$wv_textbox
+        decade <- aad
         
+        out_1 <- data.frame(similarity, word, decade)
         
-        cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+        out <- bind_rows(out, out_1)
         
-       forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:16])#[2:21])
-        
-        colnames(forplot)[1] <- "similarity"
-        
-        forplot$word <- rownames(forplot)
-        
-        print(forplot)
-        
-        forplot <- forplot %>%
-          mutate(decade = fdecade) %>%
-          filter(word == input$btnLabel)
-        
-        print(forplot)
-        
-        out <- bind_rows(out, forplot)
-        
-        
-      }
-      
-      
-    }
-    
-    print(out)
+        out <- out %>%
+          arrange(decade)
 
+      }}
     
     #validate(need(input$wv_textbox %in% rn, "type in word place holder for error"))
       
     if (isTruthy(input$wv_textbox)) {
       plot_ly(data = out, x = ~decade, y = ~similarity,
+              mode = "lines+markers",
               marker = list(
                 color = 'LightSkyBlue',
                 size = 7,
