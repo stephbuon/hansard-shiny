@@ -114,8 +114,8 @@ str3 <- "<h4>Sentences: 10,979,009</h4>"
 
 
 ui <- fluidPage(
-  #theme = shinytheme("flatly"),
   theme = shinytheme("cosmo"),
+  #theme = shinytheme("paper"),
   navbarPage("The Hansard Parliamentary Debates",
              
              tabPanel("Introduction",
@@ -156,6 +156,7 @@ ui <- fluidPage(
              tabPanel("Triples Network", 
                       sidebarLayout(
                         sidebarPanel(
+                          
                           helpText("Check the boxes to explore the langauge of different speakers."),
                           
                           checkboxGroupInput("subreddit", "Speaker:",
@@ -204,7 +205,8 @@ ui <- fluidPage(
              navbarMenu("Nations",
                         tabPanel("Nation Concerns",
                                  sidebarLayout(
-                                   sidebarPanel(
+                                   sidebarPanel(#style =
+                                    # "height: 600px;",
                                      width = 2), 
                                    
                                    mainPanel(plotlyOutput("treemap")))),
@@ -219,6 +221,7 @@ ui <- fluidPage(
                                                   style="color: #fff; 
                                        background-color: #337ab7; 
                                        border-color: #2e6da4; 
+                                       width: 179px;
                                        padding:4px; 
                                        font-size:90%"),
                                      p(),
@@ -267,6 +270,7 @@ ui <- fluidPage(
                                        style="color: #fff; 
                                        background-color: #337ab7; 
                                        border-color: #2e6da4; 
+                                       width: 179px;
                                        padding:4px; 
                                        font-size:90%"),
                           p(),
@@ -353,6 +357,15 @@ ui <- fluidPage(
                         tabPanel("Top Speakers",
                                  sidebarLayout(
                                    sidebarPanel(
+                                     actionButton("about_top_speakers_by_year", 
+                                                  "About This Page",
+                                                  style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       width: 179px;
+                                       padding:4px; 
+                                       font-size:90%"),
+                                     p(),
                                      radioButtons("top_speakers_df", "Top Speakers:",
                                                   c("By Year" = "by_year",
                                                     "By Decade" = "by_decade")),
@@ -377,12 +390,12 @@ ui <- fluidPage(
                         tabPanel("Debate Titles",
                                  sidebarLayout(
                                    sidebarPanel(
-                                     helpText("Say something meaningful"),
                                      actionButton("about_debate_titles", 
                                                   "About This Page",
                                                   style="color: #fff; 
                                        background-color: #337ab7; 
                                        border-color: #2e6da4; 
+                                       width: 179px;
                                        padding:4px; 
                                        font-size:90%"),
                                      p(),
@@ -444,19 +457,44 @@ ui <- fluidPage(
                         tabPanel("Try 2",
                          sidebarLayout(
                            sidebarPanel(
+                             actionButton("about_try_2", 
+                                          "About This Page",
+                                          style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       width: 179px;
+                                       padding:4px; 
+                                       font-size:90%"),
+                             p(),
                              textInput("wv_textbox", "Keyword:", ""),
                             # actionButton("wv_action_button", "hi",
                             #              onclick = "Shiny.setInputValue('btnLabel', this.innerText);"
                             #              ),
                              uiOutput("wv_action_button",
                                       onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                            br(),
+                            uiOutput("wv_action_button_2",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                            br(),
+                            uiOutput("wv_action_button_3",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                            br(),
+                            uiOutput("wv_action_button_4",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                            br(),
+                            uiOutput("wv_action_button_5",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
                              
+                            br(),
+                            uiOutput("wv_action_button_6",
+                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
                              #actionButton("wv_action_button", 
                             #              "TEST"),
                             
                              
                              width = 2),
-                           mainPanel(verbatimTextOutput("wv_test"))
+                          # mainPanel(verbatimTextOutput("wv_test"))
+                           mainPanel(plotlyOutput("wv_test"))
                              
                              
                            )
@@ -729,7 +767,7 @@ server <- function(input, output, session) {
       if(!is.null(s)) {
         hh <- separate(s, y, into = c("left", "right"), sep = "-")
         
-        print(hh)
+     
         
         left_nation <- hh$left
         right_nation <- hh$right
@@ -829,9 +867,7 @@ server <- function(input, output, session) {
   render_value = function(NN){
     output$tbl4 <- renderPlotly({#renderPlot({
       s <- event_data("plotly_click", source = "subset")
-      #print('NEED THIS')
-      #print(s)
-      #print(NN)
+
       #return(datatable(NN[NN$words_per_day==s$y,])) 
       NN <- NN[NN$words_per_day==s$y,]
       
@@ -975,9 +1011,7 @@ server <- function(input, output, session) {
                speechdate == s$x) %>%
         select(-decade, -decade_ranking, -year_ranking)
       
-    #  print(NN)
-      
-      print(NN)
+
       
         str1 <- paste(NN$debate)
         str2 <- paste(NN$debate_id)
@@ -1008,8 +1042,7 @@ server <- function(input, output, session) {
       NN <- NN %>%
         filter(words_per_debate == s$y,
                speechdate == s$x)
-      
-     # print(NN)
+ 
       
       #write_csv(NN, "~/debugging_NN_2")
       
@@ -1044,6 +1077,22 @@ server <- function(input, output, session) {
   
   
   
+  
+  
+  observeEvent(input$about_top_speakers_by_year, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"))
+  })
   
 
   
@@ -1081,6 +1130,21 @@ server <- function(input, output, session) {
     ))
   })
   
+  
+  observeEvent(input$about_try_2, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"))
+  })
   
   
   
@@ -1480,115 +1544,196 @@ server <- function(input, output, session) {
   
   
   
+ # data$C <- (data$A - data$B)
   
   
-  
-  
-  
-  
-  #output$test <- renderPlotly({
-  
-  output$wv_action_button <- renderUI({
-  
-  #ntext <- eventReactive(input$wv_action_button, {
+  get_button <- function() {
     
 
-      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
+    table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
+    
+    word_vectors <- as.matrix(read.table(table, as.is = TRUE))
+    
+    rn <- rownames(word_vectors)
+    
+    if(input$wv_textbox %in% rn) {
+      
+      kw = word_vectors[input$wv_textbox, , drop = F]
+      
+      cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+      
+      
+      forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:7])#[2:21])
+      
+      colnames(forplot)[1] <- "similarity"
+      
+      forplot$word <- rownames(forplot)
+      
+      return (forplot)
+      
+    } else {
+      
+      df <- data.frame(decade=integer(),
+                       similarity=integer())
+      
+      return (df)
+      
+       
+      
+    }
+    
+  #  }
+    
+    
+    
+    
+  }
+  
+  
+  
+  
+  output$wv_action_button <- renderUI({
+    forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+    actionButton("wv_action_button", label = forplot[1,2], style = "width: 179px;") } else {
+      return()
+      
+    } })
+  
+  output$wv_action_button_2 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+    actionButton("wv_action_button_2", label = forplot_2[2,2], style = "width: 179px;") } else {
+      return() }
+      
+      })
+  
+  output$wv_action_button_3 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+    actionButton("wv_action_button_3", label = forplot_2[3,2], style = "width: 179px;") } else
+      return() } )
+  
+  output$wv_action_button_4 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+    actionButton("wv_action_button_4", label = forplot_2[4,2], style = "width: 179px;") } else {
+      return() }
+    })
+  
+  output$wv_action_button_5 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+    actionButton("wv_action_button_5", label = forplot_2[5,2], style = "width: 179px;") } else {
+      return() } })
+  
+  output$wv_action_button_6 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+    actionButton("wv_action_button_6", label = forplot_2[6,2], style = "width: 179px;") } else {
+      return() }
+    })
+  
+  
+  
+  #output$wv_test <- renderText({
+  output$wv_test <- renderPlotly({
+    
+    
+    #print(str(ntext()))
+   # ntext()
+    #input$btnLabel
+
+    #print(input$wv_action_button)
+    
+    
+    req(input$btnLabel)
+    out <- data.frame()
+   
+    
+    decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
+    
+    for(d in 1:length(decades)) {
+      
+      fdecade <- decades[d] 
+      
+      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
       
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
- 
+      
+      
+      
       rn <- rownames(word_vectors)
       
       if(input$wv_textbox %in% rn) {
         
         kw = word_vectors[input$wv_textbox, , drop = F]
         
+        
         cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
         
-        forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:6])#[2:21])
+       forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:16])#[2:21])
         
         colnames(forplot)[1] <- "similarity"
         
         forplot$word <- rownames(forplot)
         
-
+        print(forplot)
         
+        forplot <- forplot %>%
+          mutate(decade = fdecade) %>%
+          filter(word == input$btnLabel)
+        
+        print(forplot)
+        
+        out <- bind_rows(out, forplot)
+        
+        
+      }
+      
+      
     }
     
-    print(forplot[1,2])
-    print(forplot[2,2])
-    print(forplot[3,2])
-    print(forplot[4,2])
-    
- # })
-  
-  
-  
-  a <- forplot[1,2]
-  
+    print(out)
 
-  actionButton("wv_action_button", label = a)
+    
+    #validate(need(input$wv_textbox %in% rn, "type in word place holder for error"))
+      
+    if (isTruthy(input$wv_textbox)) {
+      plot_ly(data = out, x = ~decade, y = ~similarity,
+              marker = list(
+                color = 'LightSkyBlue',
+                size = 7,
+                opacity = 0.8,
+                line = list(
+                  color = 'black',
+                  width = 1 ))) %>%
+        layout(title = paste0("Similarity of ", "\"", input$btnLabel, "\"", " to ", "\"", input$wv_textbox, "\"", " over time")) %>%
+        config(displayModeBar = F) } else {
+          
+          df <- data.frame(decade=integer(),
+                           similarity=integer())
+          
+          plot_ly(data = df,
+                  x = ~decade,
+                  y = ~similarity) %>%
+            config(displayModeBar = F)
+          
+          
+        }
+      
+      
+      
+     
+  #  if (!isTruthy(input$wv_textbox)) {
+  #   plotly_empty()
+  #  }
+    
+    
+   
+    
+    
   })
-  
-  output$wv_test <- renderText({
-    
-    
-    #print(str(ntext()))
-   # ntext()
-    input$btnLabel
-
-    #print(input$wv_action_button)
-    
-    
-    
-    
-  })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   
   
@@ -1694,7 +1839,6 @@ server <- function(input, output, session) {
         metadata <- data.frame()
       }
       
-      print(NN)
       test_2 <- left_join(metadata, NN, by = c("keywords", "year"))
       
       test_2 <- test_2 %>%
