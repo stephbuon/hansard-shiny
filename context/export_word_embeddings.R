@@ -23,6 +23,8 @@ for (file in files){
   hansard_decade_subset <- hansard_decade_subset %>%
     filter(!grepl("[[:digit:]]", ngrams))
   
+  hansard_decade_subset$ngrams <- str_replace(hansard_decade_subset$ngrams, "'s", "")
+  
   hansard_decade_subset <- hansard_decade_subset %>%
     filter(!str_detect(ngrams, stopwords))
   

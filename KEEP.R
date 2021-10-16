@@ -1,7 +1,6 @@
 # remember that rN the network data is in network/cleaning.R
 
 
-
 # remember to add cache stuff 
 # If I want to see the full network, I can pass VisNetwork the static edges data (e1) instead of the reactive expression (reactive_edges()). 
 
@@ -16,14 +15,9 @@
 
 # google drive: https://docs.google.com/document/d/15rDOVGFlx8JF7DmysuqGS02Be7air8wka_J6dxL4k9I/edit
 
-
-# I am working on an interactive mining app
-# using triples to visualize descriptions of the "other" in covid data 
 # I don't keep ambig like saint johns nation or church
 
 # add favorite words for speaker -- click on point and return DF with that info 
-
-# nations-concerns -- would return a histogram for both nations showing top concerns
 
 # triples network could instead be nations 
 
@@ -95,24 +89,17 @@ directions <- data.frame("To explore text click on a node. Results will appear h
 names(directions)[1] <- " "
 
 
-###########################
-
-
-
 e1 <- read_csv("~/projects/hansard-shiny/edges_test_data.csv")
 n1 <- read_csv("~/projects/hansard-shiny/nodes_test_data.csv")
 
 
+########### UI 
 
-
-
-######################
 
 counts <- "<h3>Count Totals:</h3>"
 str1 <- "<h4>Debates: 173,275</h4>"
 str2 <- "<h4>Speakers: X</h4>"
 str3 <- "<h4>Sentences: 10,979,009</h4>"
-
 
 ui <- fluidPage(
   theme = shinytheme("yeti"),
@@ -380,10 +367,60 @@ ui <- fluidPage(
                         tabPanel("Longest Speeches",
                                  mainPanel(plotlyOutput("longest_speeches"),
                                            dataTableOutput('tbl5'))),
+                        
                         tabPanel("Speech Lengths",
-                                 mainPanel())),
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     
+                                     width = 2),
+                                   
+                                 mainPanel())), # plotlyOutput("speech_lengths")
+                        tabPanel("Speaker Comparison",
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     selectInput("sc_view", "View:",
+                                                 c("Top Words" = "sc_top_words",
+                                                   "tf-idf" = "sc_tf-idf",
+                                                   "Speech Lengths" = "sc_speech_lengths")),
+                                     
+                                     sliderTextInput(
+                                       inputId = "sc_decade", 
+                                       label = "Decade: ", 
+                                       grid = TRUE, 
+                                       force_edges = TRUE,
+                                       choices = c("1800",
+                                                   "1810", 
+                                                   "1820", 
+                                                   "1830", 
+                                                   "1840",
+                                                   "1850", 
+                                                   "1860",
+                                                   "1870",
+                                                   "1880",
+                                                   "1890")),
+                                     
+                                     radioButtons("sc_radio_buttons_top", 
+                                                  "Top Speakers:",
+                                                  c("Normal" = "norm",
+                                                    "Uniform" = "unif",
+                                                    "Log-normal" = "lnorm",
+                                                    "Exponential" = "exp"),
+                                                  selected = "norm"),
+                                     
+                                     radioButtons("sc_radio_buttons_bottom", 
+                                                  "Top Speakers:",
+                                                  c("Normal" = "norm",
+                                                    "Uniform" = "unif",
+                                                    "Log-normal" = "lnorm",
+                                                    "Exponential" = "exp"),
+                                                  selected = "unif"),
+                                     
+                                     width = 2),
+                                 mainPanel()))),
              
-             # plotlyOutput("speech_lengths")
+          
+             
+             
              
              
              
@@ -610,17 +647,6 @@ server <- function(input, output, session) {
   
   
   
-  #text = ~paste0('Name: ', speaker, '\n',
-  #               'Speech Date: ', speechdate, '\n',
-  #               'Speech Word Count ', count_per_speech),
-  #hoverinfo = 'text') %>%
-  
-  
-  
-  
-  
-  
-  
   
   #render_value_text = function(NN){
   
@@ -634,11 +660,9 @@ server <- function(input, output, session) {
   # }) }
   
   
-  #######################################################3
   
-  
-  
-  
+  #################### Network ###########################################################################################
+  ########################################################################################################################
   
   reactive_nodes <- reactive({
     
@@ -677,8 +701,7 @@ server <- function(input, output, session) {
     
     out <- left_join(out, c, by = 'label')
     
-    out <- unique(out) 
-  })
+    out <- unique(out)})
   
   
   reactive_edges <- reactive({
@@ -737,20 +760,16 @@ server <- function(input, output, session) {
       # I could return KWIC-like text
       
     } else { directions }) 
+
   
+  #################### Nations ###########################################################################################
+  ########################################################################################################################
   
-  ####################### Nation Pairs
-  
-  
-  
-  
-  
+  #################### Nation Pairs 
+
   nations_count <- read_csv("~/projects/hansard-shiny/data/nations/hansard_c19_debate_title_nation_count.csv")
   
   nations_count$decade <- as.character(nations_count$decade)
-  
-  
-  
   
   output$plot_2 <- renderPlotly({
     nation_pairs <- read_csv("~/projects/hansard-shiny/data/nations/nation_pairs_in_debate_titles.csv")
@@ -769,8 +788,6 @@ server <- function(input, output, session) {
             text = ~paste0("Nation Pair: ", "<b>", nation_pair, "</b>", "\n",
                            "Frequency: ", "<b>", n, "</b>", "\n"),
             hoverinfo = "text",
-            
-            #text = n, 
             orientation = 'h',
             source = "np",
             marker= list(color = 'rgb(158,202,225)',
@@ -1101,108 +1118,7 @@ server <- function(input, output, session) {
   
   
   
-  observeEvent(input$about_top_speakers_by_year, {
-    showModal(modalDialog(
-      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
-      "Define",
-      br(),
-      p(),
-      strong("Controls:"),
-      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
-      "Type search terms in each . The ",
-      br(),
-      p(),
-      strong("Measurement:"),
-      "Here we are using proportion instead of ENTER"))
-  })
-  
-
-  
-  observeEvent(input$about_debate_titles, {
-    showModal(modalDialog(
-      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
-      "Define",
-      br(),
-      p(),
-      strong("Controls:"),
-      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
-      "Type search terms in each . The ",
-      br(),
-      p(),
-      strong("Measurement:"),
-      "Here we are using proportion instead of ENTER"
-      
-    ))
-  })
-  
-  observeEvent(input$about_nation_pairs, {
-    showModal(modalDialog(
-      title = "Raw Count of Nations and Nation Pairs",
-      "Define",
-      br(),
-      p(),
-      strong("Controls:"),
-      "Slide the dial under \"Decade\" to change time periods",
-      "Click on a bar to visualize the raw count for each nation in the pair over the course of the 19th-century.",
-      br(),
-      p(),
-      strong("Measurement:"),
-      "Raw count"
-      
-    ))
-  })
-  
-  
-  observeEvent(input$about_try_2, {
-    showModal(modalDialog(
-      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
-      "Define",
-      br(),
-      p(),
-      strong("Controls:"),
-      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
-      "Type search terms in each . The ",
-      br(),
-      p(),
-      strong("Measurement:"),
-      "Here we are using proportion instead of ENTER"))
-  })
-  
-  observeEvent(input$about_we_similarity, {
-    showModal(modalDialog(
-      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
-      "Define",
-      br(),
-      p(),
-      strong("Controls:"),
-      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
-      "Type search terms in each . The ",
-      br(),
-      p(),
-      strong("Measurement:"),
-      "Here we are using proportion instead of ENTER"))
-  })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+ 
   
   
   
@@ -1322,46 +1238,6 @@ server <- function(input, output, session) {
   
   ##################### collocates
   
-  
-  observeEvent(input$about_collocates, {
-    showModal(modalDialog(
-      title = "Special Vocabulary: Sentiment Laden Collocates",
-      "A collocate is a series of words that co-occur in text. 
-        A grammatical collocate represents the co-occuring words that share a sentence-level grammatical relationship.",
-      br(),
-      p(),
-      strong("Controls:"),
-      "Click a radio button under \"Special Vocabulary\" to select a scholar curated vocabulary list to guide your search.",
-      br(),
-      p(),
-      "Slide the dials under \"Decade\" to change time periods",
-      br(),
-      p(),
-      "Choose a keyword from the drop down box to narrow your analysis to just collocates containing that word.
-        The keywords will update based on the selected vocabulary list.",
-      br(),
-      p(),
-      "Slide the dial under \"Sentiment\" to narrow your analysis from all sentiment laden collocates to just those with positive or negative scores.",
-      br(),
-      p(),
-      "Click a radio button under \"Measure\" to return results based on: 
-        a) a frequency count; b) term frequency - inverse document frequency (tf-idf); or c) Jenson-Shannon divergence (jsd).",
-      br(),
-      p(),
-      strong("Measurements:"),
-      "\"Count\" refers to the number of times a pair of collocates appeared in a sentence in the debate text.",
-      br(),
-      p(),
-      "\"tf-idf\" is a numerical statistic that reflects how \"important\" a word is to a corpus. 
-        The tf–idf value increases proportionally to the number of times a word appears in a decade and is offset by the other decade that contains the word, 
-        which helps to adjust the results for the fact that some words appear more frequently in general.",
-      br(),
-      p(),
-      "\"jsd\" is a "
-      
-    ))
-  })
-  
   import_collocates_data <- reactive({
     collocates_data <- read_csv(paste0("~/projects/hansard-shiny/data/collocates/", input$special_vocabulary, "_collocates.csv")) })
   
@@ -1479,9 +1355,7 @@ server <- function(input, output, session) {
         yaxis = list(title = "Placeholder")) %>%
       config(displayModeBar = F) })
   
-  
-  
-  #word_vectors <- as.matrix(read.table("~/projects/hansard-shiny/hansard_word_vectors_1800.txt", as.is = TRUE))
+  #################### Similarity
   
   output$most_similar <- renderPlotly({
     #renderPlot({
@@ -1495,10 +1369,7 @@ server <- function(input, output, session) {
       fdecade <- decades[d] 
       
       table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
-      
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
-      
-
       
       rn <- rownames(word_vectors)
       
@@ -1568,7 +1439,7 @@ server <- function(input, output, session) {
   
   
   
-  
+  #################### Try 2 
   
   
   
@@ -1621,37 +1492,10 @@ server <- function(input, output, session) {
   
   get_button <- function() {
     
-
- #   table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
-    
-#    word_vectors <- as.matrix(read.table(table, as.is = TRUE))
-    
- #   rn <- rownames(word_vectors)
-    
-  #  if(input$wv_textbox %in% rn) {
-      
-  #    kw = word_vectors[input$wv_textbox, , drop = F]
-      
-  #    cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
-      
-      
-  #    forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:7])#[2:21])
-      
-  #    colnames(forplot)[1] <- "similarity"
-      
-    
-   #   forplot$word <- rownames(forplot)
-      
-    #  return (forplot)
-      
-    
     decades <- c(1800, 1850)
     
-    
     out <- input_loop(input$wv_textbox, decades, 2, 201, make_m = TRUE, make_decade = FALSE)
-    
-    
-    
+
     cycle = 0
     
     for(d in 1:length(decades)) {
@@ -1685,15 +1529,16 @@ server <- function(input, output, session) {
         
         rownames(forplot) <- NULL
         
-        
-        
         out <- left_join(out, forplot, by = "word") }}
+  
+    b <- out %>%
+      drop_na()
     
     
-    if (ncol(out) == 3) {
+
     
-    
-    
+    if ( nrow(b) >= 8 && ncol(out) == 3 ) { 
+      
       out$all_sim <- (out$similarity1 - out$similarity2)
       
       out <- out %>%
@@ -1705,6 +1550,9 @@ server <- function(input, output, session) {
         arrange(desc(all_sim))
       
       return(out) } else {
+        
+        out <- out %>%
+          slice(10:18)
         
         return(out)
         
@@ -1722,23 +1570,19 @@ server <- function(input, output, session) {
     forplot <- get_button() 
       if (nrow(forplot) > 0) {
     actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } else { # 1,2
-      return()
-      
-    } })
+      return() } })
   
   output$wv_action_button_2 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
     actionButton("wv_action_button_2", label = forplot_2[2,1], style = "width: 179px;") } else { # 2,2
-      return() }
-      
-      })
+      return() } })
   
   output$wv_action_button_3 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else # 3,2
-      return() } )
+    actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else { # 3,2
+      return() } })
   
   output$wv_action_button_4 <- renderUI({
     forplot_2 <- get_button()
@@ -1776,20 +1620,8 @@ server <- function(input, output, session) {
   })
   
 
-  
-  #tags$style("#select2 {background-color:blue;}"),
-  
-  
-  #output$wv_test <- renderText({
-  output$wv_test <- renderPlotly({
-    
-    
-    #print(str(ntext()))
-   # ntext()
-    #input$btnLabel
 
-    #print(input$wv_action_button)
-    
+  output$wv_test <- renderPlotly({
     
     req(input$btnLabel)
    
@@ -1797,37 +1629,39 @@ server <- function(input, output, session) {
     decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
     
     # if button was selected: 
+    if (!is.na(input$btnLabel)) {
     out <- input_loop(input$wv_textbox, decades, 2, 201, make_decade = TRUE, input_button_label = input$btnLabel, make_m = FALSE)
     # else if textbox is typed in:
+    } else if (!is.na(input$wv_text_box_1)) {
+      print("hi")
+    out <- input_loop(input$wv_textbox, decades, 2, 201, make_decade = TRUE, input_button_label= input$wv_text_box_1, make_m = FALSE)
+    }
     
-    #write_csv(out, "~/test_out.csv")
     
-    for(d in 1:length(decades)) {
-      
-      aad <- decades[d] 
-      if (!aad %in% out$decade) {
+    ### to add zeros
+    # input$search_subject
+    # for(d in 1:length(decades)) {
+    # aad <- decades[d] 
+    # if (!aad %in% out$decade) {
         
-        similarity <- 0
-        word <- input$wv_textbox
-        decade <- aad
+    # similarity <- 0
+    # word <- input$wv_textbox
+    # decade <- aad
         
-        out_1 <- data.frame(similarity, word, decade)
+    # out_1 <- data.frame(similarity, word, decade)
         
-        out <- bind_rows(out, out_1)
+    # out <- bind_rows(out, out_1)
         
-        out <- out %>%
-          arrange(decade)
-
-      }}
+    # out <- out %>%
+    # arrange(decade) }}
     
-    #validate(need(input$wv_textbox %in% rn, "type in word place holder for error"))
-      
+    
     if (isTruthy(input$wv_textbox)) {
       plot_ly(data = out, x = ~decade, y = ~similarity,
               mode = "lines+markers",
               marker = list(
                 color = 'LightSkyBlue',
-                size = 7,
+                size = 15,
                 opacity = 0.8,
                 line = list(
                   color = 'black',
@@ -1844,20 +1678,7 @@ server <- function(input, output, session) {
             config(displayModeBar = F)
           
           
-        }
-      
-      
-      
-     
-  #  if (!isTruthy(input$wv_textbox)) {
-  #   plotly_empty()
-  #  }
-    
-    
-   
-    
-    
-  })
+        } })
   
   
   
@@ -1992,6 +1813,127 @@ server <- function(input, output, session) {
   
   
   
+  #################### Modal Dialog ######################################################################################
+  ########################################################################################################################
+  
+  
+  observeEvent(input$about_top_speakers_by_year, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"))
+  })
+  
+  
+  observeEvent(input$about_debate_titles, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER" ))
+  })
+  
+  
+  observeEvent(input$about_nation_pairs, {
+    showModal(modalDialog(
+      title = "Raw Count of Nations and Nation Pairs",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Slide the dial under \"Decade\" to change time periods",
+      "Click on a bar to visualize the raw count for each nation in the pair over the course of the 19th-century.",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Raw count" ))
+  })
+  
+  
+  observeEvent(input$about_try_2, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"))
+  })
+  
+  
+  observeEvent(input$about_we_similarity, {
+    showModal(modalDialog(
+      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
+      "Define",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
+      "Type search terms in each . The ",
+      br(),
+      p(),
+      strong("Measurement:"),
+      "Here we are using proportion instead of ENTER"))
+  })
+  
+  observeEvent(input$about_collocates, {
+    showModal(modalDialog(
+      title = "Special Vocabulary: Sentiment Laden Collocates",
+      "A collocate is a series of words that co-occur in text. 
+        A grammatical collocate represents the co-occuring words that share a sentence-level grammatical relationship.",
+      br(),
+      p(),
+      strong("Controls:"),
+      "Click a radio button under \"Special Vocabulary\" to select a scholar curated vocabulary list to guide your search.",
+      br(),
+      p(),
+      "Slide the dials under \"Decade\" to change time periods",
+      br(),
+      p(),
+      "Choose a keyword from the drop down box to narrow your analysis to just collocates containing that word.
+        The keywords will update based on the selected vocabulary list.",
+      br(),
+      p(),
+      "Slide the dial under \"Sentiment\" to narrow your analysis from all sentiment laden collocates to just those with positive or negative scores.",
+      br(),
+      p(),
+      "Click a radio button under \"Measure\" to return results based on: 
+        a) a frequency count; b) term frequency - inverse document frequency (tf-idf); or c) Jenson-Shannon divergence (jsd).",
+      br(),
+      p(),
+      strong("Measurements:"),
+      "\"Count\" refers to the number of times a pair of collocates appeared in a sentence in the debate text.",
+      br(),
+      p(),
+      "\"tf-idf\" is a numerical statistic that reflects how \"important\" a word is to a corpus. 
+        The tf–idf value increases proportionally to the number of times a word appears in a decade and is offset by the other decade that contains the word, 
+        which helps to adjust the results for the fact that some words appear more frequently in general.",
+      br(),
+      p(),
+      "\"jsd\" is a " ))
+    })
+  
+  
   
   
   
@@ -2001,11 +1943,3 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 
-
-
-#layout(#autosize = F,
-#   xaxis = xlab,
-#   yaxis = ylab,
-#  margin = list(l = 160), xaxis = list(tickangle = 45)) %>%
-
-#config(displayModeBar = F)
