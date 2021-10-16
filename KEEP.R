@@ -40,6 +40,9 @@ library(ggwordcloud)
 
 library(shinyBS)
 
+
+vals=reactiveValues(btn=FALSE,text=FALSE)
+
 search_svo <- function(df, s, v, o) {
   if(s == "" & v == "" & o == "") {
     return(df) } else if (s != "" & (v == "" & o == "")) {
@@ -378,6 +381,15 @@ ui <- fluidPage(
                         tabPanel("Speaker Comparison",
                                  sidebarLayout(
                                    sidebarPanel(
+                                     actionButton("about_nation_pairs", 
+                                                  "About This Page",
+                                                  style="color: #fff;
+                                                  background-color: #337ab7; 
+                                                  border-color: #2e6da4; 
+                                                  width: 179px;
+                                                  padding:4px; 
+                                                  font-size:90%"),
+                                     p(),
                                      selectInput("sc_view", "View:",
                                                  c("Top Words" = "sc_top_words",
                                                    "tf-idf" = "sc_tf-idf",
@@ -513,46 +525,36 @@ ui <- fluidPage(
                                        padding:4px; 
                                        font-size:90%"),
                              p(),
-                             textInput("wv_textbox", "Keyword:", ""),
-                            # actionButton("wv_action_button", "hi",
-                            #              onclick = "Shiny.setInputValue('btnLabel', this.innerText);"
-                            #              ),
+                             textInput("wv_textbox", "Keyword:", "hardship"),
                              uiOutput("wv_action_button",
                                       onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                            br(),
-                            uiOutput("wv_action_button_2",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                            br(),
-                            uiOutput("wv_action_button_3",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                            br(),
-                            uiOutput("wv_action_button_4",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                            br(),
-                            uiOutput("wv_action_button_5",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                             
-                            br(),
-                            uiOutput("wv_action_button_6",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                             #actionButton("wv_action_button", 
-                            #              "TEST"),
-                            br(),
-                            uiOutput("wv_action_button_7",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                            
-                            br(),
-                            uiOutput("wv_action_button_8",
-                                     onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
-                            br(),
-                            tags$style("#wv_text_box_1 {background-color:#E8E8E8;}"),
-                            textInput("wv_text_box_1", 
-                                      "Type:", ""),
-
-
-                             
+                             br(),
+                             uiOutput("wv_action_button_2",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             uiOutput("wv_action_button_3",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             uiOutput("wv_action_button_4",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             uiOutput("wv_action_button_5",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             uiOutput("wv_action_button_6",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             uiOutput("wv_action_button_7",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             uiOutput("wv_action_button_8",
+                                      onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
+                             br(),
+                             tags$style("#wv_text_box_1 {background-color:#E8E8E8;}"),
+                             textInput("wv_text_box_1", 
+                                       "Type:", ""),
                              width = 2),
-                          # mainPanel(verbatimTextOutput("wv_test"))
+                           
                            mainPanel(plotlyOutput("wv_test", height = "650"))
                              
                              
@@ -806,14 +808,9 @@ server <- function(input, output, session) {
       if(!is.null(s)) {
         hh <- separate(s, y, into = c("left", "right"), sep = "-")
         
-     
-        
         left_nation <- hh$left
         right_nation <- hh$right
-        
-        #left_nation <- str_to_title(left_nation)
-        #right_nation <- str_to_title(right_nation)
-        
+
         ln <- nations_count %>%
           filter(debate == left_nation) %>%
           rename(lcount = n)
@@ -822,8 +819,6 @@ server <- function(input, output, session) {
         
         ln <- dcast(ln, decade ~ debate)
         
-        
-        
         rn <- nations_count %>%
           filter(debate == right_nation) %>%
           rename(rcount = n)
@@ -831,8 +826,7 @@ server <- function(input, output, session) {
         rn$debate <- "right_nation_1"
         
         rn <- dcast(rn, decade ~ debate)
-        
-        
+   
         all <- left_join(ln, rn, on = "decade")
         
         
@@ -857,10 +851,14 @@ server <- function(input, output, session) {
     }) } 
   
   
+
   
   
   
-  #############################################################
+  #################### Speakers ##########################################################################################
+  ########################################################################################################################
+  
+  #################### Top Words
   
   speaker_favorite_words_count <- read_csv("~/projects/hansard-shiny/data/speakers/clean_speaker_favorite_words_by_decade.csv")
   
@@ -907,18 +905,11 @@ server <- function(input, output, session) {
     output$tbl4 <- renderPlotly({#renderPlot({
       s <- event_data("plotly_click", source = "subset")
 
-      #return(datatable(NN[NN$words_per_day==s$y,])) 
       NN <- NN[NN$words_per_day==s$y,]
-      
-      #print(NN)
-      
-      aa <- NN$speaker
-      
-      #print(aa)
       
       # read in this df first 
       speaker_favorite_words_count <- speaker_favorite_words_count %>%
-        filter(speaker == aa)
+        filter(speaker == NN$speaker)
       
       #print(speaker_favorite_words_count)
       
@@ -929,7 +920,7 @@ server <- function(input, output, session) {
                  color = "black",
                  size = .3) +
         #fill = "steel blue") +
-        labs(title = paste0(aa, "'s Top Words Over Time"),
+        labs(title = paste0(NN$speaker, "'s Top Words Over Time"),
              subtitle = "",
              x = "Word",
              y = "Count") +
@@ -943,11 +934,7 @@ server <- function(input, output, session) {
       #  make plots same size : https://stackoverflow.com/questions/45696723/how-can-i-make-plotly-subplots-the-same-size-when-converting-from-facets-with-gg
       ggplotly(g) %>%
         #layout_ggplotly %>%
-        config(displayModeBar = F)
-      
-      
-      
-    }) } 
+        config(displayModeBar = F) }) } 
   
   
   output$longest_speeches <- renderPlotly({ 
@@ -977,8 +964,7 @@ server <- function(input, output, session) {
   render_value_2 = function(NN){
     output$tbl5 <- renderDataTable({
       s <- event_data("plotly_click", source = "subset_2")
-      return(datatable(NN[NN$count_per_speech==s$y,])) 
-    }) } 
+      return(datatable(NN[NN$count_per_speech==s$y,])) }) } 
   
   
   
@@ -992,24 +978,120 @@ server <- function(input, output, session) {
             type = 'scatter', 
             mode = 'lines',
             line = list(color = 'rgb(158,202,225)',
-                        width = 4))
-    
-    
-  })
+                        width = 4))  })
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  ######################### Debates 
   
 
+  
+  #################### Debates ##########################################################################################
+  ########################################################################################################################
+  
+  
+  #################### Debate Titles
+  
+  import_debate_titles_data <- reactive( {
+    
+    if (input$kw_list != "custom") {
+      kw_data <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_list_", input$kw_list, ".csv")) } 
+    else { 
+      kw_data <- data.frame() } })
+  
+  keyword_addition <- function(d, input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6){
+    
+    keywords <- stri_remove_empty(c(input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6), TRUE)
+    
+    if (length(keywords != 0)) {
+      
+      words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
+      debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
+      
+      if (input$kw_list != "custom") {
+        all_year_counts <- read_csv(paste0("~/projects/hansard-shiny/data/debates/all_year_counts_", input$kw_list, ".csv")) } 
+      else {
+        all_year_counts <- data.frame()
+      }
+      
+      # if all year counts has data 
+      
+      for(i in 1:length(keywords)){
+        
+        keyword <- keywords[i]
+        
+        debate_titles_w_keyword <- debate_title_year_counts %>%
+          filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b"), ignore_case = TRUE)))
+        
+        # if input keyword does not exist, else: 
+        #if (identical(debate_titles_w_keyword, debate_title_year_counts))
+        
+        year_count <- debate_titles_w_keyword %>%
+          group_by(year) %>%
+          summarise(debates_per_year = n()) %>%
+          arrange(year) %>%
+          #mutate(keywords = input_keyword_addition)
+          mutate(keywords = keyword)
+        
+        all_year_counts <- bind_rows(all_year_counts, year_count) }
+      
+      all_year_counts <- all_year_counts %>%
+        left_join(words_per_year, by = "year") %>%
+        mutate(proportion = debates_per_year/words_per_year)
+      
+      return(all_year_counts) } else {
+        return(d)
+      }
+    
+    
+  }
+  
+  
+  output$debate_titles <- renderPlotly({
+    
+    d <- import_debate_titles_data()
+    
+    d <- keyword_addition(d, input$keyword_addition, input$keyword_addition_word_2, input$keyword_addition_word_3, input$keyword_addition_word_4, input$keyword_addition_word_5, input$keyword_addition_word_6)
+    
+    render_value_debate_titles(d)
+    
+    
+    debate_titles_ggplot <- ggplot(data = d) +
+      geom_col(aes(x = year, 
+                   y = proportion,
+                   fill=reorder(keywords, debates_per_year))) + 
+      scale_fill_viridis(discrete = TRUE, option = "C")+
+      guides(fill = guide_legend(title = "Keywords")) +
+      theme_bw() + 
+      scale_y_continuous(labels = function(x) paste0(x, "%")) +
+      labs(y = "debates per year as proportion", 
+           title = "Proportion of Debate Titles That Include Keywords")
+    
+    ggplotly(debate_titles_ggplot,
+             source = "TEST") %>%
+      config(displayModeBar = F)})
+  
+  
+  render_value_debate_titles = function(NN){
+    output$debate_titles_DT <- renderDT({
+      s <- event_data("plotly_click", source = "TEST")
+      
+      
+      if (input$kw_list != "custom") {
+        metadata <- read_csv(paste0("~/projects/hansard-shiny/kw_metadata_", input$kw_list, ".csv")) } 
+      else {
+        metadata <- data.frame()
+      }
+      
+      test_2 <- left_join(metadata, NN, by = c("keywords", "year"))
+      
+      test_2 <- test_2 %>%
+        select(-debates_per_year, -words_per_year, -proportion)
+      
+      datatable(test_2[test_2$year==s$x,]) }) }
+  
+  
+  ### NExt 
+  
   
   zz <- read_csv("~/projects/hansard-shiny/clean_longest_debates_wordcloud.csv")
   
@@ -1039,11 +1121,9 @@ server <- function(input, output, session) {
       config(displayModeBar = F) })
   
   render_value_3 = function(NN){
-    output$tbl6 <- # renderDataTable({
-      renderUI({
+    output$tbl6 <- renderUI({
       s <- event_data("plotly_click", source = "subset_3")
-      
-    #  print(s)
+
       
       NN <- NN %>%
         filter(words_per_debate == s$y,
@@ -1081,18 +1161,10 @@ server <- function(input, output, session) {
       NN <- NN %>%
         filter(words_per_debate == s$y,
                speechdate == s$x)
- 
-      
-      #write_csv(NN, "~/debugging_NN_2")
-      
-     # NN <- NN[NN$words_per_debate==s$y,]
       
       zz <- zz %>%
         filter(debate == NN$debate,
                speechdate == NN$speechdate) 
-      
-   #   zz <- zz[zz$debate == NN$debate, ]
-  #    print(zz)
       
       set.seed(42)
       ggplot(zz, aes(label = lemma, size = token_count)) +
@@ -1103,15 +1175,7 @@ server <- function(input, output, session) {
         ggtitle(paste0("Top words in ", zz$debate)) + 
         theme(plot.title = element_text(hjust = 0.5,
                                         size=22,
-                                        vjust= -10))
-      
-      #ggplotly(f)
-      
-    })
-    
-    
-    
-  }
+                                        vjust= -10)) }) }
   
   
   
@@ -1122,25 +1186,6 @@ server <- function(input, output, session) {
   
   
   
-  
-  
-  
-  output$word_embeddings <- renderPlotly({
-    forplot <- read_csv("~/projects/hansard-shiny/data/word_embeddings/for_plot.csv")
-    
-    plot_ly(data = forplot, 
-            x = ~V1, 
-            y = ~V2, 
-            type = 'scatter', 
-            mode = 'text',
-            text = ~word) %>% 
-      layout(#autosize = F,
-        xaxis = list(title = "Placeholder"),
-        yaxis = list(title = "Placeholder")) %>%
-      config(displayModeBar = F)
-    
-    
-  })
   
   
   
@@ -1368,7 +1413,7 @@ server <- function(input, output, session) {
       
       fdecade <- decades[d] 
       
-      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021/hansard_word_vectors_", fdecade, ".txt")
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
       
       rn <- rownames(word_vectors)
@@ -1441,11 +1486,60 @@ server <- function(input, output, session) {
   
   #################### Try 2 
   
+  output$wv_action_button <- renderUI({
+    forplot <- get_button() 
+    if (nrow(forplot) > 0) {
+      actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } else { # 1,2
+        return() } })
+  
+  output$wv_action_button_2 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_2", label = forplot_2[2,1], style = "width: 179px;") } else { # 2,2
+        return() } })
+  
+  output$wv_action_button_3 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else { # 3,2
+        return() } })
+  
+  output$wv_action_button_4 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_4", label = forplot_2[4,1], style = "width: 179px;") } else { # 4,2
+        return() }
+  })
+  
+  output$wv_action_button_5 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_5", label = forplot_2[5,1], style = "width: 179px;") } else { # 5,2 
+        return() } })
+  
+  output$wv_action_button_6 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_6", label = forplot_2[6,1], style = "width: 179px;") } else { # 6,2 
+        return() }
+  })
+  
+  output$wv_action_button_7 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_7", label = forplot_2[7,1], style = "width: 179px;") } else { 
+        return() }
+  })
   
   
+  output$wv_action_button_8 <- renderUI({
+    forplot_2 <- get_button()
+    if (nrow(forplot_2) > 0) {
+      actionButton("wv_action_button_8", label = forplot_2[8,1], style = "width: 179px;") } else { 
+        return() }
+  })
   
-  
-  
+
   input_loop <- function(input, decades, first_range, second_range, make_m, make_decade, ...) {
     
     out <- data.frame()
@@ -1454,7 +1548,7 @@ server <- function(input, output, session) {
     for(d in 1:length(il_decades)) {
       fdecade <- il_decades[d] 
       
-      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021/hansard_word_vectors_", fdecade, ".txt")
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
       
       rn <- rownames(word_vectors)
@@ -1467,14 +1561,12 @@ server <- function(input, output, session) {
         forplot$word <- rownames(forplot)
         
         if (make_decade == TRUE) {
-          
           forplot <- forplot %>%
             mutate(decade = fdecade) %>%
             filter(word == ...) } 
         
         if (make_m == TRUE) {
           rownames(forplot) <- NULL
-          
           forplot <- forplot %>%
             select(word) }
         
@@ -1489,36 +1581,29 @@ server <- function(input, output, session) {
   
   
   
-  
   get_button <- function() {
-    
     decades <- c(1800, 1850)
     
-    out <- input_loop(input$wv_textbox, decades, 2, 201, make_m = TRUE, make_decade = FALSE)
+    out <- input_loop(input$wv_textbox, decades, 2, 401, make_m = TRUE, make_decade = FALSE) # from 201 -- 301 may have been better 
 
     cycle = 0
     
     for(d in 1:length(decades)) {
-      
       cycle = cycle + 1
-      
       fdecade <- decades[d] 
       
-      table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_", fdecade, ".txt")
+      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021/hansard_word_vectors_", fdecade, ".txt")
       # table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
       
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
       
       rn <- rownames(word_vectors)
-      
       if(input$wv_textbox %in% rn) {
-        
         kw = word_vectors[input$wv_textbox, , drop = F]
         
         cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
-        
-        
-        forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:101])#[2:21])
+ 
+        forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:401]) # from 101
         
         colnames(forplot)[1] <- paste0("similarity", cycle)
         
@@ -1533,9 +1618,6 @@ server <- function(input, output, session) {
   
     b <- out %>%
       drop_na()
-    
-    
-
     
     if ( nrow(b) >= 8 && ncol(out) == 3 ) { 
       
@@ -1554,119 +1636,60 @@ server <- function(input, output, session) {
         out <- out %>%
           slice(10:18)
         
-        return(out)
-        
-      }
-    
-      
-    }
-    
-      
-     
-  
-  
-  
-  output$wv_action_button <- renderUI({
-    forplot <- get_button() 
-      if (nrow(forplot) > 0) {
-    actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } else { # 1,2
-      return() } })
-  
-  output$wv_action_button_2 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_2", label = forplot_2[2,1], style = "width: 179px;") } else { # 2,2
-      return() } })
-  
-  output$wv_action_button_3 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else { # 3,2
-      return() } })
-  
-  output$wv_action_button_4 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_4", label = forplot_2[4,1], style = "width: 179px;") } else { # 4,2
-      return() }
-    })
-  
-  output$wv_action_button_5 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_5", label = forplot_2[5,1], style = "width: 179px;") } else { # 5,2 
-      return() } })
-  
-  output$wv_action_button_6 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_6", label = forplot_2[6,1], style = "width: 179px;") } else { # 6,2 
-      return() }
-    })
-  
-  output$wv_action_button_7 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-      actionButton("wv_action_button_7", label = forplot_2[7,1], style = "width: 179px;") } else { 
-        return() }
-  })
-  
-  
-  output$wv_action_button_8 <- renderUI({
-    forplot_2 <- get_button()
-    if (nrow(forplot_2) > 0) {
-      actionButton("wv_action_button_8", label = forplot_2[8,1], style = "width: 179px;") } else { 
-        return() }
-  })
+        return(out) } }
   
 
+  
+  observeEvent(input$btnLabel,{
+    vals$btn=TRUE
+    vals$text=FALSE })
+  
+  observeEvent(input$wv_text_box_1,{
+    vals$btn=FALSE
+    vals$text=TRUE })
+  
+  
 
   output$wv_test <- renderPlotly({
     
-    req(input$btnLabel)
-   
-    
     decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
-    
-    # if button was selected: 
-    if (!is.na(input$btnLabel)) {
-    out <- input_loop(input$wv_textbox, decades, 2, 201, make_decade = TRUE, input_button_label = input$btnLabel, make_m = FALSE)
-    # else if textbox is typed in:
-    } else if (!is.na(input$wv_text_box_1)) {
-      print("hi")
-    out <- input_loop(input$wv_textbox, decades, 2, 201, make_decade = TRUE, input_button_label= input$wv_text_box_1, make_m = FALSE)
+
+    if(vals$btn){
+    out <- input_loop(input$wv_textbox, decades, 2, 401, make_decade = TRUE, input_button_label = input$btnLabel, make_m = FALSE) # same -- from 201 
+    } else {
+    out <- input_loop(input$wv_textbox, decades, 2, 401, make_m = FALSE, make_decade = TRUE, input_button_label= input$wv_text_box_1) # same -- from 201 
     }
     
+    print(input$wv_text_box_1)
     
     ### to add zeros
     # input$search_subject
     # for(d in 1:length(decades)) {
     # aad <- decades[d] 
     # if (!aad %in% out$decade) {
-        
     # similarity <- 0
     # word <- input$wv_textbox
     # decade <- aad
-        
     # out_1 <- data.frame(similarity, word, decade)
-        
     # out <- bind_rows(out, out_1)
-        
     # out <- out %>%
     # arrange(decade) }}
     
+    if(vals$btn){
+      ff <- input$btnLabel
+    } else {
+      ff <- input$wv_text_box_1
+    }
     
     if (isTruthy(input$wv_textbox)) {
       plot_ly(data = out, x = ~decade, y = ~similarity,
               mode = "lines+markers",
-              marker = list(
-                color = 'LightSkyBlue',
-                size = 15,
-                opacity = 0.8,
-                line = list(
-                  color = 'black',
-                  width = 1 ))) %>%
-        layout(title = paste0("Similarity of ", "\"", input$btnLabel, "\"", " to ", "\"", input$wv_textbox, "\"", " over time")) %>%
+              line = list(color = "black", width = 1),
+              marker = list(color = 'rgb(158,202,225)',
+                            size = 15,
+                            line = list(color = 'rgb(8,48,107)',
+                                        width = 1.5))) %>%
+        layout(title = paste0("Similarity of ", "\"", ff, "\"", " to ", "\"", input$wv_textbox, "\"", " over time")) %>%
         config(displayModeBar = F) } else {
           
           df <- data.frame(decade=integer(),
@@ -1675,142 +1698,9 @@ server <- function(input, output, session) {
           plot_ly(data = df,
                   x = ~decade,
                   y = ~similarity) %>%
-            config(displayModeBar = F)
-          
-          
-        } })
+            config(displayModeBar = F) } })
   
-  
-  
-  
-  #################### Debate Titles
-  
-  import_debate_titles_data <- reactive( {
-    
-    if (input$kw_list != "custom") {
-      kw_data <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_list_", input$kw_list, ".csv")) } 
-    else { 
-      kw_data <- data.frame() } })
-  
-  keyword_addition <- function(d, input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6){
-    
-    keywords <- stri_remove_empty(c(input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6), TRUE)
-    
-    if (length(keywords != 0)) {
-      
-      words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
-      debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
-      
-      if (input$kw_list != "custom") {
-        all_year_counts <- read_csv(paste0("~/projects/hansard-shiny/data/debates/all_year_counts_", input$kw_list, ".csv")) } 
-      else {
-        all_year_counts <- data.frame()
-      }
-      
-      # if all year counts has data 
-      
-      for(i in 1:length(keywords)){
-        
-        keyword <- keywords[i]
-        
-        debate_titles_w_keyword <- debate_title_year_counts %>%
-          filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b"), ignore_case = TRUE)))
-        
-        # if input keyword does not exist, else: 
-        #if (identical(debate_titles_w_keyword, debate_title_year_counts))
-        
-        year_count <- debate_titles_w_keyword %>%
-          group_by(year) %>%
-          summarise(debates_per_year = n()) %>%
-          arrange(year) %>%
-          #mutate(keywords = input_keyword_addition)
-          mutate(keywords = keyword)
-        
-        all_year_counts <- bind_rows(all_year_counts, year_count) }
-      
-      all_year_counts <- all_year_counts %>%
-        left_join(words_per_year, by = "year") %>%
-        mutate(proportion = debates_per_year/words_per_year)
-      
-      return(all_year_counts) } else {
-        return(d)
-      }
-    
-    
-  }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  output$debate_titles <- renderPlotly({
-    
-    d <- import_debate_titles_data()
-    
-    d <- keyword_addition(d, input$keyword_addition, input$keyword_addition_word_2, input$keyword_addition_word_3, input$keyword_addition_word_4, input$keyword_addition_word_5, input$keyword_addition_word_6)
-    
-    render_value_debate_titles(d)
-    
-    
-    debate_titles_ggplot <- ggplot(data = d) +
-      geom_col(aes(x = year, 
-                   y = proportion,
-                   fill=reorder(keywords, debates_per_year))) + 
-      scale_fill_viridis(discrete = TRUE, option = "C")+
-      guides(fill = guide_legend(title = "Keywords")) +
-      theme_bw() + 
-      scale_y_continuous(labels = function(x) paste0(x, "%")) +
-      labs(y = "debates per year as proportion", 
-           title = "Proportion of Debate Titles That Include Keywords")
-    
-    ggplotly(debate_titles_ggplot,
-             source = "TEST") %>%
-      config(displayModeBar = F)})
-  
-  
-  render_value_debate_titles = function(NN){
-    output$debate_titles_DT <- renderDT({
-      s <- event_data("plotly_click", source = "TEST")
-      
-      
-      if (input$kw_list != "custom") {
-        metadata <- read_csv(paste0("~/projects/hansard-shiny/kw_metadata_", input$kw_list, ".csv")) } 
-      else {
-        metadata <- data.frame()
-      }
-      
-      test_2 <- left_join(metadata, NN, by = c("keywords", "year"))
-      
-      test_2 <- test_2 %>%
-        select(-debates_per_year, -words_per_year, -proportion)
-      
-      datatable(test_2[test_2$year==s$x,])
-      
-      #print(test_2)
-      # print(datatable(NN[NN$words_per_day==s$y,])) 
-      
-      #NN <- NN[NN$words_per_day==s$y,]
-      
-      #print(NN)
-      
-      #aa <- NN$speaker
-      
-      #test_2 <- left_join(all_year_counts, metadata, by = c("keywords", "year"))
-      
-      
-      #print(aa)
-      
-      # read in this df first 
-      # speaker_favorite_words_count <- speaker_favorite_words_count %>%
-      # filter(speaker == aa) 
-    }) }
-  
-  
+
   
   
   #################### Modal Dialog ######################################################################################

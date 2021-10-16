@@ -77,8 +77,8 @@ for (file in files){
   #hansard_word_vectors <- as.data.frame(hansard_word_vectors)
   
   
-  #print("Checking if dir exists")
-  #ifelse(!dir.exists(file.path(dir, target_dir)), dir.create(file.path(dir, target_dir)), FALSE)
+  print("Checking if dir exists")
+  ifelse(!dir.exists(file.path(dir, target_dir)), dir.create(file.path(dir, target_dir)), FALSE)
   
   fname <- paste0(dir, "/", target_dir, "/", "hansard_word_vectors_", first_year_label, "_", last_year_label, ".txt")
   
