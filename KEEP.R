@@ -390,7 +390,7 @@ ui <- fluidPage(
                                                   padding:4px; 
                                                   font-size:90%"),
                                      p(),
-                                     selectInput("sc_view", "View:",
+                                     selectInput("sc_compare", "Compare:",
                                                  c("Top Words" = "sc_top_words",
                                                    "tf-idf" = "sc_tf-idf",
                                                    "Speech Lengths" = "sc_speech_lengths")),
@@ -416,16 +416,20 @@ ui <- fluidPage(
                                                   c("Normal" = "norm",
                                                     "Uniform" = "unif",
                                                     "Log-normal" = "lnorm",
-                                                    "Exponential" = "exp"),
+                                                    "Exponential" = "exp",
+                                                    "Fifth Option" = "five"),
                                                   selected = "norm"),
+                                     textInput("sc_custom_search_top", "Custom Search:", ""),
                                      
                                      radioButtons("sc_radio_buttons_bottom", 
                                                   "Top Speakers:",
                                                   c("Normal" = "norm",
                                                     "Uniform" = "unif",
                                                     "Log-normal" = "lnorm",
-                                                    "Exponential" = "exp"),
+                                                    "Exponential" = "exp",
+                                                    "Fifth Option" = "five"),
                                                   selected = "unif"),
+                                     textInput("sc_custom_search_bottom", "Custom Search:", ""),
                                      
                                      width = 2),
                                  mainPanel()))),
@@ -525,7 +529,7 @@ ui <- fluidPage(
                                        padding:4px; 
                                        font-size:90%"),
                              p(),
-                             textInput("wv_textbox", "Keyword:", "hardship"),
+                             textInput("wv_textbox", "Keyword:", "tenant"),
                              uiOutput("wv_action_button",
                                       onclick = "Shiny.setInputValue('btnLabel', this.innerText);"),
                              br(),
@@ -552,7 +556,7 @@ ui <- fluidPage(
                              br(),
                              tags$style("#wv_text_box_1 {background-color:#E8E8E8;}"),
                              textInput("wv_text_box_1", 
-                                       "Type:", ""),
+                                       "Custom Search:", ""),
                              width = 2),
                            
                            mainPanel(plotlyOutput("wv_test", height = "650"))
@@ -567,55 +571,75 @@ ui <- fluidPage(
              
              navbarMenu("About",
                         tabPanel("Purpose",
-                                 h3("The Hansard Viewer"),
-                                 br(),
-                                 p(),
-                                 "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
-                                 p(),
-                                 "For seven years, our lab, Democracy Lab, has been operating at the juncture of political, historical, and textual analysis of democratic debates, publishing numerous articles, collaborating with the builders of infrastructure to make text mining accessible to the public, and building a preliminary series of public-facing apps. 
-                                 Users of our prototype web application can use an array of data-mining and statistical approaches which can provide new insights into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts. 
-                                 Citizens using our toolset can navigate from an overview showing change over time, to a depiction of how different candidates talk about the same issue, to the in-text mentions of word use that a computer has used to produce the visualizations in question.",
-                                 p(),
-                                 "The usefulness of any application for citizens to understand democracy depends upon how much they can trust the data and its analysis. 
-                                 For users to trust the analysis, an app must cut a line between transparency, precision, and innovation. 
-                                 Our tool does this by employing methods such as word counts, tf-idf measures, topic models, word embeddings, and triples analysis. 
-                                 
-                                 
-                                 In general, our app’s design will try to compensate for user mistrust of algorithm- and algebra- dependent measures by linking visualizations to the citations that explain each algorithm or measure and links in lay language. We will also privilege certain measures -- for instance triples analysis, a tool that is simultaneously transparent, precise, and sensitive. 
-
-                                 
-                                 
-                                 "),
+                                 fluidPage(
+                                   fluidRow(
+                                     column(10,
+                                            offset = 1, 
+                                            h3("The Hansard Viewer"),
+                                            br(),
+                                            p(),
+                                            "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
+                                            p(),
+                                            "For seven years Democracy Lab has been operating at the juncture of political, historical, and textual analysis of democratic debates, publishing numerous articles and collaborating with the builders of infrastructure to make text mining accessible to the public.
+                                            This app belongs to a series of preliminary public-facing web applications 
+                                            Users of our prototype application can use an array of data-mining and statistical tools to explore the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts. 
+                                            Citizens using our toolset can navigate from an overview showing change over time, to a depiction of how different candidates talk about the same issue, to the in-text mentions of word use that a computer has used to produce the visualizations in question.",
+                                            p(),
+                                            "This data-informed angle into the Hansard debates enables users to perceive change over time at scale. A quantitative approach emphasizes trends, enter. 
+                                            
+                                            Despite -- it can still show unique occurances in the form of statistical outliers. 
+                                            
+                                            The usefulness of any application for citizens to understand democracy depends upon how much they can trust the data and its analysis. 
+                                            For users to trust the analysis, an app must cut a line between transparency, precision, and innovation. 
+                                            Our tool does this by employing methods such as word counts, tf-idf measures, topic models, word embeddings, and triples analysis. 
+                                            
+                                            
+                                            
+                                            In general, our app’s design will try to compensate for user mistrust of algorithm- and algebra- dependent measures by linking visualizations to the citations that explain each algorithm or measure and links in lay language. We will also privilege certain measures -- for instance triples analysis, a tool that is simultaneously transparent, precise, and sensitive.")
+                                            ) ) ),
                         
                         tabPanel("Code", 
-                                 h3("Code"),
-                                 br(), 
-                                 p(),
-                                 "Our project values transparency, precision, and innovation. 
+                                 fluidPage(
+                                   fluidRow(
+                                     column(10,
+                                            offset = 1,
+                                            h3("Code"),
+                                            br(), 
+                                            p(),
+                                            "Our project values transparency, precision, and innovation. 
                                  
                                  
-                                 All of our code is open source and can be found on our",
-                                 HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
-                                 #HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
-                                 "Transparency.",
-                                 br(),
-                                 p(),
-                                 "For the source code, enter"),
+                                            All of our code is open source and can be found on our",
+                                            HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
+                                            #HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
+                                            "Transparency.",
+                                            br(),
+                                            p(),
+                                            "For the source code, enter"),
+                                     ) ) ),
+                        
                         tabPanel("Data",
-                                 "Placeholder text.",
-                                 br(),
-                                 p(),
-                                 strong("Hansard:"),
-                                 "SMU version of the Hansard data with improved speaker names.",
-                                 br(),
-                                 p(),
-                                 strong("Nations:"),
-                                 "placeholder description",
-                                 br(),
-                                 p(),
-                                 strong("Stop Words:"),
-                                 ""))
-  ))
+                                 fluidPage(
+                                   fluidRow(
+                                     column(10,
+                                            offset = 1,
+                                            h3("Data"),
+                                            br(),
+                                            p(),
+                                            "This page offers links to download the data used by this app.",
+                                            br(),
+                                            p(),
+                                            strong("Hansard:"),
+                                            "SMU version of the Hansard data with improved speaker names.",
+                                            br(),
+                                            p(),
+                                            strong("Nations:"),
+                                            "placeholder description",
+                                            br(),
+                                            p(),
+                                            strong("Stop Words:"),
+                                            "")
+                                     ) ) ) ) ) )
 
 
 server <- function(input, output, session) {
@@ -1413,7 +1437,7 @@ server <- function(input, output, session) {
       
       fdecade <- decades[d] 
       
-      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021/hansard_word_vectors_", fdecade, ".txt")
+      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021_2/hansard_word_vectors_", fdecade, ".txt")
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
       
       rn <- rownames(word_vectors)
@@ -1490,19 +1514,22 @@ server <- function(input, output, session) {
     forplot <- get_button() 
     if (nrow(forplot) > 0) {
       actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } else { # 1,2
-        return() } })
+        return() } 
+    })
   
   output$wv_action_button_2 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
       actionButton("wv_action_button_2", label = forplot_2[2,1], style = "width: 179px;") } else { # 2,2
-        return() } })
+        return() } 
+    })
   
   output$wv_action_button_3 <- renderUI({
     forplot_2 <- get_button()
     if (nrow(forplot_2) > 0) {
       actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else { # 3,2
-        return() } })
+        return() } 
+    })
   
   output$wv_action_button_4 <- renderUI({
     forplot_2 <- get_button()
@@ -1548,7 +1575,7 @@ server <- function(input, output, session) {
     for(d in 1:length(il_decades)) {
       fdecade <- il_decades[d] 
       
-      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021/hansard_word_vectors_", fdecade, ".txt")
+      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021_2/hansard_word_vectors_", fdecade, ".txt")
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
       
       rn <- rownames(word_vectors)
@@ -1592,7 +1619,7 @@ server <- function(input, output, session) {
       cycle = cycle + 1
       fdecade <- decades[d] 
       
-      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021/hansard_word_vectors_", fdecade, ".txt")
+      table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10162021_2/hansard_word_vectors_", fdecade, ".txt")
       # table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
       
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
@@ -1630,6 +1657,9 @@ server <- function(input, output, session) {
       
       out <- out %>%
         arrange(desc(all_sim))
+      
+      out <- out %>% # just added
+        slice(20:28)
       
       return(out) } else {
         
@@ -1689,7 +1719,7 @@ server <- function(input, output, session) {
                             size = 15,
                             line = list(color = 'rgb(8,48,107)',
                                         width = 1.5))) %>%
-        layout(title = paste0("Similarity of ", "\"", ff, "\"", " to ", "\"", input$wv_textbox, "\"", " over time")) %>%
+        layout(title = paste0("Relationship of ", "\"", ff, "\"", " to ", "\"", input$wv_textbox, "\"", " over time")) %>%
         config(displayModeBar = F) } else {
           
           df <- data.frame(decade=integer(),
@@ -1725,23 +1755,35 @@ server <- function(input, output, session) {
   
   observeEvent(input$about_debate_titles, {
     showModal(modalDialog(
-      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
-      "Define",
+      title = "Proportion of Debate Titles that Include Keywords",
+      "The number of recorded debates grew significantly over the course of the 19th-century.
+      Therefore, we use proportion to measure which subjects were given more attention over time.
+      Using proportion adjusts the results for the possibility that any subject might be addressed more often because the number of debates increased, 
+      not because more time was spent on the subject.",
       br(),
       p(),
       strong("Controls:"),
-      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
-      "Type search terms in each . The ",
+      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start your analysis with an empty plot",
+      br(),
+      p(),
+      "Type search terms into each text box to add them to the plot.
+      The search terms can be one or more words.",
+      br(),
+      p(),
+      "Click on a column in the plot to view the debate titles containing keywords for that for that year.",
+      br(),
+      p(),
+      "With the debate viewer open, use the search box to find debates containing terms, and the the buttons below the debate viewer to navigate through the results.",
       br(),
       p(),
       strong("Measurement:"),
-      "Here we are using proportion instead of ENTER" ))
+      "Proportion is found by"))
   })
   
   
   observeEvent(input$about_nation_pairs, {
     showModal(modalDialog(
-      title = "Raw Count of Nations and Nation Pairs",
+      title = "Count of Nations and Nation Pairs",
       "Define",
       br(),
       p(),
@@ -1773,17 +1815,16 @@ server <- function(input, output, session) {
   
   observeEvent(input$about_we_similarity, {
     showModal(modalDialog(
-      title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
-      "Define",
+      title = "",
+      "DEFINE",
       br(),
       p(),
       strong("Controls:"),
-      "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start with an empty graph.",
-      "Type search terms in each . The ",
+      "Type a single word into the search box to view its most closely associated words throughout the period.",
       br(),
       p(),
       strong("Measurement:"),
-      "Here we are using proportion instead of ENTER"))
+      "" ))
   })
   
   observeEvent(input$about_collocates, {
