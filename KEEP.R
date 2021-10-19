@@ -542,6 +542,8 @@ ui <- fluidPage(
                                      width = 2),
                                    
                                    mainPanel(plotlyOutput("debate_titles"),
+                                             br(),
+                                             br(),
                                              DTOutput('debate_titles_DT')))),
                         #mainPanel(div(plotlyOutput("debate_titles", height = "100%"), align = "center"))))),
                         tabPanel("Longest Debates",
@@ -1288,14 +1290,13 @@ server <- function(input, output, session) {
     
     render_value_debate_titles(d)
     
-    print(d)
-    
-    
-    
     debate_titles_ggplot <- ggplot(data = d) +
       geom_col(aes(x = year, 
                    y = proportion,
-                   fill=reorder(keywords, debates_per_year))) + 
+                   fill=reorder(keywords, debates_per_year),
+                   text = paste0("Keyword: ", "<b>", keywords, "</b>", "\n",
+                                 "Proportion: ", "<b>", proportion, "</b>", "\n",
+                                 "Year: ", "<b>", year, "</b>", "\n") )) + 
       scale_fill_viridis(discrete = TRUE, option = "C")+
       guides(fill = guide_legend(title = "Keywords")) +
       theme_bw() + 
@@ -1303,8 +1304,13 @@ server <- function(input, output, session) {
       labs(y = "debates per year as proportion", 
            title = "Proportion of Debate Titles That Include Keywords")
     
+    
+    geom_point(aes(text=sprintf("letter: %s<br>Letter: %s", a, b)))
+    
+    
     ggplotly(debate_titles_ggplot,
-             source = "TEST") %>%
+             source = "TEST",
+             tooltip = "text") %>%
       config(displayModeBar = F) }
     
     else {
@@ -1333,11 +1339,15 @@ server <- function(input, output, session) {
       test_2 <- test_2 %>%
         select(-debates_per_year, -words_per_year, -proportion)
       
-      datatable(test_2[test_2$year==s$x,]) }
+      datatable(test_2[test_2$year==s$x,],
+                options = list(dom = 'ip'),
+                filter = list(position = "top")) }
       
       else {
         datatable(directions_1,
-                  options = list(pageLength = 1, dom = 't'), rownames = FALSE)
+                  options = list(pageLength = 1, 
+                                 dom = 't'),
+                  rownames = FALSE)
       }
       
       }) }
