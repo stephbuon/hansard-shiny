@@ -28,8 +28,18 @@ for(i in 1:length(keywords)){
   
   keyword <- keywords[i]
   
-  debate_titles_w_keyword <- a %>%
+  debate_titles_w_keyword_1 <- a %>%
     filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b"), ignore_case = TRUE))) # took "test" out of string argument and added the paste 0 stuff 
+  
+  
+  debate_titles_w_keyword_2 <- a %>%
+    filter(str_detect(debate, regex(paste0("^", keyword, "\\b"), ignore_case = TRUE)))
+  
+  
+  debate_titles_w_keyword_3 <- a %>%
+    filter(str_detect(debate, regex(paste0("\\b", keyword, "$"), ignore_case = TRUE)))
+  
+  debate_titles_w_keyword <- bind_rows(debate_titles_w_keyword_1, debate_titles_w_keyword_2, debate_titles_w_keyword_3)
   
   m <- debate_titles_w_keyword %>%
     select(debate, year) %>%
@@ -62,9 +72,9 @@ all_year_counts <- all_year_counts %>%
 
 #test_2 <- left_join(all_year_counts, metadata, by = c("keywords", "year")) # just added
 
-#write_csv(metadata, "~/kw_property_metadata.csv") # just added
+#write_csv(metadata, "~/kw_metadata_industry.csv") # just added
 
-write_csv(all_year_counts, "~/kw_list_industry.csv")
+write_csv(all_year_counts, "~/kw_list_property.csv")
 
 rr <- ggplot(data = all_year_counts) +
   geom_col(aes(x = year, 

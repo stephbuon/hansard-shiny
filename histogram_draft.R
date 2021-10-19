@@ -1,7 +1,8 @@
 library(plotly)
 library(shiny)
+library(shinyWidgets)
 library(DT)
-library(dplyr)
+library(tidyverse)
 
 hansard <- read_csv("~/projects/hansard-shiny/speech_lengths.csv") %>%
   rename(speech_length = n)
@@ -11,12 +12,21 @@ hansard <- read_csv("~/projects/hansard-shiny/speech_lengths.csv") %>%
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
-      sliderInput(inputId = "bins",
-                  label = "Number of bins:",
-                  min = 5,
-                  max = 25,
-                  value = 15, 
-                  step = 10),
+      actionButton("about_nation_pairs", 
+                   "About This Page",
+                   style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       width: 179px;
+                                       padding:4px; 
+                                       font-size:90%"),
+      p(),
+      selectInput("radio_buttons_hist", 
+                   "Speeches:",
+                   c("Overview" = "overview",
+                     "Short Speeches" = "short",
+                     "Mid-Range Speeches" = "mid",
+                     "Long Speeches" = "long")),
       
       sliderTextInput(
         inputId = "decade_hist", 
@@ -34,10 +44,15 @@ ui <- fluidPage(
                     "1880",
                     "1890")),
       
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:",
+                  min = 5,
+                  max = 25,
+                  value = 15, 
+                  step = 10),
+      
       width = 2),
     mainPanel(
-      plotlyOutput("low_range"),
-      DTOutput("tbl444"),
       plotlyOutput("mid_range"),
       DTOutput('tbl44')))
 )
@@ -51,7 +66,7 @@ server <- function(input, output, session) {
     
     hansard <- hansard %>%
       filter(speech_length > 0,
-             speech_length < 1001)
+             speech_length < 50)
     
     d <- hansard %>%
       group_by(speech_length) %>%
@@ -120,8 +135,8 @@ server <- function(input, output, session) {
       filter(decade == input$decade_hist)
     
     hansard <- hansard %>%
-      filter(speech_length > 1000,
-             speech_length < 10000)
+      filter(speech_length > 49,
+             speech_length < 1000)
 
     d <- hansard %>%
       group_by(speech_length) %>%
