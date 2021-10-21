@@ -1,5 +1,8 @@
 # remember that rN the network data is in network/cleaning.R
 
+# download multiple plots: https://stackoverflow.com/questions/32320135/how-to-download-several-png-plots-within-one-download-button-in-shiny
+
+# change mid range to mid length 
 
 # remember to add cache stuff 
 # If I want to see the full network, I can pass VisNetwork the static edges data (e1) instead of the reactive expression (reactive_edges()). 
@@ -88,45 +91,17 @@ radioTooltip <- function(id, choice, title, placement = "bottom", trigger = "hov
 }
 
 
-empty_plot <- function(title = NULL){
-  p <- plotly_empty(type = "scatter", mode = "markers") %>%
-    config(
-      displayModeBar = FALSE
-    ) %>%
-    layout(
-      title = list(
-        text = title,
-        yref = "paper",
-        y = 0.5
-      )
-    )
-  return(p)
-} 
-
-empty_ggplot <- function(title = NULL){
-  g <- ggplot() +
-    theme_void() +
-    geom_text(aes(0, 0.5, 
-                  label = title),
-              color = "#696969",
-              size=6.5,
-              family="Helvetica") +
-    xlab(NULL)
-  
-  return(g)
-  
-}
-
-directions_1 <- data.frame("To explore text click on a node. Results will appear here.")
-names(directions_1)[1] <- " "
-
-directions <- data.frame("To explore text click on a node. Results will appear here.") 
-names(directions)[1] <- " "
 
 
 e1 <- read_csv("~/projects/hansard-shiny/edges_test_data.csv")
 n1 <- read_csv("~/projects/hansard-shiny/nodes_test_data.csv")
 
+
+e1 <- e1 %>%
+  filter(decade == 1850)
+
+n1 <- n1 %>%
+  filter(decade == 1850)
 
 ########### UI 
 
@@ -137,58 +112,50 @@ str2 <- "<h4>Speakers: X</h4>"
 str3 <- "<h4>Sentences: 10,979,009</h4>"
 
 ui <- fluidPage(
+  
+  tags$head(tags$style(HTML(".shiny-output-error-validation { 
+                            color: #696969;
+                            text-align: center;
+                            font-size: 18px; } "))),
+  
   theme = shinytheme("yeti"),
   #theme = bs_theme(bootswatch = "litera"),
+  
   navbarPage("The Hansard Parliamentary Debates",
+             
              
              tabPanel("Introduction",
                       splitLayout(cellWidths = c("75%", "25%"),
                                   cellArgs = list(style = "padding: 6px"),
                                   plotlyOutput("ndbs"),
-                                  
-                                  
-                                  #textOutput("text1"))),
-                                  
-                                  
                                   HTML(paste(counts, str1, str2, str3, sep = '<br/>'))),
                       fluidRow(column(width = 7, 
                                       offset = 1,
                                       br(),
                                       p(),
                                       br(),
-                                      p(),
-                                      "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
-                                      br(),
-                                      p(),
-                                      "This protoype app belongs to a preliminary series of public-facing web apps designed to show the language features of debates. 
-                                      Users can apply an array of data-mining and statistical tools to gain insight into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts.",
-                                      br(),
-                                      p(),
+                                      p("Tools for mining text can open a window onto politics making what happens in government more transparent to citizens."),
+                                      p("This protoype app belongs to a preliminary series of public-facing web apps designed to show the language features of debates. 
+                                      Users can apply an array of data-mining and statistical tools to gain insight into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts."),
                                       strong("Controls:"),
                                       "Use the navigation bar at the top of the page to change between different views of the Hansard corpus.",
                                       br(),
-                                      p(),
-                                      "Click on the blue button found in the top left corner of the following pages to learn more about the data and the methods of measurement used to produce a visualization.",
-                                      br(),
+                                      p("Click on the blue button found in the top left corner of the following pages to learn more about the data and the methods of measurement used to produce a visualization."),
                                       p(),
                                       p()
-                      ))),
-             
-             
+                                      ))),
+
              
              tabPanel("Triples Network", 
                       sidebarLayout(
                         sidebarPanel(
-                          
                           helpText("Check the boxes to explore the langauge of different speakers."),
                           
                           checkboxGroupInput("subreddit", "Speaker:",
-                                             
                                              c("William E. Gladstone" = "Mr. Gladstone",
                                                "Benjamin Disraeli" = "bdisraeli",
                                                "Arthur Balfour" = "abalfour",
                                                "Mr. Placeholder" = "Mr. Placeholder"),
-                                             
                                              selected = c("Mr. Gladstone", "Mr. Placeholder")),
                           
                           tags$hr(style="border-color: black;"),
@@ -216,14 +183,20 @@ ui <- fluidPage(
                           textInput("search_subject", "Subject:", ""),
                           textInput("search_verb", "Verb:", ""),
                           textInput("search_object", "Object:", ""),
+                          actionButton('download_network', 
+                                       "Download Plot",
+                                       style = "width: 179px;"
+                          ),
                           
-                          #downloadButton('download_plot', ' Download Plot '),
                           
-                          width = 2), # The width of the sidebar panel 
+                          width = 2),
                         
                         mainPanel(visNetworkOutput("network"),
-                                  DTOutput('tbl')))),
-             
+                                  DTOutput('tbl'),
+                                  
+                                  
+                                  ))),
+
              
              navbarMenu("Nations",
                         tabPanel("Nation Concerns",
@@ -236,7 +209,6 @@ ui <- fluidPage(
                         
                         
                         tabPanel("Nation Pairs",
-                                 #titlePanel("How many times was each nation pair named in Hansard debate titles?"),
                                  sidebarLayout(
                                    sidebarPanel(
                                      actionButton("about_nation_pairs", 
@@ -269,7 +241,14 @@ ui <- fluidPage(
                                    
                                    mainPanel(
                                      plotlyOutput("plot_2"),
-                                     plotlyOutput("ut"))))),
+                                     
+                                     
+                                     
+                                     plotlyOutput("ut")
+                                     
+                                   
+                                     
+                                     )))),
              
              
              tabPanel("Collocates",
@@ -335,8 +314,6 @@ ui <- fluidPage(
                                         "1890"),
                             selected = "1840"),
                           
-                          #tags$hr(style="border-color: black;"),
-                          
                           selectInput("noun", 
                                       "Keyword:",
                                       choices = NULL),
@@ -362,10 +339,6 @@ ui <- fluidPage(
                           radioTooltip(id = "collocate_measure", choice = "jsd", title = "Button 3 Explanation", placement = "right", trigger = "hover"),
                           
                           width = 2),
-                        # mainPanel(plotlyOutput("collocates_top"),
-                        #           plotlyOutput("collocates_bottom")
-                        
-                        # )))),
                         
                         mainPanel(plotlyOutput("collocates_top"),
                                   plotlyOutput("collocates_bottom")))),
@@ -391,8 +364,11 @@ ui <- fluidPage(
                                    mainPanel(plotlyOutput("top_speakers"),
                                              br(),
                                              br(),
+                                             
+                                            
                                              plotlyOutput("tbl4",
                                                           height = "580")))),
+                        
                         tabPanel("Longest Speeches",
                                  mainPanel(plotlyOutput("longest_speeches"),
                                            dataTableOutput('tbl5'))),
@@ -413,7 +389,7 @@ ui <- fluidPage(
                                                  "Speeches:",
                                                  c("Overview" = "overview",
                                                    "Short Speeches (1-49 words)" = "short",
-                                                   "Mid-Range Speeches (50-999 words) " = "mid",
+                                                   "Mid-Length Speeches (50-999 words) " = "mid",
                                                    "Long Speeches (1000+ words)" = "long")),
                                      
                                      
@@ -483,32 +459,31 @@ ui <- fluidPage(
                                      
                                      radioButtons("sc_radio_buttons_top", 
                                                   "Top Speakers:",
-                                                  c("Normal" = "norm",
-                                                    "Uniform" = "unif",
-                                                    "Log-normal" = "lnorm",
-                                                    "Exponential" = "exp",
-                                                    "Fifth Option" = "five"),
-                                                  selected = "norm"),
+                                                  #choices = NULL),
+                                                  
+                                                   c("1" = "1",
+                                                     "2" = "2",
+                                                     "3" = "3",
+                                                     "4" = "4",
+                                                     "5" = "5"),
+                                                   selected = "1"),
                                      textInput("sc_custom_search_top", "Custom Search:", ""),
                                      
                                      radioButtons("sc_radio_buttons_bottom", 
                                                   "Top Speakers:",
-                                                  c("Normal" = "norm",
-                                                    "Uniform" = "unif",
-                                                    "Log-normal" = "lnorm",
-                                                    "Exponential" = "exp",
-                                                    "Fifth Option" = "five"),
-                                                  selected = "unif"),
+                                                  #choices = NULL),
+                                                   c("1" = "1",
+                                                     "2" = "2",
+                                                     "3" = "3",
+                                                     "4" = "4",
+                                                     "5" = "5"),
+                                                   selected = "2"),
                                      textInput("sc_custom_search_bottom", "Custom Search:", ""),
                                      
                                      width = 2),
-                                 mainPanel()))),
-             
-          
-             
-             
-             
-             
+                                 mainPanel(plotlyOutput("speaker_comparison_top"),
+                                           plotlyOutput("speaker_comparison_bottom"))))),
+
              
              navbarMenu("Debates",
                         tabPanel("Debate Titles",
@@ -517,11 +492,11 @@ ui <- fluidPage(
                                      actionButton("about_debate_titles", 
                                                   "About This Page",
                                                   style="color: #fff; 
-                                       background-color: #337ab7; 
-                                       border-color: #2e6da4; 
-                                       width: 179px;
-                                       padding:4px; 
-                                       font-size:90%"),
+                                                  background-color: #337ab7; 
+                                                  border-color: #2e6da4; 
+                                                  width: 179px;
+                                                  padding:4px; 
+                                                  font-size:90%"),
                                      p(),
                                      selectInput("kw_list", 
                                                  "Keyword List:",
@@ -539,14 +514,43 @@ ui <- fluidPage(
                                      textInput("keyword_addition_word_4", "", ""),
                                      textInput("keyword_addition_word_5", "", ""),
                                      textInput("keyword_addition_word_6", "", ""),
+                                     actionButton('download', 
+                                                  "Download Plot",
+                                                  style = "width: 179px;"
+                                                  ),
                                      width = 2),
                                    
                                    mainPanel(plotlyOutput("debate_titles"),
+                                             
+                                             
+                                             tags$script('
+              document.getElementById("download").onclick = function() {
+              var gd = document.getElementById("debate_titles");
+              Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
+                var a = window.document.createElement("a");
+                a.href = url; 
+                a.type = "image/png";
+                a.download = "plot.png";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);                      
+              });
+              }
+              '),
+                                             
+                                             
+                                             
+                                             
+                                             
+                                             
+                                             
                                              br(),
                                              br(),
                                              DTOutput('debate_titles_DT')))),
                         #mainPanel(div(plotlyOutput("debate_titles", height = "100%"), align = "center"))))),
                         tabPanel("Longest Debates",
+                                 
+                           
                                  
                                  sidebarLayout(
                                    sidebarPanel(
@@ -568,11 +572,10 @@ ui <- fluidPage(
                                  sidebarLayout(
                                    sidebarPanel(
                                      helpText("Say something meaningful"),
-                                     
                                      width = 2),
                                    mainPanel(plotlyOutput("word_embeddings")))),
                         
-                        tabPanel("Similarity",
+                        tabPanel("Similarity", # ADD TEXT
                                  sidebarLayout(
                                    sidebarPanel(
                                      actionButton("about_we_similarity", 
@@ -585,9 +588,32 @@ ui <- fluidPage(
                                        font-size:90%"),
                                      p(),
                                      textInput("search_similarity", "Keyword:", value = "harvest"),
+                                     actionButton('download_similarity', 
+                                                  "Download Plot",
+                                                  style = "width: 179px;"
+                                     ),
                                      width = 2),
                                   # mainPanel(plotOutput("most_similar"))
-                                   mainPanel(plotlyOutput("most_similar"))
+                                   mainPanel(plotlyOutput("most_similar"),
+                                             
+                                             tags$script('
+              document.getElementById("download_similarity").onclick = function() {
+              var gd = document.getElementById("most_similar");
+              Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
+                var a = window.document.createElement("a");
+                a.href = url; 
+                a.type = "image/png";
+                a.download = "plot.png";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);                      
+              });
+              }
+              ')
+                                             
+                                             
+                                             
+                                             )
                                  )),
                         
                         tabPanel("Try 2",
@@ -630,13 +656,32 @@ ui <- fluidPage(
                              tags$style("#wv_text_box_1 {background-color:#E8E8E8;}"),
                              textInput("wv_text_box_1", 
                                        "Custom Search:", ""),
+                             br(),
+                             actionButton('download_try_2', 
+                                          "Download Plot",
+                                          style = "width: 179px;"
+                             ),
                              width = 2),
                            
-                           mainPanel(plotlyOutput("wv_test", height = "650"))
+                           mainPanel(plotlyOutput("wv_test", height = "650"),
+                                     
+                                     tags$script('document.getElementById("download_try_2").onclick = function() {
+                                     var gd = document.getElementById("wv_test");
+                                     Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
+                                     var a = window.document.createElement("a");
+                                     a.href = url; 
+                                     a.type = "image/png";
+                                     a.download = "plot.png";
+                                     document.body.appendChild(a);
+                                     a.click();
+                                     document.body.removeChild(a);
+                                     });
+                                     } ')
+                                     
+                                     
+                                     )
                            ) ) ),
-             
-
-             
+      
              navbarMenu("About",
                         tabPanel("Purpose",
                                  fluidPage(
@@ -718,13 +763,10 @@ server <- function(input, output, session) {
   
   output$ndbs <- renderPlotly({
     
-    #render_value_text(number_of_debates_from_1803_1910)
-    
     plot_ly(data=number_of_debates_from_1803_1910, 
             x = ~decade, 
             y = ~no_of_debates, 
             type = 'bar', 
-            source = "texty",
             text = ~paste0("Decade: ", "<b>", decade, "</b>", "\n",
                            "Number of Debates: ", "<b>", no_of_debates, "</b>", "\n"),
             hoverinfo = "text",
@@ -739,24 +781,24 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
-  #render_value_text = function(NN){
-  
-  # output$text1 <- renderText({
-  #s <- event_data("plotly_click", source = "texty") 
-  #print(s)
-  str1 <- "Number of Debates: ENTER"
-  str2 <- "Number of Speakers: ENTER"
-  #  HTML(paste(str1, str2, sep = '<br/>'))
-  
-  # }) }
-  
-  
-  
   #################### Network ###########################################################################################
   ########################################################################################################################
+  
+  
+  
+  #observeEvent(input$download_network, {
+    
+  #  webshot("network",delay=0.5,zoom=2,file=paste0("network",".png"),
+  #          vwidth=900,vheight=900)
+    
+    #visExport(output$network(),
+    #  type = "png",
+    #  name = "network_download",
+    #  label = paste0("Export as ", type),
+    #  background = "#fff")
+  #})
+  
+  
   
   reactive_nodes <- reactive({
     
@@ -828,14 +870,17 @@ server <- function(input, output, session) {
       
       visEvents(select = "function(nodes) {
                 Shiny.onInputChange('current_node_selection', nodes.nodes);
-                ;}") })
+                ;}") 
+    
+    })
   
   observe({ # is this function speeding things up? 
     visNetworkProxy("network") })
   
   
-  output$tbl <- renderDT(
-    if (!(is.null(input$current_node_selection))) {
+  output$tbl <- renderDT({
+    
+    validate(need(!is.null(input$current_node_selection), "Click on a point to see PLACEHOLDER"))
       
       # e1 <- e1 %>%
       #    filter(from_name %in% input$subreddit | to_name %in% input$subreddit)
@@ -844,20 +889,16 @@ server <- function(input, output, session) {
       #print(input$current_node_selection)
       
       # This dt might not reflect the correct count -- I need that count function 
-      e1 <- e1 %>% 
-        filter(from %in% input$current_node_selection | to %in% input$current_node_selection)# %>%
-      #select(!(c("to_name", "from")))
-      
-      #print("dt test")
-      #print(e1)
-      
+     
+    datatable(e1 <- e1 %>% 
+                filter(from %in% input$current_node_selection | to %in% input$current_node_selection) %>%
+                select(-from, -to, -decade),
+              options = list(dom = 'ip'),
+              filter = list(position = "top"))
+
+    
       # I could return KWIC-like text
-      
-    } else { 
-      
-      datatable(directions,
-                options = list(pageLength = 1, dom = 't'), rownames = FALSE)
-      
+
       }) 
 
   
@@ -902,22 +943,20 @@ server <- function(input, output, session) {
     output$ut <- renderPlotly({
       s <- event_data("plotly_click", source = "np")
       
-      if(!is.null(s)) {
-        hh <- separate(s, y, into = c("left", "right"), sep = "-")
+      validate(need(!is.null(s), "Click on a bar to visualize each nation's count over time"))
+      
+      hh <- separate(s, y, into = c("left_nation", "right_nation"), sep = "-")
+      
+      ln <- nations_count %>%
+        filter(debate == hh$left_nation) %>%
+        rename(lcount = n)
         
-        left_nation <- hh$left
-        right_nation <- hh$right
-
-        ln <- nations_count %>%
-          filter(debate == left_nation) %>%
-          rename(lcount = n)
-        
-        ln$debate <- "left_nation_1"
+      ln$debate <- "left_nation_1"
         
         ln <- dcast(ln, decade ~ debate)
         
         rn <- nations_count %>%
-          filter(debate == right_nation) %>%
+          filter(debate == hh$right_nation) %>%
           rename(rcount = n)
         
         rn$debate <- "right_nation_1"
@@ -933,23 +972,15 @@ server <- function(input, output, session) {
                 marker= list(color = 'rgb(158,202,225)',
                              line = list(color = 'rgb(8,48,107)',
                                          width = 1.5)), 
-                name = left_nation) %>% 
+                name = hh$left_nation) %>% 
           add_trace(y = ~right_nation_1, 
                     marker= list(color = 'rgb(58,200,225)',
                                  line = list(color = 'rgb(8,48,107)',
                                              width = 1.5)),
-                    name = right_nation) %>% 
+                    name = hh$right_nation) %>% 
           layout(yaxis = list(title = 'Count'), barmode = 'group') %>%
           config(displayModeBar = F)
-        
-        
-      } else {
-        empty_plot("Click on a bar to visualize each nation's counts over time")
-        
-        
-        
-      }
-    }) } 
+        }) } 
   
   
   
@@ -967,13 +998,7 @@ server <- function(input, output, session) {
   #gg
   #}
   
-  #top_speaker_title <- function(input, output) {
-  #    output$top_speaker_title <- renderText({
-  
-  #     paste("You have chosen a range that goes from",
-  #                                      input$range[1], "to", input$range[2])})
-  # }
-  
+
   output$top_speakers <- renderPlotly({ 
 
     top_speakers <- read_csv(paste0("~/projects/hansard-shiny/data/speakers/top_speakers_", input$top_speakers_df, ".csv"))
@@ -1003,7 +1028,8 @@ server <- function(input, output, session) {
     output$tbl4 <- renderPlotly({#renderPlot({
       s <- event_data("plotly_click", source = "subset")
       
-      if(!is.null(s)) {
+      validate(need(!is.null(s), "Click on a point to view the speaker's top words over time"))
+      
       NN <- NN[NN$words_per_day==s$y,]
       
       # read in this df first 
@@ -1031,15 +1057,12 @@ server <- function(input, output, session) {
       #  make plots same size : https://stackoverflow.com/questions/45696723/how-can-i-make-plotly-subplots-the-same-size-when-converting-from-facets-with-gg
       ggplotly(g) %>%
         #layout_ggplotly %>%
-        config(displayModeBar = F)}
-      else {
-        empty_plot("Click on a point to visualize the speaker's top words over time") }
-    }) 
-    }  
+        config(displayModeBar = F) }
+  ) }  
   
   
+  longest_speeches <- read_csv("~/projects/hansard-shiny/data/speakers/longest_speeches.csv")
   output$longest_speeches <- renderPlotly({ 
-    longest_speeches <- read_csv("~/projects/hansard-shiny/data/speakers/longest_speeches.csv")
     
     render_value_2(longest_speeches)
     
@@ -1066,17 +1089,11 @@ server <- function(input, output, session) {
     output$tbl5 <- renderDataTable({
       s <- event_data("plotly_click", source = "subset_2")
       
-      if (!is.null(s)) {
-      
-      return(datatable(NN[NN$count_per_speech==s$y,])) }
-      
-      else {
-        
-        datatable(directions_1,
-                  options = list(pageLength = 1, dom = 't'), rownames = FALSE)
-          
-      }
-      
+      validate(need(!is.null(s), "Click on a point to see PLACEHOLDER"))
+
+      return(datatable(NN[NN$count_per_speech==s$y,],
+                       options = list(dom = 'ip'),
+                       filter = list(position = "top"))) 
       }) } 
   
   
@@ -1096,13 +1113,15 @@ server <- function(input, output, session) {
   
   
   
+  viz <- read_csv("~/projects/hansard-shiny/speech_lengths_overview.csv")
+  hansard_speech_lengths <- read_csv("~/projects/hansard-shiny/speech_lengths.csv") #%>%
+    #rename(speech_length = n)
+  
   output$value_plot <- renderPlotly({
     
     if (input$drop_down_hist == "overview") {
       
-      viz <- read_csv("~/projects/hansard-shiny/speech_lengths_overview.csv")
-      
-      labs <- c("Short", "Mid-Range", "Long")
+      labs <- c("Short", "Mid-Length", "Long")
       
       plot <- ggplot(viz, 
                      aes(x = speech_length_type,
@@ -1125,28 +1144,19 @@ server <- function(input, output, session) {
       
     } else {
       
-      hansard <- read_csv("~/projects/hansard-shiny/speech_lengths.csv") %>%
-        rename(speech_length = n)
       
-      hansard <- hansard %>%
-        filter(decade == input$decade_hist)
-      
-      
-      if (input$drop_down_hist == "short") {
-        hansard <- hansard %>%
-          filter(speech_length > 0,
-                 speech_length < 50) } 
-      else if (input$drop_down_hist == "mid") {
-        hansard <- hansard %>%
-          filter(speech_length > 49,
-                 speech_length < 1000) }
-      else if (input$drop_down_hist == "long") {
-        hansard <- hansard %>%
-          filter(speech_length > 999) }
-      
-      d <- hansard %>%
-        group_by(speech_length) %>%
-        add_count(speech_length)
+      hansard_speech_lengths <- hansard_speech_lengths %>%
+        filter(decade == input$decade_hist) %>%
+        select(-decade)
+
+      hansard_speech_lengths <- hansard_speech_lengths %>%
+         filter(case_when(input$drop_down_hist == "short" ~ speech_length > 0 & speech_length < 50, 
+                          input$drop_down_hist == "mid" ~ speech_length > 49 & speech_length < 1000,
+                          input$drop_down_hist == "long" ~ speech_length > 999))
+       
+
+      d <- hansard_speech_lengths %>%
+        add_count(speech_length) 
       
       render_value_range_hist(d) 
       
@@ -1173,7 +1183,8 @@ server <- function(input, output, session) {
         
         s <- event_data("plotly_click", source = "YYY")
         
-        if(!is.null(s)) {
+        validate(need(!is.null(s), "Click on a bar to view binned speeches"))
+        
         
         if (input$drop_down_hist == "mid") {
           
@@ -1207,15 +1218,142 @@ server <- function(input, output, session) {
         d <- d %>%
           filter(speech_length < top,
                  speech_length > bottom)
-        } else {
         
-          datatable(directions_1,
-                    options = list(pageLength = 1, dom = 't'), rownames = FALSE)
-          
-      }}
+        datatable(d,
+                  options = list(dom = 'ip'),
+                  filter = list(position = "top"))
+      }
       
     })  
   }           
+  
+  
+  
+  
+  ######### speaker comparison
+  h <- read_csv("~/projects/hansard-shiny/speaker_comparison_speaker_count_for_app_2.csv")
+  
+  observe({
+    
+    h <- h %>%
+      filter(decade == input$sc_decade) %>%
+      distinct(decade, new_speaker, clean_new_speaker)
+    
+    updateRadioButtons(session, "sc_radio_buttons_top",
+                       choices = h$clean_new_speaker)
+    
+    updateRadioButtons(session, "sc_radio_buttons_bottom",
+                       choices = h$clean_new_speaker)
+    
+  })
+  
+  
+  
+  
+  tf_idf_b <- function(df, dct, dcb) {
+    
+    df <- df %>%
+      filter(clean_new_speaker == dct | clean_new_speaker == dcb) 
+    
+    df <- df %>%
+      ungroup()
+    
+    df <- df %>%
+      bind_tf_idf(ngrams, clean_new_speaker, n)
+    
+    df <- df %>%
+      select(-n) %>%
+      rename(n = tf_idf) 
+    
+    return(df)}
+  
+  
+  
+  output$speaker_comparison_top <- renderPlotly({
+    
+    h <- h %>%
+      filter(decade == input$sc_decade)
+             
+    
+    
+    if (input$sc_compare == "sc_top_words") {
+      xlab <- list(title ="Frequency")
+      
+    } else if (input$sc_compare == "sc_tf-idf") {
+      
+      h <- tf_idf_b(h, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom)
+      
+      xlab <- list(title ="tf-idf")
+    }
+    
+    h <- h %>%
+      filter(clean_new_speaker == input$sc_radio_buttons_top)
+    
+    
+    #write_csv(h, "~/debugg.csv")
+    
+    top <- h %>%
+      arrange(desc(n)) %>%
+      slice(1:20)
+
+    plot_ly(top, 
+            x = ~n, 
+            y = ~reorder(ngrams, n), 
+            type = 'bar', 
+            text = n,
+            orientation = "h",
+            marker = list(color = 'rgb(158,202,225)',
+                          line = list(color = 'rgb(8,48,107)',
+                                      width = 1.5))) %>%
+      layout(xaxis = list("placeholder"),
+             yaxis = list(title = "")) %>%
+      config(displayModeBar = F) 
+    })
+
+
+  
+  
+  output$speaker_comparison_bottom<- renderPlotly({
+    
+    h <- h %>%
+      filter(decade == input$sc_decade) 
+    
+    
+    if (input$sc_compare == "sc_top_words") {
+      xlab <- list(title ="Frequency")
+      
+    } else if (input$sc_compare == "sc_tf-idf") {
+      
+      h <- tf_idf_b(h, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom)
+      
+      xlab <- list(title ="tf-idf")
+    }
+    
+    h <- h %>%
+      filter(clean_new_speaker == input$sc_radio_buttons_bottom)
+    
+    
+    top <- h %>%
+      arrange(desc(n)) %>%
+      slice(1:20)
+
+    plot_ly(top, 
+            x = ~n, 
+            y = ~reorder(ngrams, n), 
+            type = 'bar', 
+            text = n,
+            orientation = "h",
+            marker = list(color = 'rgb(158,202,225)',
+                          line = list(color = 'rgb(8,48,107)',
+                                      width = 1.5))) %>%
+      layout(xaxis = list("placeholder"),
+             yaxis = list(title = "")) %>%
+      config(displayModeBar = F) 
+  })
+  
+  
+  
+  
   
 
   
@@ -1225,12 +1363,15 @@ server <- function(input, output, session) {
   
   #################### Debate Titles
   
+  words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
+  debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
+  
   import_debate_titles_data <- reactive( {
     
-    if (input$kw_list != "custom") {
-      kw_data <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_list_", input$kw_list, ".csv")) } 
-    else { 
-      kw_data <- data.frame() } })
+     if (input$kw_list != "custom") {
+       kw_data <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_list_", input$kw_list, ".csv")) } 
+     else { 
+       kw_data <- data.frame() } })
   
   keyword_addition <- function(d, input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6){
     
@@ -1238,32 +1379,22 @@ server <- function(input, output, session) {
     
     if (length(keywords != 0)) {
       
-      words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
-      debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
+      #words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
+      #debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
       
-      if (input$kw_list != "custom") {
+      if (input$kw_list != "custom") { 
         all_year_counts <- read_csv(paste0("~/projects/hansard-shiny/data/debates/all_year_counts_", input$kw_list, ".csv")) } 
       else {
-        all_year_counts <- data.frame()
-      }
+        all_year_counts <- read_csv("~/projects/hansard-shiny/data/debates/all_debate_titles_metadata.csv") }
       
-      # if all year counts has data 
-      
-      for(i in 1:length(keywords)){
-        
-        keyword <- keywords[i]
+      for (keyword in keywords) {
         
         debate_titles_w_keyword <- debate_title_year_counts %>%
-          filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b"), ignore_case = TRUE)))
-        
-        # if input keyword does not exist, else: 
-        #if (identical(debate_titles_w_keyword, debate_title_year_counts))
+          filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b|^", keyword, "\\b|\\b", keyword, "$"), ignore_case = TRUE)))
         
         year_count <- debate_titles_w_keyword %>%
           group_by(year) %>%
-          summarise(debates_per_year = n()) %>%
-          arrange(year) %>%
-          #mutate(keywords = input_keyword_addition)
+          summarise(debates_per_year = sum(n)) %>%
           mutate(keywords = keyword)
         
         all_year_counts <- bind_rows(all_year_counts, year_count) }
@@ -1271,7 +1402,7 @@ server <- function(input, output, session) {
       all_year_counts <- all_year_counts %>%
         left_join(words_per_year, by = "year") %>%
         mutate(proportion = debates_per_year/words_per_year)
-      
+
       return(all_year_counts) } else {
         return(d)
       }
@@ -1286,9 +1417,12 @@ server <- function(input, output, session) {
     
     d <- keyword_addition(d, input$keyword_addition, input$keyword_addition_word_2, input$keyword_addition_word_3, input$keyword_addition_word_4, input$keyword_addition_word_5, input$keyword_addition_word_6)
     
-    if(length(d) > 0) {
+    test <- stri_remove_empty(c(input$keyword_addition, input$keyword_addition_word_2, input$keyword_addition_word_3, input$keyword_addition_word_4, input$keyword_addition_word_5, input$keyword_addition_word_6), TRUE)
+
     
-    render_value_debate_titles(d)
+    validate(need(length(d) > 0, "Type words in the text boxes to visualize their proportion over time"))
+    
+    render_value_debate_titles(d, test)
     
     debate_titles_ggplot <- ggplot(data = d) +
       geom_col(aes(x = year, 
@@ -1311,55 +1445,71 @@ server <- function(input, output, session) {
     ggplotly(debate_titles_ggplot,
              source = "TEST",
              tooltip = "text") %>%
-      config(displayModeBar = F) }
-    
-    else {
-      
-      empty_plot("PLACEHOLDER")
-    }
-    
-    
+      config(displayModeBar = F)
     })
   
   
-  render_value_debate_titles = function(NN){
+  render_value_debate_titles = function(NN, ...){
     output$debate_titles_DT <- renderDT({
       s <- event_data("plotly_click", source = "TEST")
       
-      if (!is.null(s)) {
+      validate(need(!is.null(s), "Click on a bar to view the debates containing a keyword for that year"))
       
       if (input$kw_list != "custom") {
-        metadata <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_metadata_", input$kw_list, ".csv")) } 
+        metadata <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_metadata_", input$kw_list, ".csv")) 
+        test_2 <- left_join(metadata, NN, by = c("keywords", "year")) }
+        
+        
+        
       else {
-        metadata <- data.frame()
-      }
+        
+        m <- read_csv("~/projects/hansard-shiny/data/debates/metadata_debate_titles.csv") %>%
+          select(debate, year)
+        
+        out <- data.frame()
+        
+        
+        for(i in 1:length(...)) {
+          
+          keyword <- ...[i]
+        
+          debate_titles_w_keyword <- m %>%
+            filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b|^", keyword, "\\b|\\b", keyword, "$"), ignore_case = TRUE))) %>%
+            mutate(keywords = keyword)
+          
+          out <- bind_rows(debate_titles_w_keyword, out)
+
+          
+        }
+        
+        
+        
+        test_2 <- left_join(out, NN, by = c("keywords", "year", "debate"))
+        
+      } 
+        
+        
+ 
       
-      test_2 <- left_join(metadata, NN, by = c("keywords", "year"))
       
       test_2 <- test_2 %>%
         select(-debates_per_year, -words_per_year, -proportion)
       
       datatable(test_2[test_2$year==s$x,],
                 options = list(dom = 'ip'),
-                filter = list(position = "top")) }
+                filter = list(position = "top"))
       
-      else {
-        datatable(directions_1,
-                  options = list(pageLength = 1, 
-                                 dom = 't'),
-                  rownames = FALSE)
-      }
-      
+  
       }) }
   
   
   ### NExt 
   
   
+  longest_debates <- read_csv("~/projects/hansard-shiny/data/debates/longest_debates.csv")
   zz <- read_csv("~/projects/hansard-shiny/clean_longest_debates_wordcloud.csv")
   
   output$longest_debates <- renderPlotly({ 
-    longest_debates <- read_csv("~/projects/hansard-shiny/data/debates/longest_debates.csv")
     
     render_value_3(longest_debates)
     render_value_4(longest_debates, zz)
@@ -1387,14 +1537,11 @@ server <- function(input, output, session) {
     output$tbl6 <- renderUI({
       s <- event_data("plotly_click", source = "subset_3")
 
-      
       NN <- NN %>%
         filter(words_per_debate == s$y,
                speechdate == s$x) %>%
         select(-decade, -decade_ranking, -year_ranking)
-      
 
-      
         str1 <- paste(NN$debate)
         str2 <- paste(NN$debate_id)
         str3 <- paste(NN$speechdate)
@@ -1404,13 +1551,6 @@ server <- function(input, output, session) {
                    "Debate ID:", str2, "<br>",
                    "Speech Date:", str3, "<br>",
                    "Words Per Debate:", str4))
-      
-      
-     # return(datatable(NN,
-    #                   options = list(pageLength = 1, dom = 'tip'), rownames = FALSE))
-      
-    #  return(datatable(NN[NN$words_per_debate==s$y,] & NN[NN$speechdate == s$x,],
-     #                  options = list(pageLength = 5, dom = 'tip'), rownames = FALSE))
     }) } 
   
   
@@ -1420,7 +1560,7 @@ server <- function(input, output, session) {
     output$tbl99 <- renderPlot({
       s <- event_data("plotly_click", source = "subset_3")
       
-      if(!is.null(s)) {
+      validate(need(!is.null(s), "Click on a point to view the debate's top words."))
       
       NN <- NN %>%
         filter(words_per_debate == s$y,
@@ -1439,37 +1579,16 @@ server <- function(input, output, session) {
         ggtitle(paste0("Top words in ", zz$debate)) + 
         theme(plot.title = element_text(hjust = 0.5,
                                         size=22,
-                                        vjust= -10)) }
-      else {
-        
-        empty_ggplot("Click on a point to view the top words in the debate.")
-        
-        
-      }
+                                        vjust= -10))
       
       }) }
   
-  
-  
-  
-  
-  
- 
-  
-  
-  
-  
-  
-  
+  c <- read_csv("~/projects/hansard-shiny/treemap_1880.csv")
   output$treemap <- renderPlotly({
-    
-    c <- read_csv("~/projects/hansard-shiny/treemap_1880.csv")
-    
     
     a <- c$a
     b <- c$b
     values <- c$d
-    
     
     plot_ly(
       type="treemap",
@@ -1477,7 +1596,9 @@ server <- function(input, output, session) {
       parents = b,
       values = values) %>%
       layout(height = 600, width = 1000, treemapcolorway=c("3CBB75FF","2D708EFF", "FDE725FF", "481567FF", "1F968BFF")) %>%
-      config(displayModeBar = F)})
+      config(displayModeBar = F)
+    
+    })
   
   
   
@@ -1489,24 +1610,20 @@ server <- function(input, output, session) {
   
   # Collocates
   
-  filter_sentiment <- function(df, sw){
-    if(sw == 'All') {
-      return (df) } else if(sw == 'Positive') {
-        df <- df %>%
-          filter(sentiment == 'Positive') 
-        return(df)} else if(sw == 'Negative') {
-          df <- df %>%
-            filter(sentiment == 'Negative')
-          return(df) } }
   
+  filter_sentiment <- function(df, sw) {
+    if(sw == "All") {
+      return(df) }
+    df <- df %>%
+      filter(sentiment == sw)
+    return (df) }
+  
+
   filter_noun <- function(df, nnn) {
     if(nnn == 'All') {
       return(df) } else {
         df <- df %>%
           filter(str_detect(grammatical_collocates, paste0(" ", nnn))) } }
-  
-  
-  
   
   observe({
     if (input$special_vocabulary == "property") {
@@ -1555,18 +1672,15 @@ server <- function(input, output, session) {
   
   ##################### collocates
   
-  import_collocates_data <- reactive({
+  import_collocates_data <- reactive({ 
     collocates_data <- read_csv(paste0("~/projects/hansard-shiny/data/collocates/", input$special_vocabulary, "_collocates.csv")) })
-  
-  
   
   output$collocates_top <- renderPlotly({
     
     collocates <- import_collocates_data() #read_csv("~/projects/hansard-shiny/data/collocates/property_collocates.csv")
     
     collocates <- filter_sentiment(collocates, input$sentiment)
-    
-    
+
     collocates <- filter_noun(collocates, input$noun)
     
     if (input$collocate_measure == "count") {
@@ -1577,8 +1691,6 @@ server <- function(input, output, session) {
       collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
       
       xlab <- list(title ="tf-idf")
-      #write_csv(collocates, "~/debug.csv")
-      
     }
     
     collocates <- collocates %>%
@@ -1820,8 +1932,8 @@ server <- function(input, output, session) {
     out <- data.frame()
     il_decades <- decades
     
-    for(d in 1:length(il_decades)) {
-      fdecade <- il_decades[d] 
+    for(fdecade in il_decades) {
+      #fdecade <- il_decades[d] 
       
       table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
@@ -1863,9 +1975,9 @@ server <- function(input, output, session) {
 
     cycle = 0
     
-    for(d in 1:length(decades)) {
+    for(fdecade in decades) {
       cycle = cycle + 1
-      fdecade <- decades[d] 
+      #fdecade <- decades[d] 
       
       table <- paste0("~/projects/hansard-shiny/data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
       # table <- paste0("~/projects/hansard-shiny/hansard_word_vectors_1800.txt")
@@ -1896,18 +2008,13 @@ server <- function(input, output, session) {
     
     if ( nrow(b) >= 8 && ncol(out) == 3 ) { 
       
-      out$all_sim <- (out$similarity1 - out$similarity2)
+      out$all_sim <- abs(out$similarity1 - out$similarity2)
       
       out <- out %>%
         drop_na()
       
-      out$all_sim <- abs(out$all_sim)   
-      
       out <- out %>%
         arrange(desc(all_sim))
-      
-     # out <- out %>% # just added
-    #    slice(20:28)
       
       return(out) } else {
         
@@ -1969,7 +2076,7 @@ server <- function(input, output, session) {
                             tickmode = "array", 
                             tickvals = c(1800, 1810, 1820, 1830, 1840, 1850, 1860),
                             dtick = 10),
-               yaxis = list(rangemode = "tozero"),
+               #yaxis = list(rangemode = "tozero"),
                title = paste0("Relationship of ", "\"", ff, "\"", " to ", "\"", input$wv_textbox, "\"", " over time")) %>%
         config(displayModeBar = F) } else {
           
@@ -2010,22 +2117,16 @@ server <- function(input, output, session) {
       "The number of recorded debates grew significantly over the course of the 19th-century.
       Therefore, we use proportion to measure which subjects were given more attention over time.
       Using proportion adjusts the results for the possibility that any subject might be addressed more often because the number of debates increased, 
-      not because more time was spent on the subject.",
+      not because more time was spent on one subject relative to another.",
       br(),
       p(),
       strong("Controls:"),
       "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start your analysis with an empty plot",
       br(),
-      p(),
-      "Type search terms into each text box to add them to the plot.
-      The search terms can be one or more words.",
-      br(),
-      p(),
-      "Click on a column in the plot to view the debate titles containing keywords for that for that year.",
-      br(),
-      p(),
-      "With the debate viewer open, use the search box to find debates containing terms, and the the buttons below the debate viewer to navigate through the results.",
-      br(),
+      p("Type search terms into the text boxes to add them to the plot.
+      The search terms can be one or more words.",),
+      p("Click on a column in the plot to view the debate titles containing keywords for that for that year."),
+      p("With the debate viewer open, use the search box to find debates containing terms, and the the buttons below the debate viewer to navigate through the results."),
       p(),
       strong("Measurement:"),
       "Proportion is found by"))
@@ -2116,8 +2217,49 @@ server <- function(input, output, session) {
     })
   
   
+  #################### Download Handlers ##################################################################################
+  ########################################################################################################################
   
-  
+  # data <- mtcars
+  # 
+  # output$download_network <- downloadHandler(
+  #   filename = function() {
+  #     paste("data-", Sys.Date(), ".csv", sep="")
+  #   },
+  #   content = function(file) {
+  #     write.csv(data, file)
+  #   }
+  # )
+  # 
+  # 
+  # 
+  #  
+  # output$downloadPlot <- downloadHandler(
+  #   filename = function() { paste(input$dataset, '.png', sep='') },
+  #   content = function(file) {
+  #     device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
+  #     ggsave(file, plot = plotInput(), device = device)
+  #   }
+  # )
+  # 
+  # 
+  # output$download_debate_titles <- downloadHandler(
+  #   filename = function() {
+  #     paste("A", Sys.Date(), ".jpg", sep="")
+  #   },
+  #   content = function(file) {
+  #     device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
+  #     ggsave(file, plot = input$debate_titles, device = device)
+  #   }
+  # )
+  # 
+  # output$download_debate_titles <- downloadHandler(
+  #   filename = function(){paste("input$debate_titles",'.png',sep='')},
+  #   content = function(file){
+  #     ggsave(file,plot=input$debate_titles)
+  #   }
+  # )
+  # 
   
   
   
