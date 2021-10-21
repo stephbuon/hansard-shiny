@@ -479,6 +479,10 @@ ui <- fluidPage(
                                                      "5" = "5"),
                                                    selected = "2"),
                                      textInput("sc_custom_search_bottom", "Custom Search:", ""),
+                                     actionButton('download_speaker_comparison', 
+                                                  "Download Plot",
+                                                  style = "width: 179px;"
+                                     ),
                                      
                                      width = 2),
                                  mainPanel(plotlyOutput("speaker_comparison_top"),
@@ -880,7 +884,7 @@ server <- function(input, output, session) {
   
   output$tbl <- renderDT({
     
-    validate(need(!is.null(input$current_node_selection), "Click on a point to see PLACEHOLDER"))
+    validate(need(!is.null(input$current_node_selection), "Click on a node to see its context"))
       
       # e1 <- e1 %>%
       #    filter(from_name %in% input$subreddit | to_name %in% input$subreddit)
@@ -1009,6 +1013,7 @@ server <- function(input, output, session) {
             x = ~speechdate, 
             y = ~words_per_day,
             source = "subset",
+            type = "scatter",
             marker = list(
               color = 'LightSkyBlue',
               size = 7,
@@ -1070,6 +1075,7 @@ server <- function(input, output, session) {
             x = ~speechdate, 
             y = ~count_per_speech,
             source = "subset_2",
+            type = "scatter",
             marker = list(
               color = 'LightSkyBlue',
               size = 7,
@@ -1517,6 +1523,7 @@ server <- function(input, output, session) {
     plot_ly(data = longest_debates, 
             x = ~speechdate, 
             y = ~words_per_debate,
+            type = "scatter",
             source = "subset_3",
             marker = list(
               color = 'LightSkyBlue',
@@ -1668,10 +1675,7 @@ server <- function(input, output, session) {
   
   
   
-  
-  
-  ##################### collocates
-  
+
   import_collocates_data <- reactive({ 
     collocates_data <- read_csv(paste0("~/projects/hansard-shiny/data/collocates/", input$special_vocabulary, "_collocates.csv")) })
   
@@ -1723,6 +1727,9 @@ server <- function(input, output, session) {
     
     collocates <- filter_sentiment(collocates, input$sentiment)
     
+    collocates <- filter_noun(collocates, input$noun) # just added
+    
+    
     if (input$collocate_measure == "count") {
       
       xlab <- list(title ="Frequency")
@@ -1732,8 +1739,7 @@ server <- function(input, output, session) {
       collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
       
       xlab <- list(title ="tf-idf")
-      #write_csv(collocates, "~/debug.csv")
-      
+
     }
     
     
@@ -2065,8 +2071,11 @@ server <- function(input, output, session) {
     }
     
     if (isTruthy(input$wv_textbox)) {
-      plot_ly(data = out, x = ~decade, y = ~similarity,
+      plot_ly(data = out, 
+              x = ~decade, 
+              y = ~similarity,
               mode = "lines+markers",
+              type = "scatter",
               line = list(color = "black", width = 1),
               marker = list(color = 'rgb(158,202,225)',
                             size = 15,
@@ -2215,52 +2224,6 @@ server <- function(input, output, session) {
       p(),
       "\"jsd\" is a " ))
     })
-  
-  
-  #################### Download Handlers ##################################################################################
-  ########################################################################################################################
-  
-  # data <- mtcars
-  # 
-  # output$download_network <- downloadHandler(
-  #   filename = function() {
-  #     paste("data-", Sys.Date(), ".csv", sep="")
-  #   },
-  #   content = function(file) {
-  #     write.csv(data, file)
-  #   }
-  # )
-  # 
-  # 
-  # 
-  #  
-  # output$downloadPlot <- downloadHandler(
-  #   filename = function() { paste(input$dataset, '.png', sep='') },
-  #   content = function(file) {
-  #     device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
-  #     ggsave(file, plot = plotInput(), device = device)
-  #   }
-  # )
-  # 
-  # 
-  # output$download_debate_titles <- downloadHandler(
-  #   filename = function() {
-  #     paste("A", Sys.Date(), ".jpg", sep="")
-  #   },
-  #   content = function(file) {
-  #     device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
-  #     ggsave(file, plot = input$debate_titles, device = device)
-  #   }
-  # )
-  # 
-  # output$download_debate_titles <- downloadHandler(
-  #   filename = function(){paste("input$debate_titles",'.png',sep='')},
-  #   content = function(file){
-  #     ggsave(file,plot=input$debate_titles)
-  #   }
-  # )
-  # 
-  
   
   
 }
