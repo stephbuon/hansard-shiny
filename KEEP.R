@@ -1119,8 +1119,8 @@ server <- function(input, output, session) {
   
   
   
-  viz <- read_csv("~/projects/hansard-shiny/speech_lengths_overview.csv")
-  hansard_speech_lengths <- read_csv("~/projects/hansard-shiny/speech_lengths.csv") #%>%
+  viz <- read_csv("~/projects/hansard-shiny/data/speakers/speech_lengths_overview.csv")
+  hansard_speech_lengths <- read_csv("~/projects/hansard-shiny/data/speakers/speech_lengths.csv") #%>%
     #rename(speech_length = n)
   
   output$value_plot <- renderPlotly({
@@ -1237,7 +1237,7 @@ server <- function(input, output, session) {
   
   
   ######### speaker comparison
-  h <- read_csv("~/projects/hansard-shiny/speaker_comparison_speaker_count_for_app_2.csv")
+  h <- read_csv("~/projects/hansard-shiny/data/speakers/speaker_comparison_speaker_count_for_app_2.csv")
   
   observe({
     
@@ -1311,7 +1311,7 @@ server <- function(input, output, session) {
             marker = list(color = 'rgb(158,202,225)',
                           line = list(color = 'rgb(8,48,107)',
                                       width = 1.5))) %>%
-      layout(xaxis = list("placeholder"),
+      layout(xaxis = xlab,
              yaxis = list(title = "")) %>%
       config(displayModeBar = F) 
     })
@@ -1352,7 +1352,7 @@ server <- function(input, output, session) {
             marker = list(color = 'rgb(158,202,225)',
                           line = list(color = 'rgb(8,48,107)',
                                       width = 1.5))) %>%
-      layout(xaxis = list("placeholder"),
+      layout(xaxis = xlab,
              yaxis = list(title = "")) %>%
       config(displayModeBar = F) 
   })
@@ -1370,7 +1370,7 @@ server <- function(input, output, session) {
   #################### Debate Titles
   
   words_per_year <- read_csv("~/projects/hansard-shiny/data/debates/words_per_year.csv")
-  debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
+  debate_title_year_counts <- read_csv("~/projects/hansard-shiny/data/debates/debate_title_year_counts.csv")
   
   import_debate_titles_data <- reactive( {
     
@@ -1397,6 +1397,11 @@ server <- function(input, output, session) {
         
         debate_titles_w_keyword <- debate_title_year_counts %>%
           filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b|^", keyword, "\\b|\\b", keyword, "$"), ignore_case = TRUE)))
+        
+       # year_count <- debate_titles_w_keyword %>%
+      #    group_by(year) %>%
+      #    summarise(debates_per_year = sum(year_count)) %>% 
+      #    mutate(keywords = keyword)
         
         year_count <- debate_titles_w_keyword %>%
           group_by(year) %>%
@@ -1455,6 +1460,9 @@ server <- function(input, output, session) {
     })
   
   
+  m <- read_csv("~/projects/hansard-shiny/data/debates/all_debate_titles_metadata.csv") %>%
+    select(debate, year, year_count)
+  
   render_value_debate_titles = function(NN, ...){
     output$debate_titles_DT <- renderDT({
       s <- event_data("plotly_click", source = "TEST")
@@ -1464,20 +1472,15 @@ server <- function(input, output, session) {
       if (input$kw_list != "custom") {
         metadata <- read_csv(paste0("~/projects/hansard-shiny/data/debates/kw_metadata_", input$kw_list, ".csv")) 
         test_2 <- left_join(metadata, NN, by = c("keywords", "year")) }
-        
-        
-        
       else {
         
-        m <- read_csv("~/projects/hansard-shiny/data/debates/metadata_debate_titles.csv") %>%
-          select(debate, year)
-        
         out <- data.frame()
-        
-        
+               
         for(i in 1:length(...)) {
           
           keyword <- ...[i]
+
+          validate(need(!is.na(keyword), "Click on a bar to view the debates containing a keyword for that year"))
         
           debate_titles_w_keyword <- m %>%
             filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b|^", keyword, "\\b|\\b", keyword, "$"), ignore_case = TRUE))) %>%
@@ -1488,15 +1491,16 @@ server <- function(input, output, session) {
           
         }
         
+
+        NN <- NN %>%
+          select(-year_count)
         
         
         test_2 <- left_join(out, NN, by = c("keywords", "year", "debate"))
+
         
       } 
-        
-        
- 
-      
+  
       
       test_2 <- test_2 %>%
         select(-debates_per_year, -words_per_year, -proportion)

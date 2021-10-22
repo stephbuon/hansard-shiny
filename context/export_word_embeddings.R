@@ -18,7 +18,7 @@ files <- list.files(path = dir, pattern = "hansard_decades_text2vec", full.names
 
 for (file in files){
   hansard_decade_subset <- read_csv(file)
-  #hansard_decade_subset <- read_csv("/scratch/group/pract-txt-mine/sbuongiorno/hansard_decades_text2vec_subsets/hansard_decades_text2vec1803_1807.csv")
+  hansard_decade_subset <- read_csv("/scratch/group/pract-txt-mine/sbuongiorno/hansard_decades_text2vec_subsets/hansard_decades_text2vec1803_1807.csv")
   
   hansard_decade_subset <- hansard_decade_subset %>%
     filter(!grepl("[[:digit:]]", ngrams))
@@ -70,7 +70,7 @@ for (file in files){
   # 
   
   
-  #print("Transfering words from index")
+  print("Transfering words from index")
   #hansard_word_vectors$word <- rownames(hansard_word_vectors)
   
   #print("Casting matrix to DF")
@@ -90,6 +90,3 @@ for (file in files){
   write.table(hansard_word_vectors, file=fname)#, row.names=F, col.names=F)
   
 }
-
-
-
