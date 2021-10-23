@@ -45,7 +45,7 @@ library(scales)
 
 vals = reactiveValues(btn = FALSE, text = FALSE)
 vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
-
+bottom_vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
 
 search_svo <- function(df, s, v, o) {
   if(s == "" & v == "" & o == "") {
@@ -1215,11 +1215,11 @@ server <- function(input, output, session) {
     vals_speaker_comparison$btn = FALSE
     vals_speaker_comparison$text = TRUE })
 
-  observeEvent(input$sc_radio_buttons_top,{
+  observeEvent(input$sc_radio_buttons_bottom,{
     bottom_vals_speaker_comparison$btn = TRUE
     bottom_vals_speaker_comparison$text = FALSE })
   
-  observeEvent(input$sc_custom_search_top,{
+  observeEvent(input$sc_custom_search_bottom,{
     bottom_vals_speaker_comparison$btn = FALSE
     bottom_vals_speaker_comparison$text = TRUE })
   
@@ -1268,7 +1268,7 @@ server <- function(input, output, session) {
   
   output$speaker_comparison_top <- renderPlotly({
     
-    if(vals_speaker_comparison$btn) {
+    if(vals_speaker_comparison$btn & bottom_vals_speaker_comparison$btn) {
       j <- h 
       j <- j  %>%
         filter(decade == input$sc_decade)
@@ -1282,7 +1282,7 @@ server <- function(input, output, session) {
       j <- j %>%
         filter(clean_new_speaker == input$sc_radio_buttons_top) }
     
-    else if (vals_speaker_comparison$text != "") {
+    else if (vals_speaker_comparison$text != "" & bottom_vals_speaker_comparison$btn ) {
       jj <- j[.(as.numeric(input$sc_decade))] # .09 seconds 
       
       setkey(jj, clean_new_speaker)
@@ -1294,7 +1294,11 @@ server <- function(input, output, session) {
         j <- tf_idf_b(jj, input$sc_custom_search_top, input$sc_radio_buttons_bottom)
         xlab <- list(title ="tf-idf")
    
+      } else if (vals_speaker_comparison$btn & bottom_vals_speaker_comparison$text) {
+        
       }
+      
+      
     }
     
 
@@ -1306,8 +1310,6 @@ server <- function(input, output, session) {
       top <- j %>%
         arrange(desc(n)) %>%
         slice(1:20) 
-      
-      print(top)
       
       } else {
           
