@@ -15,14 +15,16 @@ test <- within(test, {
   geograpthy[f] <- 'Europe'
 }) 
 
+test$nation <- str_replace_all(test$nation, "_", " ")
 
 
 test$geograpthy <- str_replace(test$geograpthy, "Britain", "UK")
 test$geograpthy <- str_replace(test$geograpthy, "Australia", "Oceania")
 
+dec <- 1830
 
 test_2 <- test %>%
-  filter(decade == 1800) %>%
+  filter(decade == dec) %>%
   rename(labels = concern,
          parents = nation) %>%
   select(-sentence_id, -n)
@@ -90,8 +92,6 @@ values <- append(ggg, values)
 a <- append("", a)
 b <- append("", b)
 
-write_csv(c, "~/projects/hansard-shiny/treemap_1880.csv")
-
 
 fig <- plot_ly(
   type="treemap",
@@ -101,3 +101,6 @@ fig <- plot_ly(
   
 )
 fig
+
+
+write_csv(c, paste0("~/projects/hansard-shiny/treemap_", dec, ".csv"))

@@ -43,7 +43,9 @@ library(scales)
 
 
 
-vals=reactiveValues(btn=FALSE,text=FALSE)
+vals = reactiveValues(btn = FALSE, text = FALSE)
+vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
+
 
 search_svo <- function(df, s, v, o) {
   if(s == "" & v == "" & o == "") {
@@ -89,6 +91,8 @@ str1 <- "<h4>Debates: 173,275</h4>"
 str2 <- "<h4>Speakers: X</h4>"
 str3 <- "<h4>Sentences: 10,979,009</h4>"
 
+
+
 ui <- fluidPage(
   
   tags$head(tags$style(HTML(".shiny-output-error-validation { 
@@ -100,8 +104,7 @@ ui <- fluidPage(
   #theme = bs_theme(bootswatch = "litera"),
   
   navbarPage("The Hansard Parliamentary Debates",
-             
-             
+
              tabPanel("Introduction",
                       splitLayout(cellWidths = c("75%", "25%"),
                                   cellArgs = list(style = "padding: 6px"),
@@ -451,7 +454,7 @@ ui <- fluidPage(
                                                      "3" = "3",
                                                      "4" = "4",
                                                      "5" = "5"),
-                                                   selected = "2"),
+                                                   selected = "1"),
                                      textInput("sc_custom_search_bottom", "Custom Search:", ""),
                                      actionButton('download_speaker_comparison', 
                                                   "Download Plot",
@@ -500,28 +503,17 @@ ui <- fluidPage(
                                    
                                    mainPanel(plotlyOutput("debate_titles"),
                                              
-                                             
-                                             tags$script('
-              document.getElementById("download").onclick = function() {
-              var gd = document.getElementById("debate_titles");
-              Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
-                var a = window.document.createElement("a");
-                a.href = url; 
-                a.type = "image/png";
-                a.download = "plot.png";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);                      
-              });
-              }
-              '),
-                                             
-                                             
-                                             
-                                             
-                                             
-                                             
-                                             
+                                             tags$script('document.getElementById("download").onclick = function() {
+                                             var gd = document.getElementById("debate_titles");
+                                             Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
+                                             var a = window.document.createElement("a");
+                                             a.href = url; 
+                                             a.type = "image/png";
+                                             a.download = "plot.png";
+                                             document.body.appendChild(a);
+                                             a.click();
+                                             document.body.removeChild(a); }); }'),
+                                            
                                              br(),
                                              br(),
                                              DTOutput('debate_titles_DT')))),
@@ -1213,20 +1205,37 @@ server <- function(input, output, session) {
   
   ######### speaker comparison
   h <- fread("~/projects/hansard-shiny/data/speakers/speaker_comparison_speaker_count_for_app_2.csv")
+  j <- fread("~/projects/hansard-shiny/clean_clean_tokenized_hansard_counts.csv", key = "decade")
+  
+  observeEvent(input$sc_radio_buttons_top,{
+    vals_speaker_comparison$btn = TRUE
+    vals_speaker_comparison$text = FALSE })
+  
+  observeEvent(input$sc_custom_search_top,{
+    vals_speaker_comparison$btn = FALSE
+    vals_speaker_comparison$text = TRUE })
+
+  observeEvent(input$sc_radio_buttons_top,{
+    bottom_vals_speaker_comparison$btn = TRUE
+    bottom_vals_speaker_comparison$text = FALSE })
+  
+  observeEvent(input$sc_custom_search_top,{
+    bottom_vals_speaker_comparison$btn = FALSE
+    bottom_vals_speaker_comparison$text = TRUE })
+  
+  
+  
   
   observe({
-    
     h <- h %>%
       filter(decade == input$sc_decade) %>%
       distinct(decade, new_speaker, clean_new_speaker)
-    
-    updateRadioButtons(session, "sc_radio_buttons_top",
-                       choices = h$clean_new_speaker)
-    
-    updateRadioButtons(session, "sc_radio_buttons_bottom",
-                       choices = h$clean_new_speaker)
-    
-  })
+      
+      updateRadioButtons(session, "sc_radio_buttons_top",
+                         choices = h$clean_new_speaker)
+      
+      updateRadioButtons(session, "sc_radio_buttons_bottom",
+                         choices = h$clean_new_speaker) })
   
   
   
@@ -1241,41 +1250,78 @@ server <- function(input, output, session) {
     
     df <- df %>%
       bind_tf_idf(ngrams, clean_new_speaker, n)
+
     
     df <- df %>%
       select(-n) %>%
       rename(n = tf_idf) 
     
-    return(df)}
+    return(df) }
   
   
+  
+  
+  # button, button
+  # text, button
+  # button, text
+  # text, text 
   
   output$speaker_comparison_top <- renderPlotly({
     
-    h <- h %>%
-      filter(decade == input$sc_decade)
-             
+    if(vals_speaker_comparison$btn) {
+      j <- h 
+      j <- j  %>%
+        filter(decade == input$sc_decade)
+      
+      if (input$sc_compare == "sc_top_words") {
+        xlab <- list(title ="Frequency") } 
+      else if (input$sc_compare == "sc_tf-idf") {
+        j <- tf_idf_b(j, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) 
+        xlab <- list(title ="tf-idf") } 
+      
+      j <- j %>%
+        filter(clean_new_speaker == input$sc_radio_buttons_top) }
     
-    
-    if (input$sc_compare == "sc_top_words") {
-      xlab <- list(title ="Frequency")
+    else if (vals_speaker_comparison$text != "") {
+      jj <- j[.(as.numeric(input$sc_decade))] # .09 seconds 
       
-    } else if (input$sc_compare == "sc_tf-idf") {
-      
-      h <- tf_idf_b(h, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom)
-      
-      xlab <- list(title ="tf-idf")
+      setkey(jj, clean_new_speaker)
+      j <- jj[.(as.character(input$sc_custom_search_top))]
+
+      if (input$sc_compare == "sc_top_words") {
+        xlab <- list(title ="Frequency") } 
+      else if (input$sc_compare == "sc_tf-idf") {
+        j <- tf_idf_b(jj, input$sc_custom_search_top, input$sc_radio_buttons_bottom)
+        xlab <- list(title ="tf-idf")
+   
+      }
     }
     
-    h <- h %>%
-      filter(clean_new_speaker == input$sc_radio_buttons_top)
+
+    
+    if(vals_speaker_comparison$btn) { 
+      
+      j <- as.data.frame(j)
+      
+      top <- j %>%
+        arrange(desc(n)) %>%
+        slice(1:20) 
+      
+      print(top)
+      
+      } else {
+          
+          
+          j <- j[order(j, -n)]
+          top <- j[1:20]  }
     
     
-    #write_csv(h, "~/debugg.csv")
+    if(vals_speaker_comparison$btn){
+      ff <- input$sc_radio_buttons_top
+    } else {
+      ff <- input$sc_custom_search_top
+    }
     
-    top <- h %>%
-      arrange(desc(n)) %>%
-      slice(1:20)
 
     plot_ly(top, 
             x = ~n, 
@@ -1286,33 +1332,34 @@ server <- function(input, output, session) {
             marker = list(color = 'rgb(158,202,225)',
                           line = list(color = 'rgb(8,48,107)',
                                       width = 1.5))) %>%
-      layout(xaxis = xlab,
+      layout(title = ff,
+             xaxis = list(title = xlab),
              yaxis = list(title = "")) %>%
       config(displayModeBar = F) 
     })
 
-
   
   
-  output$speaker_comparison_bottom<- renderPlotly({
+  
+  output$speaker_comparison_bottom <- renderPlotly({
     
     h <- h %>%
       filter(decade == input$sc_decade) 
     
-    
     if (input$sc_compare == "sc_top_words") {
-      xlab <- list(title ="Frequency")
-      
-    } else if (input$sc_compare == "sc_tf-idf") {
-      
-      h <- tf_idf_b(h, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom)
-      
-      xlab <- list(title ="tf-idf")
-    }
+      xlab <- list(title ="Frequency") } 
+    
+    else if (input$sc_compare == "sc_tf-idf") {
+      if(vals_speaker_comparison$btn) {
+        h <- tf_idf_b(h, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) 
+        xlab <- list(title ="tf-idf") } 
+      else {
+        h <- tf_idf_b(j, input$sc_custom_search_top, input$sc_radio_buttons_bottom) 
+        xlab <- list(title ="tf-idf") } } 
     
     h <- h %>%
       filter(clean_new_speaker == input$sc_radio_buttons_bottom)
-    
+
     
     top <- h %>%
       arrange(desc(n)) %>%
@@ -1569,7 +1616,7 @@ server <- function(input, output, session) {
       
       }) }
   
-  c <- fread("~/projects/hansard-shiny/data/nations/treemap_1880.csv")
+  c <- fread("~/projects/hansard-shiny/data/nations/treemap_1800.csv")
   output$treemap <- renderPlotly({
     
     a <- c$a
@@ -2102,7 +2149,7 @@ server <- function(input, output, session) {
       "Use the \"Keywords List\" drop down box to select a scholar curated vocabulary list, or choose \"Blank Plot\" to start your analysis with an empty plot",
       br(),
       p("Type search terms into the text boxes to add them to the plot.
-      The search terms can be one or more words.",),
+      The search terms can be one or more words."),
       p("Click on a column in the plot to view the debate titles containing keywords for that for that year."),
       p("With the debate viewer open, use the search box to find debates containing terms, and the the buttons below the debate viewer to navigate through the results."),
       p(),
