@@ -20,9 +20,6 @@
 
 # add favorite words for speaker -- click on point and return DF with that info 
 
-#library(bslib) # for more themes
-#library(ggrepel)
-
 # triples network could instead be nations 
 
 library(shiny)
@@ -41,16 +38,12 @@ library(text2vec)
 library(ggwordcloud)
 library(scales)
 
+#library(bslib) # for more themes
+#library(ggrepel)
+
+
 modules_dir <- "~/projects/hansard-shiny/modules/"
-
-source(paste0(modules_dir, "introduction/introduction.R"))
 source(paste0(modules_dir, "nation-concerns/nation_concerns.R"))
-source(paste0(modules_dir, "similarity/similarity.R"))
-
-
-
-
-
 
 
 vals = reactiveValues(btn = FALSE, text = FALSE)
@@ -95,11 +88,11 @@ n1 <- n1 %>%
 
 ########### UI 
 
-# 
-# counts <- "<h3>Count Totals:</h3>"
-# str1 <- "<h4>Debates: 173,275</h4>"
-# str2 <- "<h4>Speakers: X</h4>"
-# str3 <- "<h4>Sentences: 10,979,009</h4>"
+
+counts <- "<h3>Count Totals:</h3>"
+str1 <- "<h4>Debates: 173,275</h4>"
+str2 <- "<h4>Speakers: X</h4>"
+str3 <- "<h4>Sentences: 10,979,009</h4>"
 
 
 
@@ -116,8 +109,27 @@ ui <- fluidPage(
   navbarPage("The Hansard Parliamentary Debates",
 
              tabPanel("Introduction",
-                      introduction_ui("ndbs")),
- 
+                      splitLayout(cellWidths = c("75%", "25%"),
+                                  cellArgs = list(style = "padding: 6px"),
+                                  plotlyOutput("ndbs"),
+                                  HTML(paste(counts, str1, str2, str3, sep = '<br/>'))),
+                      fluidRow(column(width = 7, 
+                                      offset = 1,
+                                      br(),
+                                      p(),
+                                      br(),
+                                      p("Tools for mining text can open a window onto politics making what happens in government more transparent to citizens."),
+                                      p("This protoype app belongs to a preliminary series of public-facing web apps designed to show the language features of debates. 
+                                      Users can apply an array of data-mining and statistical tools to gain insight into the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts."),
+                                      strong("Controls:"),
+                                      "Use the navigation bar at the top of the page to change between different views of the Hansard corpus.",
+                                      br(),
+                                      p("Click on the blue button found in the top left corner of the following pages to learn more about the data and the methods of measurement used to produce a visualization."),
+                                      p(),
+                                      p()
+                                      ))),
+
+             
              tabPanel("Triples Network", 
                       sidebarLayout(
                         sidebarPanel(
@@ -173,7 +185,6 @@ ui <- fluidPage(
              navbarMenu("Nations",
                         tabPanel("Nation Concerns",
                                  nation_concerns_ui("nation_concerns")),
-                        
                         
                         tabPanel("Nation Pairs",
                                  sidebarLayout(
@@ -532,12 +543,30 @@ ui <- fluidPage(
                                    mainPanel(plotlyOutput("word_embeddings")))),
                         
                         tabPanel("Similarity", # ADD TEXT
-                                 similarity_ui("similarity")),
+                                 sidebarLayout(
+                                   sidebarPanel(
+                                     actionButton("about_we_similarity", 
+                                                  "About This Page",
+                                                  style="color: #fff; 
+                                       background-color: #337ab7; 
+                                       border-color: #2e6da4; 
+                                       width: 179px;
+                                       padding:4px; 
+                                       font-size:90%"),
+                                     p(),
+                                     textInput("search_similarity", "Keyword:", value = "harvest"),
+                                     actionButton('download_similarity', 
+                                                  "Download Plot",
+                                                  style = "width: 179px;"
+                                     ),
+                                     width = 2),
+                                   mainPanel(plotlyOutput("most_similar"),
+                                             tags$script(src = "test.js")))),
                         
-                        tabPanel("Difference",
+                        tabPanel("Try 2",
                          sidebarLayout(
                            sidebarPanel(
-                             actionButton("about_difference", 
+                             actionButton("about_try_2", 
                                           "About This Page",
                                           style="color: #fff; 
                                        background-color: #337ab7; 
@@ -702,9 +731,7 @@ server <- function(input, output, session) {
   #################### Network ###########################################################################################
   ########################################################################################################################
   
-  introduction_server("ndbs")
   nation_concerns_server("nation_concerns")
-  similarity_server("similarity")
   
   
   #observeEvent(input$download_network, {
@@ -1890,6 +1917,85 @@ server <- function(input, output, session) {
         yaxis = list(title = "Placeholder")) %>%
       config(displayModeBar = F) })
   
+  #################### Similarity
+  
+  output$most_similar <- renderPlotly({
+    #renderPlot({
+    
+    out <- data.frame()
+    
+    decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
+    
+    for(d in 1:length(decades)) {
+      
+      fdecade <- decades[d] 
+      
+      table <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
+      word_vectors <- as.matrix(read.table(table, as.is = TRUE))
+      
+      if(input$search_similarity %in% rownames(word_vectors)) {
+       
+        kw = word_vectors[input$search_similarity, , drop = F]
+        
+        cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
+        
+        forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[2:16])#[2:21])
+        
+        colnames(forplot)[1] <- "similarity"
+        
+        forplot$word <- rownames(forplot)
+        
+        
+        forplot <- forplot %>%
+          mutate(decade = fdecade)
+        
+        out <- bind_rows(out, forplot)
+        
+      }
+      
+      
+    }
+    
+
+    #ggplot(data = out,
+    #       aes(x=decade,
+    #           y=similarity)) + 
+    #  geom_text_repel(label = rownames(out)) +
+    #  geom_point() 
+      
+    # })
+  
+
+    
+    plot_ly(data = out, 
+            x = ~decade, 
+            y = ~similarity,
+            #mode = "markers",
+            mode = "markers+text",
+            text = ~word,
+            type = "scatter",
+            marker = list(color = 'rgb(158,202,225)',
+                          size = 15,
+                          line = list(color = 'rgb(8,48,107)',
+                                      width = 1.5)),
+            textposition = "center right",
+            height=650) %>%
+      config(displayModeBar = F) #%>%
+     # add_annotations(x = out$decade,
+    #                  y = out$similarity,
+    #                  text = rownames(out),
+    #                  xref = "x",
+    #                  yref = "y",
+    #                  showarrow = TRUE,
+    #                  arrowhead = 4,
+    #                  arrowsize = .5,
+    #                  ax = 20,
+    #                  ay = -40)
+    
+    
+    })
+  
+  
   
   
   #################### Try 2 
@@ -2176,7 +2282,7 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$about_difference, {
+  observeEvent(input$about_try_2, {
     showModal(modalDialog(
       title = "Debate Titles: Proportion of Debate Titles that Include Keywords",
       "Define",

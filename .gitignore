@@ -4,6 +4,7 @@
 .Ruserdata
 *.csv
 
-data/
-archived-data/
-origin-data/
+# directories
+app-data/
+archive/
+
