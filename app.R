@@ -1339,17 +1339,19 @@ server <- function(input, output, session) {
         j <- j %>%
           filter(clean_new_speaker == speaker) %>%
           distinct(new_speaker, decade, ngrams, n, clean_new_speaker) } }
+    
+    
+    
+    
+    j <- j[order(j, -n)]
+    top <- j[1:20]  
 
-    return(j) }
+    return(top) }
 
   
   output$speaker_comparison_top <- renderPlotly({
     
-    j <- test_2(j, "top") 
-   
-    j <- j[order(j, -n)]
-    top <- j[1:20]  
-
+    ll <- test_2(j, "top") 
     
     if(top_vals_speaker_comparison$btn){
       ff <- input$sc_radio_buttons_top } 
@@ -1364,7 +1366,7 @@ server <- function(input, output, session) {
       xlab <- list(title ="tf-idf") }
     
     
-    plot_ly(top, 
+    plot_ly(ll, 
             x = ~n, 
             y = ~reorder(ngrams, n), 
             type = 'bar', 
@@ -1479,42 +1481,15 @@ server <- function(input, output, session) {
   
   
   output$speaker_comparison_bottom <- renderPlotly({
-    # 
-    # h <- h %>%
-    #   filter(decade == input$sc_decade) 
-    # 
-    # if (input$sc_compare == "sc_top_words") {
-    #   xlab <- list(title ="Frequency") } 
-    # 
-    # else if (input$sc_compare == "sc_tf-idf") {
-    #   if(vals_speaker_comparison$btn) {
-    #     h <- tf_idf_b(h, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) 
-    #     xlab <- list(title ="tf-idf") } 
-    #   else {
-    #     h <- tf_idf_b(j, input$sc_custom_search_top, input$sc_radio_buttons_bottom) 
-    #     xlab <- list(title ="tf-idf") } } 
-    # 
-    # h <- h %>%
-    #   filter(clean_new_speaker == input$sc_radio_buttons_bottom)
-    # 
-    # 
-    # top <- h %>%
-    #   arrange(desc(n)) %>%
-    #   slice(1:20)
 
-    j <- test_2(j, "bottom") 
-    
-    j <- j[order(j, -n)]
-    top <- j[1:20]  
+    ll <- test_2(j, "bottom") 
     
     
     if(bottom_vals_speaker_comparison$btn){
       ff <- input$sc_radio_buttons_bottom } 
     else {
       ff <- input$sc_custom_search_bottom }
-    
-    
-    
+
     if (input$sc_compare == "sc_top_words") {
       xlab <- list(title ="Frequency") } 
     else if (input$sc_compare == "sc_tf-idf") {
@@ -1522,7 +1497,7 @@ server <- function(input, output, session) {
     
     
     
-    plot_ly(top, 
+    plot_ly(ll, 
             x = ~n, 
             y = ~reorder(ngrams, n), 
             type = 'bar', 
