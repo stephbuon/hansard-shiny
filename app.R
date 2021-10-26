@@ -353,23 +353,209 @@ server <- function(input, output, session) {
     
     if (input$drop_down_hist == "overview") {
       
-      labs <- c("Short", "Mid-Length", "Long")
       
-      plot <- ggplot(viz, 
-                     aes(x = speech_length_type,
-                         y = n,
-                         fill = `Speech Length`,
-                         show.legend = FALSE)) + 
-        geom_bar(stat="identity") + 
-        scale_x_discrete(labels = labs) +
-        scale_y_continuous(labels = comma) +
-        facet_wrap(~decade) +
-        scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-        theme_bw() 
       
-      ggplotly(plot) %>%
-        layout(height = 650) %>%
-        config(displayModeBar = F)
+      viz <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths_overview.csv")
+      
+      data_1800 <- viz %>%
+        filter(decade == 1800)
+      data_1810 <- viz %>%
+        filter(decade == 1810)
+      data_1820 <- viz %>%
+        filter(decade == 1820)
+      data_1830 <- viz %>%
+        filter(decade == 1830)
+      data_1840 <- viz %>%
+        filter(decade == 1840)
+      data_1850 <- viz %>%
+        filter(decade == 1850)
+      data_1860 <- viz %>%
+        filter(decade == 1860)
+      data_1870 <- viz %>%
+        filter(decade == 1870)
+      data_1880 <- viz %>%
+        filter(decade == 1880)
+      data_1890 <- viz %>%
+        filter(decade == 1890)
+      data_1900 <- viz %>%
+        filter(decade == 1900)
+      data_1910 <- viz %>%
+        filter(decade == 1910)
+      
+      fig_1800 <- plot_ly(data_1800,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(xaxis = list(showgrid = F,
+                            zerolinecolor = '#ffff', 
+                            zerolinewidth = 2, 
+                            gridcolor = 'ffff'),
+               yaxis = list(range = c(0, 130000)))
+      
+      fig_1810 <- plot_ly(data_1810,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1820 <- plot_ly(data_1820,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1830 <- plot_ly(data_1830,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1840 <- plot_ly(data_1840,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1850 <- plot_ly(data_1850,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1860 <- plot_ly(data_1860,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1870 <- plot_ly(data_1870,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1880 <- plot_ly(data_1880,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1890 <- plot_ly(data_1890,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1900 <- plot_ly(data_1900,
+                          x = ~speech_length_type,
+                          y = ~n,
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(yaxis = list(range = c(0, 130000)))
+      
+      fig_1910 <- plot_ly(data_1910, 
+                          x = ~speech_length_type,
+                          y = ~n, 
+                          type = 'bar',
+                          marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) %>%
+        layout(xaxis = list(zerolinecolor = '#ffff', 
+                            zerolinewidth = 2, 
+                            gridcolor = 'ffff'),
+      yaxis = list(range = c(0, 130000)))
+      
+      
+      fig <- subplot(fig_1800, fig_1810, fig_1820, fig_1830, fig_1840, fig_1850, fig_1860, fig_1870, fig_1880, fig_1890, fig_1900, fig_1910, nrows = 3, margin = c(.02, .02, .03, .03)) %>% 
+        layout(title = "Speech Lengths from 1800 to 1910",
+               plot_bgcolor='#e5ecf6', 
+               xaxis = list( 
+                 zerolinecolor = '#ffff', 
+                 zerolinewidth = 2, 
+                 gridcolor = 'ffff'), 
+               yaxis = list( 
+                 zerolinecolor = '#ffff', 
+                 zerolinewidth = 2, 
+                 gridcolor = 'ffff'))
+      
+      annotations = list( 
+        list( 
+          x = 0.12,  
+          y = 1.0,  
+          text = "1800",  
+          xref = "paper",  
+          yref = "paper",  
+          xanchor = "center",  
+          yanchor = "bottom",  
+          showarrow = FALSE 
+        ),  
+        list( 
+          x = 0.38,  
+          y = 1,  
+          text = "1810",  
+          xref = "paper",  
+          yref = "paper",  
+          xanchor = "center",  
+          yanchor = "bottom",  
+          showarrow = FALSE 
+        ),  
+        list( 
+          x = 0.2,  
+          y = 0.45,  
+          text = "1820",  
+          xref = "paper",  
+          yref = "paper",  
+          xanchor = "center",  
+          yanchor = "bottom",  
+          showarrow = FALSE 
+        ),
+        list( 
+          x = 0.8,  
+          y = 0.45,  
+          text = "1830",  
+          xref = "paper",  
+          yref = "paper",  
+          xanchor = "center",  
+          yanchor = "bottom",  
+          showarrow = FALSE 
+        ))
+      
+      fig <- fig %>%
+        layout(annotations = annotations,
+               height = 650,
+               showlegend = F) %>%
+        config(displayModeBar = F) 
+      
+      fig
+      
+      
+      # labs <- c("Short", "Mid-Length", "Long")
+      # 
+      # plot <- ggplot(viz, 
+      #                aes(x = speech_length_type,
+      #                    y = n,
+      #                    fill = `Speech Length`,
+      #                    show.legend = FALSE)) + 
+      #   geom_bar(stat="identity") + 
+      #   scale_x_discrete(labels = labs) +
+      #   scale_y_continuous(labels = comma) +
+      #   facet_wrap(~decade) +
+      #   scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+      #   theme_bw() 
+      # 
+      # ggplotly(plot) %>%
+      #   layout(height = 650) %>%
+      #   config(displayModeBar = F)
+      
+      
       
       
       
