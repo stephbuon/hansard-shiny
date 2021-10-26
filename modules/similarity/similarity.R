@@ -38,9 +38,6 @@ similarity_ui <- function(id) {
 
 
 
-
-
-
 similarity_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
@@ -56,9 +53,8 @@ similarity_server <- function(id) {
         table <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
         word_vectors <- as.matrix(read.table(table, as.is = TRUE))
         
-        rn <- rownames(word_vectors)
-        
-        if(input$search_similarity %in% rn) { # %in% rownames(word_vectors)
+
+        if(input$search_similarity %in% rownames(word_vectors)) { 
           
           kw = word_vectors[input$search_similarity, , drop = F]
           
