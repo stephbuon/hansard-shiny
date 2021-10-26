@@ -43,12 +43,13 @@ library(scales)
 
 modules_dir <- "~/projects/hansard-shiny/modules/"
 
+
 source(paste0(modules_dir, "introduction/introduction.R"))
 source(paste0(modules_dir, "nation-concerns/nation_concerns.R"))
 source(paste0(modules_dir, "similarity/similarity.R"))
-
-
-
+source(paste0(modules_dir, "purpose/purpose.R"))
+source(paste0(modules_dir, "code/code.R"))
+source(paste0(modules_dir, "data/data.R"))
 
 
 
@@ -94,13 +95,6 @@ n1 <- n1 %>%
   filter(decade == 1850)
 
 ########### UI 
-
-# 
-# counts <- "<h3>Count Totals:</h3>"
-# str1 <- "<h4>Debates: 173,275</h4>"
-# str2 <- "<h4>Speakers: X</h4>"
-# str3 <- "<h4>Sentences: 10,979,009</h4>"
-
 
 
 ui <- fluidPage(
@@ -157,9 +151,7 @@ ui <- fluidPage(
                           textInput("search_object", "Object:", ""),
                           actionButton('download_network', 
                                        "Download Plot",
-                                       style = "width: 179px;"
-                          ),
-                          
+                                       style = "width: 179px;"),
                           
                           width = 2),
                         
@@ -219,13 +211,7 @@ ui <- fluidPage(
              
              
              tabPanel("Collocates",
-                      
-                      #  splitLayout(cellWidths = c("95%", "5%"),
-                      #              cellArgs = list(style = "padding: 6px"),
-                      
-                      
-                      
-                      
+
                       sidebarLayout(
                         sidebarPanel(
                           actionButton("about_collocates", 
@@ -483,8 +469,7 @@ ui <- fluidPage(
                                      textInput("keyword_addition_word_6", "", ""),
                                      actionButton('download', 
                                                   "Download Plot",
-                                                  style = "width: 179px;"
-                                                  ),
+                                                  style = "width: 179px;"),
                                      width = 2),
                                    
                                    mainPanel(plotlyOutput("debate_titles"),
@@ -511,17 +496,10 @@ ui <- fluidPage(
                                  sidebarLayout(
                                    sidebarPanel(
                                      width =2),
-                                   
-                                   #fluidRow(column(width = 8, offset = 0,
-                                   #                 div(plotlyOutput("longest_debates"), align = "center"),
-                                   #                 dataTableOutput('tbl6'))))),
                                    mainPanel(plotlyOutput("longest_debates"),
                                              br(),
                                              br(),
-                                            # htmlOutput('tbl6'),
                                              plotOutput('tbl99'))))),
-                                            # dataTableOutput('tbl6'))))),
-             
              
              navbarMenu("Context",
                         tabPanel("Try 1",
@@ -600,77 +578,16 @@ ui <- fluidPage(
                                      )
                            ) ) ),
       
+             
              navbarMenu("About",
                         tabPanel("Purpose",
-                                 fluidPage(
-                                   fluidRow(
-                                     column(10,
-                                            offset = 1, 
-                                            h3("The Hansard Viewer"),
-                                            br(),
-                                            p(),
-                                            "Tools for mining text can open a window onto politics making what happens in government more transparent to citizens.",
-                                            p(),
-                                            "For seven years Democracy Lab has been operating at the juncture of political, historical, and textual analysis of democratic debates, publishing numerous articles and collaborating with the builders of infrastructure to make text mining accessible to the public.
-                                            This app belongs to a series of preliminary public-facing web applications 
-                                            Users of our prototype application can use an array of data-mining and statistical tools to explore the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts. 
-                                            Citizens using our toolset can navigate from an overview showing change over time, to a depiction of how different candidates talk about the same issue, to the in-text mentions of word use that a computer has used to produce the visualizations in question.",
-                                            p(),
-                                            "This data-informed angle into the Hansard debates enables users to perceive change over time at scale. A quantitative approach emphasizes trends, enter. 
-                                            
-                                            Despite -- it can still show unique occurances in the form of statistical outliers. 
-                                            
-                                            The usefulness of any application for citizens to understand democracy depends upon how much they can trust the data and its analysis. 
-                                            For users to trust the analysis, an app must cut a line between transparency, precision, and innovation. 
-                                            Our tool does this by employing methods such as word counts, tf-idf measures, topic models, word embeddings, and triples analysis. 
-                                            
-                                            
-                                            
-                                            In general, our app’s design will try to compensate for user mistrust of algorithm- and algebra- dependent measures by linking visualizations to the citations that explain each algorithm or measure and links in lay language. We will also privilege certain measures -- for instance triples analysis, a tool that is simultaneously transparent, precise, and sensitive.")
-                                            ) ) ),
-                        
+                                 about_ui()),
                         tabPanel("Code", 
-                                 fluidPage(
-                                   fluidRow(
-                                     column(10,
-                                            offset = 1,
-                                            h3("Code"),
-                                            br(), 
-                                            p(),
-                                            "Our project values transparency, precision, and innovation. 
-                                 
-                                 
-                                            All of our code is open source and can be found on our",
-                                            HTML(" <a href='https://github.com/stephbuon/hansard-shiny'>hansard-shiny</a> GitHub repository."),
-                                            #HTML("<ul><li>Transparency</li><li>...more text...</li></ul>"),
-                                            "Transparency.",
-                                            br(),
-                                            p(),
-                                            "For the source code, enter"),
-                                     ) ) ),
-                        
+                                 code_ui()),
                         tabPanel("Data",
-                                 fluidPage(
-                                   fluidRow(
-                                     column(10,
-                                            offset = 1,
-                                            h3("Data"),
-                                            br(),
-                                            p(),
-                                            "This page offers links to download the data used by this app.",
-                                            br(),
-                                            p(),
-                                            strong("Hansard:"),
-                                            "SMU version of the Hansard data with improved speaker names.",
-                                            br(),
-                                            p(),
-                                            strong("Nations:"),
-                                            "placeholder description",
-                                            br(),
-                                            p(),
-                                            strong("Stop Words:"),
-                                            "")
-                                     ) ) ) ) ) )
+                                 data_ui() 
+                                 
+                                 ) ) ) )
 
 
 server <- function(input, output, session) {
@@ -1338,96 +1255,6 @@ server <- function(input, output, session) {
 
   
   # IF TEXT IS TRUE GET RID OF RADIO BOX 
-  
-
-
-  # output$speaker_comparison_top <- renderPlotly({
-  # 
-  #   if(vals_speaker_comparison$btn & bottom_vals_speaker_comparison$btn) {
-  #     j <- h
-  #     j <- j  %>%
-  #       filter(decade == input$sc_decade)
-  # 
-  #     if (input$sc_compare == "sc_top_words") {
-  #       xlab <- list(title ="Frequency") }
-  #     else if (input$sc_compare == "sc_tf-idf") {
-  #       j <- tf_idf_b(j, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom)
-  #       xlab <- list(title ="tf-idf") }
-  # 
-  #     j <- j %>%
-  #       filter(clean_new_speaker == input$sc_radio_buttons_top) }
-  # 
-  #   else if (vals_speaker_comparison$text != "" & bottom_vals_speaker_comparison$btn ) {
-  #     jj <- j[.(as.numeric(input$sc_decade))] # .09 seconds
-  # 
-  #     setkey(jj, clean_new_speaker)
-  #     j <- jj[.(as.character(input$sc_custom_search_top))]
-  # 
-  #     if (input$sc_compare == "sc_top_words") {
-  #       xlab <- list(title ="Frequency") }
-  #     else if (input$sc_compare == "sc_tf-idf") {
-  #       j <- tf_idf_b(jj, input$sc_custom_search_top, input$sc_radio_buttons_bottom)
-  #       xlab <- list(title ="tf-idf") } }
-  # 
-  #   else if (vals_speaker_comparison$btn & bottom_vals_speaker_comparison$text) {
-  #       # set decade w binary search
-  #     jj <- j[.(as.numeric(input$sc_decade))] # .09 seconds
-  # 
-  #     setkey(jj, clean_new_speaker)
-  #     j <- jj[.(as.character(input$sc_custom_search_bottom))]
-  # 
-  # 
-  #   }
-  #   else {
-  #     # set decade w binary search
-  # 
-  #   }
-  # 
-  # 
-  # 
-  # 
-  # 
-  #   if(vals_speaker_comparison$btn) {
-  # 
-  #     j <- as.data.frame(j)
-  # 
-  #     top <- j %>%
-  #       arrange(desc(n)) %>%
-  #       slice(1:20)
-  # 
-  #     } else {
-  # 
-  # 
-  #         j <- j[order(j, -n)]
-  #         top <- j[1:20]  }
-  # 
-  #   if (input$sc_compare == "sc_top_words") {
-  #     xlab <- list(title ="Frequency") }
-  #   else if (input$sc_compare == "sc_tf-idf") {
-  #     xlab <- list(title ="tf-idf") }
-  # 
-  #   if(vals_speaker_comparison$btn){
-  #     ff <- input$sc_radio_buttons_top
-  #   } else {
-  #     ff <- input$sc_custom_search_top
-  #   }
-  # 
-  # 
-  #   plot_ly(top,
-  #           x = ~n,
-  #           y = ~reorder(ngrams, n),
-  #           type = 'bar',
-  #           text = n,
-  #           orientation = "h",
-  #           marker = list(color = 'rgb(158,202,225)',
-  #                         line = list(color = 'rgb(8,48,107)',
-  #                                     width = 1.5))) %>%
-  #     layout(title = ff,
-  #            xaxis = list(title = xlab),
-  #            yaxis = list(title = "")) %>%
-  #     config(displayModeBar = F)
-  #   })
-
 
   
   
@@ -1962,8 +1789,7 @@ server <- function(input, output, session) {
       table <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
       word_vectors <- as.matrix(read.table(table, as.is = TRUE))
       
-      rn <- rownames(word_vectors)
-      if(input %in% rn) {
+      if(input %in% rownames(word_vectors)) {
         kw = word_vectors[input, , drop = F]
         cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
         forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[first_range:second_range])
