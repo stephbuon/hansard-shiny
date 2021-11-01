@@ -1,7 +1,7 @@
+# not written for efficency
+
 collocates_ui <- function(id) {
   tagList(
-    
-    
     sidebarLayout(
       sidebarPanel(
         actionButton(NS(id, "about_collocates"), 
