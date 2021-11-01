@@ -101,6 +101,8 @@ network_ui <- function(id) {
 network_server <- function(id) {
   moduleServer(id, function(input, output, session) {
 
+    ns <- session$ns
+    
 
 #observeEvent(input$download_network, {
 
@@ -184,11 +186,17 @@ output$network <- renderVisNetwork({
     visPhysics(solver = "forceAtlas2Based",
                forceAtlas2Based = list(gravitationalConstant = -100)) %>%
     
-    visEvents(select = "function(nodes) {
-                Shiny.onInputChange('current_node_selection', nodes.nodes);
-                ;}") 
+    
+    #Shiny.onInputChange('",ns('got_network_current_node_id'),"',ng_nodes.nodes[0]);
+    
+
+    visEvents(select = paste0("function(nodes) {
+                Shiny.onInputChange('",ns('current_node_selection'),"', nodes.nodes[0]);
+                ;}"))
   
 })
+
+ #Shiny.onInputChange('",ns(got_network_current_node_id),"',ng_nodes);}"))
 
 observe({ # is this function speeding things up? 
   visNetworkProxy("network") })

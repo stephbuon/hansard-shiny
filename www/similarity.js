@@ -1,5 +1,5 @@
-document.getElementById("most_similar-download_similarity").onclick = function() {
-  var gd = document.getElementById("most_similar-most_similar");
+document.getElementById("similarity-download_similarity").onclick = function() {
+  var gd = document.getElementById("similarity-similarity");
   Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
     var a = window.document.createElement("a");
     a.href = url; 
