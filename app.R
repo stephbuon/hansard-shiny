@@ -49,7 +49,7 @@ source(paste0(modules_dir, "network/network.R"))
 source(paste0(modules_dir, "debate-titles/debate_titles.R"))
 source(paste0(modules_dir, "top-speakers/top_speakers.R"))
 source(paste0(modules_dir, "longest-debates/longest_debates.R"))
-source(paste0(modules_dir, "collocates/collocates.R"))
+source(paste0(modules_dir, "collocates/collocates_2.R"))
 source(paste0(modules_dir, "speech-lengths/speech_lengths.R"))
 source(paste0(modules_dir, "difference/difference.R"))
 source(paste0(modules_dir, "speaker-comparison/speaker_comparison.R"))
@@ -80,7 +80,7 @@ ui <- fluidPage(
                                  nation_pairs_ui("nation_pairs"))),
              
              tabPanel("Collocates",
-                      collocates_ui("collocates")),
+                      collocates_2_ui("collocates_2")),
              
              navbarMenu("Speakers",
                         tabPanel("Top Speakers",
@@ -139,7 +139,7 @@ server <- function(input, output, session) {
   longest_speeches_server("longest_speeches")
   longest_debates_server("longest_debates")
   top_speakers_server("top_speakers")
-  collocates_server("collocates")
+  collocates_2_server("collocates_2")
   speech_lengths_server("speech_lengths")
   difference_server("wv_test")
   speaker_comparison_server("speaker-comparison")

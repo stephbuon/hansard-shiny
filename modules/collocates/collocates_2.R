@@ -67,6 +67,12 @@ collocates_2_ui <- function(id) {
         textInput(NS(id, "custom_search"), 
                   "Custom Search:", ""),
         
+        radioButtons(NS(id, "match_type"), 
+                     "",
+                     c("Includes Keyword" = "include",
+                       "Matches Keyword" = "match"),
+                     selected = "include"),
+        
         sliderTextInput(
           inputId = NS(id,"sentiment"), 
           label = "Sentiment: ", 
@@ -146,18 +152,23 @@ collocates_2_server <- function(id) {
     #   }
     # })
     
-   
+   # maybe I can do !file.exists(fname)|!file.exists(fname_reverse) thing later
     tf_idf_b <- reactive({
       if (input$measure == "tf-idf") {
-        tf_idf_a(collocates_top(), collocates_bottom()) }
+        fname <- paste0("~/projects/hansard-shiny/app-data/collocates_2/tf-idf-data/tf_idf_", input$decade_collocates_top, "_", input$decade_collocates_bottom, "_", input$vocabulary, "_adj_noun_pairs.csv")
+        if(!file.exists(fname)) {
+          tf_idf_a(collocates_top(), collocates_bottom(), fname) }
+        else {
+          df <- fread(fname) 
+          }
       
       
-    }) 
+    } }) 
     
     
     
     
-    tf_idf_a <- function(df1, df2) {
+    tf_idf_a <- function(df1, df2, fname) {
       
       if (input$custom_search!="") { 
         df1 <- df1 %>%
@@ -173,6 +184,8 @@ collocates_2_server <- function(id) {
       df <- df %>%
         select(-n) %>%
         rename(n = tf_idf) 
+      
+      fwrite(df, fname)
       
       return(df)}
     
@@ -207,9 +220,11 @@ collocates_2_server <- function(id) {
        else if (input$measure == "tf-idf") {
          collocates <- tf_idf_b()
          xlab <- list(title ="tf-idf") }
-      
+ 
       setkey(collocates, decade)
       collocates <- collocates[.(as.numeric(input$decade_collocates_top))] 
+      
+      
       
       collocates <- filter_sentiment(collocates, input$sentiment)
       
@@ -227,7 +242,8 @@ collocates_2_server <- function(id) {
                marker= list(color = 'rgb(158,202,225)',
                             line = list(color = 'rgb(8,48,107)',
                                         width = 1.5))) %>%
-         layout(xaxis = xlab,
+         layout(title = input$decade_collocates_top,
+                xaxis = xlab,
                 yaxis = list(title = "")) %>%
          config(displayModeBar = F) })
     
@@ -265,7 +281,8 @@ collocates_2_server <- function(id) {
               marker= list(color = 'rgb(158,202,225)',
                            line = list(color = 'rgb(8,48,107)',
                                        width = 1.5))) %>% 
-      layout(xaxis = xlab,
+      layout(title = input$decade_collocates_bottom,
+             xaxis = xlab,
              yaxis = list(title = "")) %>%
         config(displayModeBar = F) })
       
@@ -313,13 +330,13 @@ collocates_2_server <- function(id) {
 
 
 # 
-ui <- fluidPage(
-  collocates_2_ui("collocates")
-)
-server <- function(input, output, session) {
-  collocates_2_server("collocates")
-}
-shinyApp(ui, server)  
+# ui <- fluidPage(
+#   collocates_2_ui("collocates")
+# )
+# server <- function(input, output, session) {
+#   collocates_2_server("collocates")
+# }
+# shinyApp(ui, server)  
 #    
 
     
