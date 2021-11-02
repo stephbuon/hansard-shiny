@@ -1,29 +1,43 @@
-# not written for efficency
+source("~/projects/hansard-shiny/modules/collocates/collocates_functions.R")
+
+# js <- '
+# $(document).on("keyup", function(e) {
+#   if(e.keyCode == 13){
+#     Shiny.onInputChange("keyPressed", Math.random());
+#   }
+# });
+# '
 
 collocates_ui <- function(id) {
+  ns <- NS(id)
+  
   tagList(
+    #tags$script(js),
+    
     sidebarLayout(
       sidebarPanel(
         actionButton(NS(id, "about_collocates"), 
                      "About This Page",
-                     style="color: #fff; 
-                                       background-color: #337ab7; 
-                                       border-color: #2e6da4; 
-                                       width: 179px;
-                                       padding:4px; 
-                                       font-size:90%"),
+                     style = "color: #fff; 
+                     background-color: #337ab7; 
+                     border-color: #2e6da4; 
+                     width: 179px;
+                     padding:4px; 
+                     font-size:90%"),
         p(),
-        #helpText("Choose a vocabulary list."),
-        radioButtons(NS(id, "special_vocabulary"), 
-                     "Special Vocabulary:",
-                     c("Property" = "property",
-                       "Concerns" = "concerns",
-                       "Offices" = "offices",
-                       "Nations" = "nations",
-                       "Cities" = "cities")),
+        selectInput(NS(id, "vocabulary"), 
+                    "Vocabulary:",
+                    c("All" = "all",
+                      "Property" = "property",
+                      "Concerns" = "concerns",
+                      "Nations" = "nations",
+                      "Cities" = "cities")),
         
-        #tags$hr(style="border-color: black;"),
-        #helpText("Slide the dial to change decades."),
+        selectInput(NS(id, "measure"),
+                    "Measure:",
+                    c("Count" = "count",
+                      "tf-idf" = "tf-idf")),
+        
         sliderTextInput(
           inputId = NS(id, "decade_collocates_top"), 
           label = "Decade (Top): ", 
@@ -57,12 +71,26 @@ collocates_ui <- function(id) {
                       "1890"),
           selected = "1840"),
         
-        selectInput(NS(id,"noun"), 
-                    "Keyword:",
-                    choices = NULL),
+        uiOutput(NS(id, "suggestion_1"),
+                 onclick = paste0("Shiny.setInputValue('", ns('btnLabel'),"', this.innerText);")),
+        br(),
+        uiOutput(NS(id, "suggestion_2"),
+                 onclick = paste0("Shiny.setInputValue('", ns('btnLabel'),"', this.innerText);")),
+        br(),
+        uiOutput(NS(id, "suggestion_3"),
+                 onclick = paste0("Shiny.setInputValue('", ns('btnLabel'),"', this.innerText);")),
+        br(),
+        uiOutput(NS(id, "suggestion_4"),
+                 onclick = paste0("Shiny.setInputValue('", ns('btnLabel'),"', this.innerText);")),
         
+        textInput(NS(id, "custom_search"), 
+                  "Custom Search:", ""),
         
-        #tags$hr(style="border-color: black;"),
+        radioButtons(NS(id, "match_type"), 
+                     "",
+                     c("Includes Keyword" = "include",
+                       "Matches Keyword" = "match"),
+                     selected = "include"),
         
         sliderTextInput(
           inputId = NS(id,"sentiment"), 
@@ -73,201 +101,209 @@ collocates_ui <- function(id) {
                       "Positive", 
                       "Negative")),
         
-        radioButtons(NS(id,"collocate_measure"),
-                     "Measure:", 
-                     list("count", "tf-idf", "jsd"), inline = TRUE, selected = "count"),
-        
-        
         width = 2),
       
-      mainPanel(plotlyOutput(NS(id,"collocates_top")),
-                plotlyOutput(NS(id,"collocates_bottom"))))
-    
-    
-    
-  ) }
-
+      mainPanel(plotlyOutput(NS(id, "collocates_top")),
+                plotlyOutput(NS(id, "collocates_bottom"))) 
+      ))}
 
 
 collocates_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-
-# Collocates
-
-
-filter_sentiment <- function(df, sw) {
-  if(sw == "All") {
-    return(df) }
-  df <- df %>%
-    filter(sentiment == sw)
-  return (df) }
-
-
-filter_noun <- function(df, nnn) {
-  if(nnn == 'All') {
-    return(df) } else {
-      df <- df %>%
-        filter(str_detect(grammatical_collocates, paste0(" ", nnn))) } }
-
-observe({
-  if (input$special_vocabulary == "property") {
-    updateSelectInput(session = session, 
-                      inputId = "noun", 
-                      choices = c("Select" = "All", 
-                                  "Evict" = "evict",
-                                  "Inclosure" = "inclosure",
-                                  "Land" = "land$",
-                                  "Landhold" = "landhold",
-                                  "Landlord" = "landlord",
-                                  "Lease" = "lease",
-                                  "Lessee" = "lessee",
-                                  "Rent" = "rent",
-                                  "Tenant" = "tenan")) } 
-  
-  else if (input$special_vocabulary == "concerns") {
-    updateSelectInput(session = session, 
-                      inputId = "noun", 
-                      choices = c("Select" = "All", 
-                                  "Poor" = "poor")) } 
-  else if (input$special_vocabulary == "cities") {
+    output$suggestion_1 <- renderUI({
+      if (input$vocabulary == "all") {
+        actionButton("suggestion_1", label = "law", style = "width: 179px;") }
+      else if (input$vocabulary == "property") {
+        actionButton("suggestion_1", label = "tenant", style = "width: 179px;") }
+      else if (input$vocabulary == "concerns") {
+        actionButton("suggestion_1", label = "poor", style = "width: 179px;") }  })
+    
+    output$suggestion_2 <- renderUI({
+      if (input$vocabulary == "all") {
+        actionButton("suggestion_2", label = "woman", style = "width: 179px;") }
+      else if (input$vocabulary == "property") {
+        actionButton("suggestion_2", label = "property", style = "width: 179px;") } 
+      else if (input$vocabulary == "concerns") {
+        actionButton("suggestion_2", label = "coal", style = "width: 179px;") }  })
+    
+    output$suggestion_3 <- renderUI({
+      if (input$vocabulary == "all") {
+        actionButton("suggestion_3", label = "man", style = "width: 179px;") }
+      else if (input$vocabulary == "property") {
+        actionButton("suggestion_3", label = "evict", style = "width: 179px;") }
+      else if (input$vocabulary == "concerns") {
+        actionButton("suggestion_3", label = "placeholder", style = "width: 179px;") } })
+    
+    output$suggestion_4 <- renderUI({
+      if (input$vocabulary == "all") {
+        actionButton("suggestion_4", label = "government", style = "width: 179px;") }
+      else if (input$vocabulary == "property") {
+        actionButton("suggestion_4", label = "landlord", style = "width: 179px;") }
+      else if (input$vocabulary == "concerns") {
+        actionButton("suggestion_4", label = "placeholder", style = "width: 179px;") }})
     
     
-  }
-})
+    observeEvent(input$btnLabel,{
+      vals$btn=TRUE
+      vals$text=FALSE })
+    
+    observeEvent(input$custom_search,{
+      vals$btn=FALSE
+      vals$text=TRUE })
+    
+    # observeEvent(input[["keyPressed"]], {
+    #   vals$btn=FALSE
+    #   vals$text=TRUE
+    # })
+    # 
+    
+   
+    
+    get_tf_idf <- reactive({
+      if (input$measure == "tf-idf") {
+        fname <- paste0("~/projects/hansard-shiny/app-data/collocates/tf-idf-data/tf_idf_", input$decade_collocates_top, "_", input$decade_collocates_bottom, "_", input$vocabulary, "_adj_noun_pairs.csv")
+        fname_reverse <- paste0("~/projects/hansard-shiny/app-data/collocates/tf-idf-data/tf_idf_", input$decade_collocates_bottom, "_", input$decade_collocates_top, "_", input$vocabulary, "_adj_noun_pairs.csv")
+        if (file.exists(fname)|file.exists(fname_reverse)) {
+          if (file.exists(fname)) {
+            df <- fread(fname) }
+          else {
+            df <- fread(fname_reverse) } }
+        else {
+          tf_idf(collocates_top(), collocates_bottom(), input$vocabulary, input$custom_search, fname) } } }) 
+    
+    
+    import_collocates_data <- function(slider) {
+      collocates_data <- fread(paste0("~/projects/hansard-shiny/app-data/collocates/", "clean_", input$vocabulary, "_adj_noun_collocates.csv"), key = "decade")
+      collocates_data <- collocates_data[.(as.numeric(slider))]
+      return(collocates_data) }
+    
+    collocates_top <- reactive ({
+      collocates_top <- import_collocates_data(input$decade_collocates_top)})
+    
+    collocates_bottom <- reactive ({
+      collocates_bottom <- import_collocates_data(input$decade_collocates_bottom) })
+    
+    
+    output$collocates_top <- renderPlotly({
+      
+       if (input$measure == "count") {
+         collocates <- collocates_top()
+         xlab <- list(title ="Raw Count") }
+       else if (input$measure == "tf-idf") {
+         collocates <- get_tf_idf()
+         xlab <- list(title ="tf-idf") }
+ 
+      setkey(collocates, decade)
+      collocates <- collocates[.(as.numeric(input$decade_collocates_top))] 
+      
+      collocates <- search(collocates, vals$text, input$match_type, input$custom_search, input$btnLabel)
+      
+      collocates <- filter_sentiment(collocates, input$sentiment)
+      
+      collocates <- collocates[order(collocates, -n)]
+      top <- collocates[1:20]
 
+       plot_ly(data = top,
+               x = ~n,
+               y = ~reorder(grammatical_collocates, n),
+               type = 'bar',
+               text = n,
+               orientation = 'h',
+               marker= list(color = 'rgb(158,202,225)',
+                            line = list(color = 'rgb(8,48,107)',
+                                        width = 1.5))) %>%
+         layout(title = input$decade_collocates_top,
+                xaxis = xlab,
+                yaxis = list(title = "")) %>%
+         config(displayModeBar = F) })
+    
+    
+    output$collocates_bottom <- renderPlotly({
+       
+      if (input$measure == "count") {
+        collocates <- collocates_bottom()
+        xlab <- list(title ="Raw Count") }
+      
+      else if (input$measure == "tf-idf") {
+        collocates <- get_tf_idf()
+        xlab <- list(title ="tf-idf") }
+      
+      setkey(collocates, decade)
+      collocates <- collocates[.(as.numeric(input$decade_collocates_bottom))] 
+      
+      collocates <- search(collocates, vals$text, input$match_type, input$custom_search, input$btnLabel)
+      
+      collocates <- filter_sentiment(collocates, input$sentiment)
+      
+      collocates <- collocates[order(collocates, -n)]
+      top <- collocates[1:20] 
 
-tf_idf_a <- function(df, dct, dcb) {
-  
-  df <- df %>%
-    filter(decade == dct | decade == dcb) 
-  
-  df <- df %>%
-    bind_tf_idf(grammatical_collocates, decade, n)
-  
-  df <- df %>%
-    select(-n) %>%
-    rename(n = tf_idf) 
-  
-  return(df)}
-
-
-
-
-import_collocates_data <- reactive({ 
-  collocates_data <- fread(paste0("~/projects/hansard-shiny/app-data/collocates/", input$special_vocabulary, "_collocates.csv")) })
-
-output$collocates_top <- renderPlotly({
-  
-  collocates <- import_collocates_data()
-  collocates <- filter_sentiment(collocates, input$sentiment)
-  collocates <- filter_noun(collocates, input$noun)
-  
-  if (input$collocate_measure == "count") {
-    xlab <- list(title ="Frequency") } 
-  else if (input$collocate_measure == "tf-idf") {
-    collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
-    xlab <- list(title ="tf-idf") }
-  
-  setkey(collocates, decade) # could intitalize key on reading data 
-  collocates <- collocates[.(as.numeric(input$decade_collocates_top))]
-  collocates <- collocates[order(collocates, -n)]
-  top <- collocates[1:20]
-  
-  plot_ly(data = top, 
-          x = ~n, 
-          y = ~reorder(grammatical_collocates, n),
-          type = 'bar',
-          text = n, 
-          orientation = 'h',
-          marker= list(color = 'rgb(158,202,225)',
-                       line = list(color = 'rgb(8,48,107)',
-                                   width = 1.5))) %>% 
-    layout(xaxis = xlab,
-           yaxis = list(title = "")) %>%
-    #tickangle = 330)) %>%
-    config(displayModeBar = F) })
-
-
-
-output$collocates_bottom <- renderPlotly({
-  
-  collocates <- import_collocates_data()
-  collocates <- filter_sentiment(collocates, input$sentiment)
-  collocates <- filter_noun(collocates, input$noun) # just added
-  
-  if (input$collocate_measure == "count") {
-    xlab <- list(title ="Frequency") } 
-  else if (input$collocate_measure == "tf-idf") {
-    collocates <- tf_idf_a(collocates, input$decade_collocates_top, input$decade_collocates_bottom)
-    xlab <- list(title ="tf-idf") }
-  
-  
-  collocates <- collocates %>%
-    filter(decade == input$decade_collocates_bottom)
-  
-  collocates <- filter_noun(collocates, input$noun)
-  
-  collocates <- collocates %>%
-    arrange(desc(n)) %>%
-    slice(1:20)
-  
-  plot_ly(data = collocates, 
-          x = ~n, 
-          y = ~reorder(grammatical_collocates, n),
-          type = 'bar',
-          text = n, 
-          orientation = 'h',
-          marker= list(color = 'rgb(158,202,225)',
-                       line = list(color = 'rgb(8,48,107)',
-                                   width = 1.5))) %>% 
-    layout(xaxis = xlab,
-           yaxis = list(title = "")) %>%
-    #tickangle = 330)) %>%
-    config(displayModeBar = F) })
-
-
-observeEvent(input$about_collocates, {
-  showModal(modalDialog(
-    title = "Special Vocabulary: Sentiment Laden Collocates",
-    "A collocate is a series of words that co-occur in text. 
+      plot_ly(data = top, 
+              x = ~n, 
+              y = ~reorder(grammatical_collocates, n),
+              type = 'bar',
+              text = n, 
+              orientation = 'h',
+              marker= list(color = 'rgb(158,202,225)',
+                           line = list(color = 'rgb(8,48,107)',
+                                       width = 1.5))) %>% 
+      layout(title = input$decade_collocates_bottom,
+             xaxis = xlab,
+             yaxis = list(title = "")) %>%
+        config(displayModeBar = F) })
+      
+    
+    observeEvent(input$about_collocates, {
+      showModal(modalDialog(
+        title = "Special Vocabulary: Sentiment Laden Collocates",
+        "A collocate is a series of words that co-occur in text.
         A grammatical collocate represents the co-occuring words that share a sentence-level grammatical relationship.",
-    br(),
-    p(),
-    strong("Controls:"),
-    "Click a radio button under \"Special Vocabulary\" to select a scholar curated vocabulary list to guide your search.",
-    br(),
-    p(),
-    "Slide the dials under \"Decade\" to change time periods",
-    br(),
-    p(),
-    "Choose a keyword from the drop down box to narrow your analysis to just collocates containing that word.
+        br(),
+        p(),
+        strong("Controls:"),
+        "Click a radio button under \"Special Vocabulary\" to select a scholar curated vocabulary list to guide your search.",
+        br(),
+        p(),
+        "Slide the dials under \"Decade\" to change time periods",
+        br(),
+        p(),
+        "Choose a keyword from the drop down box to narrow your analysis to just collocates containing that word.
         The keywords will update based on the selected vocabulary list.",
-    br(),
-    p(),
-    "Slide the dial under \"Sentiment\" to narrow your analysis from all sentiment laden collocates to just those with positive or negative scores.",
-    br(),
-    p(),
-    "Click a radio button under \"Measure\" to return results based on: 
+        br(),
+        p(),
+        "Slide the dial under \"Sentiment\" to narrow your analysis from all sentiment laden collocates to just those with positive or negative scores.",
+        br(),
+        p(),
+        "Click a radio button under \"Measure\" to return results based on:
         a) a frequency count; b) term frequency - inverse document frequency (tf-idf); or c) Jenson-Shannon divergence (jsd).",
-    br(),
-    p(),
-    strong("Measurements:"),
-    "\"Count\" refers to the number of times a pair of collocates appeared in a sentence in the debate text.",
-    br(),
-    p(),
-    "\"tf-idf\" is a numerical statistic that reflects how \"distinctive\" a word is to a corpus. 
-        The tf–idf value increases proportionally to the number of times a word appears in a decade and is offset by the other decade that contains the word, 
+        br(),
+        p(),
+        strong("Measurements:"),
+        "\"Count\" refers to the number of times a pair of collocates appeared in a sentence in the debate text.",
+        br(),
+        p(),
+        "\"tf-idf\" is a numerical statistic that reflects how \"distinctive\" a word is to a corpus.
+        The tf–idf value increases proportionally to the number of times a word appears in a decade and is offset by the other decade that contains the word,
         which helps to adjust the results for the fact that some words appear more frequently in general.",
-    br(),
-    p(),
-    "\"jsd\" is a " ))
-})
+        br(),
+        p(),
+        "\"jsd\" is a " )) })
 
-
-})}
-
+    
+  } ) }
 
 
 
 
+# 
+# ui <- fluidPage(
+#   collocates_ui("collocates")
+# )
+# server <- function(input, output, session) {
+#   collocates_server("collocates")
+# }
+# shinyApp(ui, server)  
+#    
+
+    

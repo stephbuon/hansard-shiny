@@ -75,13 +75,11 @@ speaker_comparison_ui <- function(id) {
   ) }
 
 
-
 speaker_comparison_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-    
     h <- fread("~/projects/hansard-shiny/app-data/speakers/speaker_comparison_speaker_count_for_app_2.csv")
-    j <- fread("~/projects/hansard-shiny/clean_clean_tokenized_hansard_counts.csv", key = "decade")
+    j <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade")
     
     observeEvent(input$sc_radio_buttons_top,{
       top_vals_speaker_comparison$btn = TRUE

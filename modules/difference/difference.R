@@ -1,4 +1,4 @@
-# not working
+# not working transitions
 
 vals = reactiveValues(btn = FALSE, text = FALSE)
 

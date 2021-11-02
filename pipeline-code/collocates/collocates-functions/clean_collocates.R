@@ -1,4 +1,3 @@
-
 clean_collocates <- function(collocates, keyword) {
   
   collocates <- collocates %>%
@@ -6,18 +5,21 @@ clean_collocates <- function(collocates, keyword) {
   
   collocates$grammatical_collocates <- str_replace(collocates$grammatical_collocates, "[:punct:]", "")
   
-  collocates <- collocates %>%
-    filter(!str_detect(grammatical_collocates, "^(.*) $|^ (.*)$"))
+  # collocates$n_values <- str_count(collocates$grammatical_collocates, "\\s+") + 1
+  # 
+  # test <- collocates %>%
+  #   filter(n_values > 2)
   
   collocates$grammatical_collocates <- str_to_title(collocates$grammatical_collocates) 
   
   # make this cleaner: 
-  collocates$grammatical_collocates <- str_replace(collocates$grammatical_collocates, "Govt", " Government")
-  collocates$grammatical_collocates <- str_replace(collocates$grammatical_collocates, "Gent$", " Gentleman")
+  collocates$grammatical_collocates <- str_replace(collocates$grammatical_collocates, "^Govt ", "Government ")
+  collocates$grammatical_collocates <- str_replace(collocates$grammatical_collocates, "^Gent ", "Gentleman ")
   
-  remove <- c("Hon(.*)Right", "Lord Nob", "Friend Nob", "Sec(.*)Chief", "Earl Nob", "Committee Select", 
-              "Marquess Nob", "Marquis Nob", "Lieutenant(.*)Deputy", "Sec(.*)Nob", "Sec(.*)Under", 
-              "Hand Other", "Time Same", "Gentleman Right", "Lord Civil", "Session", "Hear Hear", " such$")
+  remove <- c("Hon(.*)Right", "Lord Nob", "Friend Nob", "Friend Hon", "Sec(.*)Chief", "Earl Nob", 
+              "Marquess Nob", "Marquis Nob", "Lieutenant(.*)Deputy", "Sec(.*)Nob", 
+              "Sec(.*)Under", "Hand Other", "Gentleman Right", "Lord Civil", "Rev(.*)Right",
+              "Paymaster Nob")
   
   for(r in remove){
     collocates <- collocates %>% 
@@ -25,7 +27,8 @@ clean_collocates <- function(collocates, keyword) {
   
   
   if (keyword == "all") {
-    remove <- c("attorney", " as$", "^as ", " at$", "^at ", " a$", "^a ", " Ab$", "^Ab ", "^Aad ", " Aad$", " First$", " Second$")
+    remove <- c("attorney", " as$", "^as ", " at$", "^at ", " a$", "^a ", " Ab$", "^Ab ", 
+                "^Aad ", " Aad$", " First$", " Second$", "^A3 ", "^Abc ", "^In ")
     
     for(r in remove){
       collocates <- collocates %>% 
@@ -43,4 +46,6 @@ clean_collocates <- function(collocates, keyword) {
     
   }
   
+  collocates$grammatical_collocates <- trimws(collocates$grammatical_collocates, which = c("both"))
+
   return(collocates) }
