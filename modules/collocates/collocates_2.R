@@ -225,15 +225,18 @@ collocates_2_server <- function(id) {
       
        if (input$measure == "count") {
          collocates <- collocates_top()
-         if (input$custom_search!="") { 
-           collocates <- collocates %>%
-             filter(str_detect(grammatical_collocates, regex(input$custom_search, ignore_case = T))) } else {
-               
-               
-             }
+         
+         # if (input$custom_search!="") { 
+         #   collocates <- collocates %>%
+         #     filter(str_detect(grammatical_collocates, regex(input$custom_search, ignore_case = T))) } else {
+         #       
+         #       
+         #     }
          
          
          xlab <- list(title ="Raw Count") }
+      
+      
        else if (input$measure == "tf-idf") {
          collocates <- tf_idf_b()
          xlab <- list(title ="tf-idf") }
@@ -241,6 +244,9 @@ collocates_2_server <- function(id) {
       setkey(collocates, decade)
       collocates <- collocates[.(as.numeric(input$decade_collocates_top))] 
       
+      if (input$custom_search!="") { 
+        collocates <- collocates %>%
+          filter(str_detect(grammatical_collocates, regex(input$custom_search, ignore_case = T))) } 
       
       
       collocates <- filter_sentiment(collocates, input$sentiment)
@@ -283,6 +289,11 @@ collocates_2_server <- function(id) {
       
       setkey(collocates, decade)
       collocates <- collocates[.(as.numeric(input$decade_collocates_bottom))] 
+      
+      if (input$custom_search!="") { 
+        print(xlab)
+        collocates <- collocates %>%
+          filter(str_detect(grammatical_collocates, regex(input$custom_search, ignore_case = T))) } 
       
       collocates <- filter_sentiment(collocates, input$sentiment)
       
