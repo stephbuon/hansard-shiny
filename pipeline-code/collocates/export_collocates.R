@@ -8,7 +8,7 @@ source(paste0(code_dir, "reorder_collocates.R"))
 
 keyword <- "all"
 
-data_dir <- "~/projects/hansard-shiny/WORK_ON_THIS_DATA/"
+data_dir <- "~/projects/hansard-shiny/origin-data/adj-noun-collocates/"
 collocates <- read_csv(paste0(data_dir, keyword, "_adj_noun_collocates.csv"))
 
 collocates <- clean_collocates(collocates, keyword)
@@ -16,4 +16,4 @@ collocates <- count_collocates(collocates)
 collocates <- score_collocates(collocates)
 collocates <- reorder_collocates(collocates)
 
-write_csv(collocates, paste0("~/projects/hansard-shiny/app-data/collocates_2/clean_", keyword, "_adj_noun_collocates.csv"))
+write_csv(collocates, paste0("~/projects/hansard-shiny/app-data/collocates/clean_", keyword, "_adj_noun_collocates.csv"))
