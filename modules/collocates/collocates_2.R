@@ -153,19 +153,36 @@ collocates_2_server <- function(id) {
     # })
     
    # maybe I can do !file.exists(fname)|!file.exists(fname_reverse) thing later
+    # tf_idf_b <- reactive({
+    #   if (input$measure == "tf-idf") {
+    #     fname <- paste0("~/projects/hansard-shiny/app-data/collocates_2/tf-idf-data/tf_idf_", input$decade_collocates_top, "_", input$decade_collocates_bottom, "_", input$vocabulary, "_adj_noun_pairs.csv")
+    #     fname_reverse <- paste0("~/projects/hansard-shiny/app-data/collocates_2/tf-idf-data/tf_idf_", input$decade_collocates_bottom, "_", input$decade_collocates_top, "_", input$vocabulary, "_adj_noun_pairs.csv")
+    #     if(!file.exists(fname)) {
+    #       tf_idf_a(collocates_top(), collocates_bottom(), fname) }
+    #     else {
+    #       df <- fread(fname) 
+    #       }
+    #   
+    #   
+    # } }) 
+    
     tf_idf_b <- reactive({
       if (input$measure == "tf-idf") {
         fname <- paste0("~/projects/hansard-shiny/app-data/collocates_2/tf-idf-data/tf_idf_", input$decade_collocates_top, "_", input$decade_collocates_bottom, "_", input$vocabulary, "_adj_noun_pairs.csv")
-        if(!file.exists(fname)) {
-          tf_idf_a(collocates_top(), collocates_bottom(), fname) }
+        fname_reverse <- paste0("~/projects/hansard-shiny/app-data/collocates_2/tf-idf-data/tf_idf_", input$decade_collocates_bottom, "_", input$decade_collocates_top, "_", input$vocabulary, "_adj_noun_pairs.csv")
+        if (file.exists(fname)|file.exists(fname_reverse)) {
+          if (file.exists(fname)) {
+            df <- fread(fname) }
+          else {
+            df <- fread(fname_reverse)
+          } } 
+        
         else {
-          df <- fread(fname) 
-          }
-      
-      
-    } }) 
-    
-    
+          tf_idf_a(collocates_top(), collocates_bottom(), fname) 
+        }
+        
+        
+      } }) 
     
     
     tf_idf_a <- function(df1, df2, fname) {
