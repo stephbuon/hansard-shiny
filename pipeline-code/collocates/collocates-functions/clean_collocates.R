@@ -19,7 +19,7 @@ clean_collocates <- function(collocates, keyword) {
   remove <- c("Hon(.*)Right", "Lord Nob", "Friend Nob", "Friend Hon", "Sec(.*)Chief", "Earl Nob", 
               "Marquess Nob", "Marquis Nob", "Lieutenant(.*)Deputy", "Sec(.*)Nob", 
               "Sec(.*)Under", "Hand Other", "Gentleman Right", "Lord Civil", "Rev(.*)Right",
-              "Paymaster Nob")
+              "Paymaster Nob", "General Attorney")
   
   for(r in remove){
     collocates <- collocates %>% 
@@ -27,7 +27,7 @@ clean_collocates <- function(collocates, keyword) {
   
   
   if (keyword == "all") {
-    remove <- c("attorney", " as$", "^as ", " at$", "^at ", " a$", "^a ", " Ab$", "^Ab ", 
+    remove <- c(" as$", "^as ", " at$", "^at ", " a$", "^a ", " Ab$", "^Ab ", 
                 "^Aad ", " Aad$", " First$", " Second$", "^A3 ", "^Abc ", "^In ")
     
     for(r in remove){

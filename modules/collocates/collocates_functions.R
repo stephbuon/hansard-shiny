@@ -28,11 +28,11 @@ search <- function(collocates, vals, match_type, custom_search, btnLabel) {
     if (match_type == "include") { 
       collocates <- collocates[grammatical_collocates %like% paste0(custom_search, "(.*)$|^(.*)", custom_search)]}
     else {
-      collocates <- collocates[grammatical_collocates %like% paste0("\\b", custom_search, "\\b|^", custom_search, "\\b|\\b", custom_search, "$")]} }
+      collocates <- collocates[grammatical_collocates %like% paste0("^", custom_search, "\\b|\\b", custom_search, "$")]} }
   else {
     if (match_type == "include") { 
       collocates <- collocates[grammatical_collocates %like% paste0(btnLabel, "(.*)$|^(.*)", btnLabel)]}
     else {
-      collocates <- collocates[grammatical_collocates %like% paste0("\\b", btnLabel, "\\b|^", btnLabel, "\\b|\\b", btnLabel, "$")]} } 
+      collocates <- collocates[grammatical_collocates %like% paste0("^", btnLabel, "\\b|\\b", btnLabel, "$")]} } 
   
   return(collocates)}

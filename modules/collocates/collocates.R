@@ -131,9 +131,9 @@ collocates_server <- function(id) {
       if (input$vocabulary == "all") {
         actionButton("suggestion_3", label = "man", style = "width: 179px;") }
       else if (input$vocabulary == "property") {
-        actionButton("suggestion_3", label = "evict", style = "width: 179px;") }
+        actionButton("suggestion_3", label = "rent", style = "width: 179px;") }
       else if (input$vocabulary == "concerns") {
-        actionButton("suggestion_3", label = "placeholder", style = "width: 179px;") } })
+        actionButton("suggestion_3", label = "future", style = "width: 179px;") } })
     
     output$suggestion_4 <- renderUI({
       if (input$vocabulary == "all") {
@@ -141,7 +141,7 @@ collocates_server <- function(id) {
       else if (input$vocabulary == "property") {
         actionButton("suggestion_4", label = "landlord", style = "width: 179px;") }
       else if (input$vocabulary == "concerns") {
-        actionButton("suggestion_4", label = "placeholder", style = "width: 179px;") }})
+        actionButton("suggestion_4", label = "industry", style = "width: 179px;") }})
     
     
     observeEvent(input$btnLabel,{
