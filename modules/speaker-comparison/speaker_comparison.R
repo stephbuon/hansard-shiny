@@ -3,20 +3,23 @@ bottom_vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
 
 speaker_comparison_ui <- function(id) {
   tagList(
-    
     sidebarLayout(
       sidebarPanel(
         actionButton(NS(id, "about_nation_pairs"), 
                      "About This Page",
                      style="color: #fff;
-                                                  background-color: #337ab7; 
-                                                  border-color: #2e6da4; 
-                                                  width: 179px;
-                                                  padding:4px; 
-                                                  font-size:90%"),
+                     background-color: #337ab7; 
+                     border-color: #2e6da4; 
+                     width: 179px;
+                     padding:4px; 
+                     font-size:90%"),
         p(),
+        selectInput(NS(id, "unit"), 
+                    "Unit:",
+                    c("Tokens" = "tokens",
+                      "Adjective-Noun Collocates" = "adj_noun_collocates")),
         selectInput(NS(id, "sc_compare"), 
-                    "Compare:",
+                    "Measure:",
                     c("Top Words" = "sc_top_words",
                       "tf-idf" = "sc_tf-idf",
                       "Speech Lengths" = "sc_speech_lengths")),
@@ -40,13 +43,13 @@ speaker_comparison_ui <- function(id) {
         radioButtons(NS(id, "sc_radio_buttons_top"), 
                      "Top Speakers:",
                      #choices = NULL),
-                     
                      c("1" = "1",
                        "2" = "2",
                        "3" = "3",
                        "4" = "4",
                        "5" = "5"),
                      selected = "1"),
+        
         textInput(NS(id, "sc_custom_search_top"), 
                   "Custom Search:", ""),
         
@@ -59,14 +62,16 @@ speaker_comparison_ui <- function(id) {
                        "4" = "4",
                        "5" = "5"),
                      selected = "1"),
+        
         textInput(NS(id, "sc_custom_search_bottom"), 
                   "Custom Search:", ""),
+        
         actionButton(NS(id, 'download_speaker_comparison'), 
                      "Download Plot",
-                     style = "width: 179px;"
-        ),
+                     style = "width: 179px;"),
         
         width = 2),
+      
       mainPanel(plotlyOutput(NS(id, "speaker_comparison_top")),
                 plotlyOutput(NS(id, "speaker_comparison_bottom"))))
     
@@ -78,7 +83,7 @@ speaker_comparison_ui <- function(id) {
 speaker_comparison_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-    h <- fread("~/projects/hansard-shiny/app-data/speakers/speaker_comparison_speaker_count_for_app_2.csv")
+    h <- fread( "~/projects/hansard-shiny/app-data/speakers/speaker_comparison_radio_button_names.csv")
     j <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade")
     
     observeEvent(input$sc_radio_buttons_top,{
@@ -99,18 +104,17 @@ speaker_comparison_server <- function(id) {
     
     
     observe({
-      h <- h %>%
-        filter(decade == input$sc_decade) %>%
-        distinct(decade, new_speaker, clean_new_speaker)
+       h <- h %>% 
+         filter(decade == input$sc_decade) 
       
       updateRadioButtons(session, "sc_radio_buttons_top",
-                         choices = h$clean_new_speaker)
+                         choices = h$clean_new_speaker,
+                         selected = h[1,3])
       
       updateRadioButtons(session, "sc_radio_buttons_bottom",
-                         choices = h$clean_new_speaker) })
-    
-    
-    
+                         choices = h$clean_new_speaker,
+                         selected = h[2,3] ) })
+
     
     tf_idf_b <- function(df, dct, dcb) {
       

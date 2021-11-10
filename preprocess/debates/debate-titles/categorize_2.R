@@ -6,6 +6,9 @@ library(plotly)
 hansard <- read_csv("~/hansard_c19_debate_titles_w_year.csv") 
 
 hansard <- hansard %>%
+  drop_na()
+
+hansard <- hansard %>%
   rename(year_count = n_debates_w_shared_title)
 
 all_debate_titles_metadata <- hansard %>%

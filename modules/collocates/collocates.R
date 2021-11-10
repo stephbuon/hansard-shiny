@@ -129,7 +129,7 @@ collocates_server <- function(id) {
     
     output$suggestion_3 <- renderUI({
       if (input$vocabulary == "all") {
-        actionButton("suggestion_3", label = "man", style = "width: 179px;") }
+        actionButton("suggestion_3", label = "men", style = "width: 179px;") }
       else if (input$vocabulary == "property") {
         actionButton("suggestion_3", label = "rent", style = "width: 179px;") }
       else if (input$vocabulary == "concerns") {
@@ -170,41 +170,56 @@ collocates_server <- function(id) {
           else {
             df <- fread(fname_reverse) } }
         else {
-          tf_idf(collocates_top(), collocates_bottom(), input$vocabulary, input$custom_search, fname) } } }) 
+          tf_idf_ct(collocates_top(), collocates_bottom(), input$vocabulary, input$custom_search, fname) } } }) 
     
     
-    import_collocates_data <- function(slider) {
-      collocates_data <- fread(paste0("~/projects/hansard-shiny/app-data/collocates/", "clean_", input$vocabulary, "_adj_noun_collocates.csv"), key = "decade")
-      collocates_data <- collocates_data[.(as.numeric(slider))]
-      return(collocates_data) }
-    
+
     collocates_top <- reactive ({
-      collocates_top <- import_collocates_data(input$decade_collocates_top)})
+      collocates_top <- import_collocates_data(input$decade_collocates_top, input$vocabulary)})
     
     collocates_bottom <- reactive ({
-      collocates_bottom <- import_collocates_data(input$decade_collocates_bottom) })
+      collocates_bottom <- import_collocates_data(input$decade_collocates_bottom, input$vocabulary) })
     
+    
+
+    
+    return_data <- function(collocates, measure, decade_slider, vals, match_type, custom_search, btnLabel, sentiment) {
+      
+      #if (measure == "count") {
+        #collocates <- collocates_top() }
+      if (measure == "tf-idf") {
+        collocates <- get_tf_idf() }
+      
+      setkey(collocates, decade)
+      collocates <- collocates[.(as.numeric(decade_slider))] 
+      
+      collocates <- search_ct(collocates, vals, match_type, custom_search, btnLabel)
+      
+      collocates <- filter_sentiment_ct(collocates, sentiment)
+      
+      collocates <- collocates[order(collocates, -n)]
+      top <- collocates[1:20]
+      
+    }
+    
+    top_plot <- reactive ({ 
+      return_data(collocates_top(), input$measure, input$decade_collocates_top, vals$text, input$match_type, input$custom_search, input$btnLabel, input$sentiment) }) #%>%
+      #bindCache(collocates_top(), collocates_bottom(), input$measure, input$decade_collocates_top, vals$text, input$match_type, input$custom_search, input$btnLabel, input$sentiment)
+    
+    # bottom_plot <- reactive ({
+    #   return_data(collocates, input$measure, input$decade_collocates_bottom, vals$text, input$match_type, input$custom_search, input$btnLabel, input$sentiment) }) %>%
+    # 
+    #   
+    # })
     
     output$collocates_top <- renderPlotly({
       
        if (input$measure == "count") {
-         collocates <- collocates_top()
          xlab <- list(title ="Raw Count") }
        else if (input$measure == "tf-idf") {
-         collocates <- get_tf_idf()
          xlab <- list(title ="tf-idf") }
- 
-      setkey(collocates, decade)
-      collocates <- collocates[.(as.numeric(input$decade_collocates_top))] 
-      
-      collocates <- search(collocates, vals$text, input$match_type, input$custom_search, input$btnLabel)
-      
-      collocates <- filter_sentiment(collocates, input$sentiment)
-      
-      collocates <- collocates[order(collocates, -n)]
-      top <- collocates[1:20]
 
-       plot_ly(data = top,
+       plot_ly(data = top_plot(),
                x = ~n,
                y = ~reorder(grammatical_collocates, n),
                type = 'bar',
@@ -216,7 +231,8 @@ collocates_server <- function(id) {
          layout(title = input$decade_collocates_top,
                 xaxis = xlab,
                 yaxis = list(title = "")) %>%
-         config(displayModeBar = F) })
+         config(displayModeBar = F) }) #%>%
+      #bindCache(collocates_top(), collocates_bottom(), input$measure, input$decade_collocates_top, vals$text, input$match_type, input$custom_search, input$btnLabel, input$sentiment)
     
     
     output$collocates_bottom <- renderPlotly({
@@ -232,9 +248,9 @@ collocates_server <- function(id) {
       setkey(collocates, decade)
       collocates <- collocates[.(as.numeric(input$decade_collocates_bottom))] 
       
-      collocates <- search(collocates, vals$text, input$match_type, input$custom_search, input$btnLabel)
+      collocates <- search_ct(collocates, vals$text, input$match_type, input$custom_search, input$btnLabel)
       
-      collocates <- filter_sentiment(collocates, input$sentiment)
+      collocates <- filter_sentiment_ct(collocates, input$sentiment)
       
       collocates <- collocates[order(collocates, -n)]
       top <- collocates[1:20] 

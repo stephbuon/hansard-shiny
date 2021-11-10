@@ -1,62 +1,62 @@
 debate_titles_ui <- function(id) {
   tagList(
-    
-    
-    
-             sidebarLayout(
-               sidebarPanel(
-                 actionButton(NS(id, "about_debate_titles"), 
-                              "About This Page",
-                              style="color: #fff; 
-                                                  background-color: #337ab7; 
-                                                  border-color: #2e6da4; 
-                                                  width: 179px;
-                                                  padding:4px; 
-                                                  font-size:90%"),
-                 p(),
-                 selectInput(NS(id, "kw_list"), 
-                             "Keyword List:",
-                             list(`Special Vocabulary` = list("Property" = "property",
-                                                              "Transportation" = "transportation",
-                                                              "Resources" = "resources",
-                                                              "Industry" = "industry"),
-                                  `Custom Vocabulary` = list("Blank Plot" = "custom"))),
-                 
-                 
-                 
-                 textInput(NS(id,"keyword_addition"), 
-                           "Search Terms:", ""),
-                 textInput(NS(id,"keyword_addition_word_2"), 
-                           "", ""),
-                 textInput(NS(id, "keyword_addition_word_3"), 
-                           "", ""),
-                 textInput(NS(id, "keyword_addition_word_4"), 
-                           "", ""),
-                 textInput(NS(id, "keyword_addition_word_5"), 
-                           "", ""),
-                 textInput(NS(id, "keyword_addition_word_6"), 
-                           "", ""),
-                 actionButton(NS(id, 'download'), 
-                              "Download Plot",
-                              style = "width: 179px;"),
-                 width = 2),
-               
-               mainPanel(plotlyOutput(NS(id, "debate_titles")),
-                         
-                         tags$script('document.getElementById("debate_titles-download").onclick = function() {
-                                             var gd = document.getElementById("debate_titles-debate_titles");
-                                             Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
-                                             var a = window.document.createElement("a");
-                                             a.href = url; 
-                                             a.type = "image/png";
-                                             a.download = "plot.png";
-                                             document.body.appendChild(a);
-                                             a.click();
-                                             document.body.removeChild(a); }); }'),
-                         
-                         br(),
-                         br(),
-                         DTOutput(NS(id, 'debate_titles_DT'))))
+    sidebarLayout(
+      sidebarPanel(
+        actionButton(NS(id, "about_debate_titles"), 
+                     "About This Page",
+                     style="color: #fff; 
+                     background-color: #337ab7; 
+                     border-color: #2e6da4; 
+                     width: 179px;
+                     padding:4px; 
+                     font-size:90%"),
+        
+        p(),
+        
+        selectInput(NS(id, "kw_list"), 
+                    "Keyword List:",
+                    list(`Special Vocabulary` = list("Property" = "property",
+                                                     "Transportation" = "transportation",
+                                                     "Resources" = "resources",
+                                                     "Industry" = "industry"),
+                         `Custom Vocabulary` = list("Blank Plot" = "custom"))),
+        
+        textInput(NS(id,"keyword_addition"), 
+                  "Search Terms:", ""),
+        textInput(NS(id,"keyword_addition_word_2"), 
+                  "", ""),
+        textInput(NS(id, "keyword_addition_word_3"), 
+                  "", ""),
+        textInput(NS(id, "keyword_addition_word_4"), 
+                  "", ""),
+        textInput(NS(id, "keyword_addition_word_5"), 
+                  "", ""),
+        textInput(NS(id, "keyword_addition_word_6"), 
+                  "", ""),
+        
+        actionButton(NS(id, 'download'), 
+                     "Download Plot",
+                     style = "width: 179px;"),
+        
+        width = 2),
+      
+      mainPanel(plotlyOutput(NS(id, "debate_titles")),
+      
+      tags$script('document.getElementById("debate_titles-download").onclick = function() {
+      var gd = document.getElementById("debate_titles-debate_titles");
+      Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
+      var a = window.document.createElement("a");
+      a.href = url; 
+      a.type = "image/png";
+      a.download = "plot.png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a); }); }'),
+      
+      br(),
+      br(),
+      
+      DTOutput(NS(id, 'debate_titles_DT'))))
     
     
      ) }

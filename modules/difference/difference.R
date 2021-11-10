@@ -1,10 +1,6 @@
-# not working transitions
-
 vals = reactiveValues(btn = FALSE, text = FALSE)
 
-
 difference_ui <- function(id) {
-  
   ns <- NS(id)
   
   tagList(
@@ -13,12 +9,14 @@ difference_ui <- function(id) {
         actionButton(NS(id, "about_difference"), 
                      "About This Page",
                      style="color: #fff; 
-                                       background-color: #337ab7; 
-                                       border-color: #2e6da4; 
-                                       width: 179px;
-                                       padding:4px; 
-                                       font-size:90%"),
+                     background-color: #337ab7; 
+                     border-color: #2e6da4;
+                     width: 179px;
+                     padding:4px; 
+                     font-size:90%"),
+        
         p(),
+        
         textInput(NS(id, "wv_textbox"), 
                   "Keyword:", 
                   "tenant"),
@@ -52,97 +50,86 @@ difference_ui <- function(id) {
         br(),
         actionButton(NS(id, 'download_try_2'), 
                      "Download Plot",
-                     style = "width: 179px;"
-        ),
+                     style = "width: 179px;"),
+        
         width = 2),
-     
-      
-      
       
       mainPanel(plotlyOutput(NS(id, "wv_test"), 
                              height = "650"),
-                
-                tags$script('document.getElementById("download_try_2").onclick = function() {
-                                     var gd = document.getElementById("wv_test");
-                                     Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
-                                     var a = window.document.createElement("a");
-                                     a.href = url; 
-                                     a.type = "image/png";
-                                     a.download = "plot.png";
-                                     document.body.appendChild(a);
-                                     a.click();
-                                     document.body.removeChild(a);
-                                     });
-                                     } ')
-                
-                
-      
-    ) ) 
-    
-
-    
-    
-  ) }
-
+                             
+                             tags$script('document.getElementById("download_try_2").onclick = function() {
+                             var gd = document.getElementById("wv_test");
+                             Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
+                             var a = window.document.createElement("a");
+                             a.href = url; 
+                             a.type = "image/png";
+                             a.download = "plot.png";
+                             document.body.appendChild(a);
+                             a.click();
+                             document.body.removeChild(a);
+                             });
+                             } '))) 
+    )}
 
 difference_server <- function(id) {
   moduleServer(id, function(input, output, session) {
+    
+    output$wv_action_button <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_2 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_2", label = forplot[2,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_3 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_3", label = forplot[3,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_4 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_4", label = forplot[4,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_5 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_5", label = forplot[5,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_6 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_6", label = forplot[6,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_7 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_7", label = forplot[7,1], style = "width: 179px;") } 
+      else {
+        return() } })
+    
+    output$wv_action_button_8 <- renderUI({
+      forplot <- get_button() 
+      if (nrow(forplot) > 0) {
+        actionButton("wv_action_button_8", label = forplot[8,1], style = "width: 179px;") } 
+      else {
+        return() } })
 
-output$wv_action_button <- renderUI({
-  forplot <- get_button() 
-  if (nrow(forplot) > 0) {
-    actionButton("wv_action_button", label = forplot[1,1], style = "width: 179px;") } else { # 1,2
-      return() } 
-})
-
-output$wv_action_button_2 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_2", label = forplot_2[2,1], style = "width: 179px;") } else { # 2,2
-      return() } 
-})
-
-output$wv_action_button_3 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_3", label = forplot_2[3,1], style = "width: 179px;") } else { # 3,2
-      return() } 
-})
-
-output$wv_action_button_4 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_4", label = forplot_2[4,1], style = "width: 179px;") } else { # 4,2
-      return() }
-})
-
-output$wv_action_button_5 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_5", label = forplot_2[5,1], style = "width: 179px;") } else { # 5,2 
-      return() } })
-
-output$wv_action_button_6 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_6", label = forplot_2[6,1], style = "width: 179px;") } else { # 6,2 
-      return() }
-})
-
-output$wv_action_button_7 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_7", label = forplot_2[7,1], style = "width: 179px;") } else { 
-      return() }
-})
-
-
-output$wv_action_button_8 <- renderUI({
-  forplot_2 <- get_button()
-  if (nrow(forplot_2) > 0) {
-    actionButton("wv_action_button_8", label = forplot_2[8,1], style = "width: 179px;") } else { 
-      return() }
-})
 
 
 input_loop <- function(input, decades, first_range, second_range, make_m, make_decade, ...) {
@@ -331,13 +318,13 @@ observeEvent(input$about_difference, {
 
   } ) }
 
-
 # 
-    ui <- fluidPage(
-      difference_ui("wv_test")
-    )
-    server <- function(input, output, session) {
-      difference_server("wv_test")
-    }
-    shinyApp(ui, server)  
-#    
+# # 
+#     ui <- fluidPage(
+#       difference_ui("wv_test")
+#     )
+#     server <- function(input, output, session) {
+#       difference_server("wv_test")
+#     }
+#     shinyApp(ui, server)  
+# #    
