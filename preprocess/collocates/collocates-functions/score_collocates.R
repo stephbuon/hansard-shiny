@@ -1,8 +1,16 @@
-score_collocates <- function (collocates) {
+score_collocates <- function (collocates, ...) {
 
+  if (... == "speakers") {
+    collocates <- collocates %>% # row-wise sum
+      replace(is.na(.), 0) %>% 
+      mutate(combined_score = rowSums(.[3:5]))
+    
+    
+  } else {
+  
 collocates <- collocates %>% # row-wise sum
   replace(is.na(.), 0) %>% 
-  mutate(combined_score = rowSums(.[2:4]))
+  mutate(combined_score = rowSums(.[2:4])) }
 
 neutral <- 0
 
@@ -24,6 +32,19 @@ neutral$sentiment <- "Neutral"
 total <- bind_rows(positive, negative, neutral)
 
 total <- total %>%
-  select(n, sentiment, decade, grammatical_collocates)
+  select(n, sentiment, decade, grammatical_collocates, new_speaker)
+
+# if (keyword == "speakers"){
+#   total <- total %>%
+#     rename(ngrams = grammatical_collocates)
+#   
+#   total$new_speaker <- separate(total$new_speaker, c("first", "last", "id"), sep = "_")
+#   total <- total %>%
+#     mutate(clean_new_speaker = paste(total$first, total$last))
+#     
+#   total <- total %>%
+#     select(-first, -last, -id)
+#   
+# }
 
 return(total) }

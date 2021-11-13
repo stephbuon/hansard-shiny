@@ -47,5 +47,17 @@ clean_collocates <- function(collocates, keyword) {
   }
   
   collocates$grammatical_collocates <- trimws(collocates$grammatical_collocates, which = c("both"))
+  
+  
+  if (keyword == "speakers") {
+    
+    remove <- c(" as$", "^as ", " at$", "^at ", " a$", "^a ", " Ab$", "^Ab ", 
+                "^Aad ", " Aad$", " First$", " Second$", "^A3 ", "^Abc ", "^In ")
+    
+    for(r in remove){
+      collocates <- collocates %>% 
+        filter(!(str_detect(grammatical_collocates, regex(r, ignore_case = TRUE)))) }
+    
+  }
 
   return(collocates) }

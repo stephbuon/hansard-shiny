@@ -83,8 +83,19 @@ speaker_comparison_ui <- function(id) {
 speaker_comparison_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
+    # import data 
     h <- fread( "~/projects/hansard-shiny/app-data/speakers/speaker_comparison_radio_button_names.csv")
-    j <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade")
+    
+    
+    j <- reactive({
+      if (input$unit == "tokens") {
+        a <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade") }
+      else if (input$unit == "adj_noun_collocates") {
+        a <- fread("~/projects/hansard-shiny/app-data/speakers/clean_speaker_adj_noun_collocates.csv", key = "decade")}
+    })
+    #j <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade")
+    
+    
     
     observeEvent(input$sc_radio_buttons_top,{
       top_vals_speaker_comparison$btn = TRUE
@@ -149,7 +160,7 @@ speaker_comparison_server <- function(id) {
       return(j) }
     
     
-    test_2 <- function (j, top_or_bottom) {
+    test_2 <- function (j, top_or_bottom) { # search for speakers 
       if (top_vals_speaker_comparison$btn & bottom_vals_speaker_comparison$btn) {
         j <- binary_search(j, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
       
@@ -227,7 +238,7 @@ speaker_comparison_server <- function(id) {
     
     output$speaker_comparison_top <- renderPlotly({
       
-      ll <- test_2(j, "top") 
+      ll <- test_2(j(), "top") 
       
       if(top_vals_speaker_comparison$btn){
         ff <- input$sc_radio_buttons_top } 
@@ -268,7 +279,7 @@ speaker_comparison_server <- function(id) {
     
     output$speaker_comparison_bottom <- renderPlotly({
       
-      ll <- test_2(j, "bottom") 
+      ll <- test_2(j(), "bottom") 
       
       
       if(bottom_vals_speaker_comparison$btn){
