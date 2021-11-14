@@ -1,7 +1,5 @@
 searchable_speaker <- function(collocates, keyword) {
   
-  collocates$new_speaker <- "William_Grenville_777"
-  
   collocates <- separate(collocates, new_speaker, into = c("first", "last", "id"), sep = "_", remove = FALSE)
   
   collocates <- collocates %>%

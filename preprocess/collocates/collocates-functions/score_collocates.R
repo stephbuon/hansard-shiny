@@ -32,7 +32,7 @@ neutral$sentiment <- "Neutral"
 total <- bind_rows(positive, negative, neutral)
 
 total <- total %>%
-  select(n, sentiment, decade, grammatical_collocates, new_speaker)
+  select(n, sentiment, decade, grammatical_collocates, new_speaker, clean_new_speaker)
 
 # if (keyword == "speakers"){
 #   total <- total %>%
