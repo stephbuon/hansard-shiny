@@ -156,9 +156,7 @@ collocates_server <- function(id) {
     #   vals$btn=FALSE
     #   vals$text=TRUE
     # })
-    # 
     
-   
     
     get_tf_idf <- reactive({
       if (input$measure == "tf-idf") {

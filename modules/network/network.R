@@ -37,13 +37,11 @@ n1 <- n1 %>%
 
 network_ui <- function(id) {
   tagList(
-    
-    
     sidebarLayout(
       sidebarPanel(
-        helpText("Check the boxes to explore the langauge of different speakers."),
+        #helpText("Check the boxes to explore the langauge of different speakers."),
         
-        checkboxGroupInput(NS(id, "subreddit"), 
+        checkboxGroupInput(NS(id, "speaker_names"), 
                            "Speaker:",
                            c("William E. Gladstone" = "Mr. Gladstone",
                              "Benjamin Disraeli" = "bdisraeli",
@@ -51,8 +49,8 @@ network_ui <- function(id) {
                              "Mr. Placeholder" = "Mr. Placeholder"),
                            selected = c("Mr. Gladstone", "Mr. Placeholder")),
         
-        tags$hr(style="border-color: black;"),
-        helpText("Slide the dial to change decades."),
+        # tags$hr(style="border-color: black;"),
+        # helpText("Slide the dial to change decades."),
         
         sliderTextInput(
           inputId = NS(id, "decade"), 
@@ -70,19 +68,18 @@ network_ui <- function(id) {
                       "1880",
                       "1890")),
         
-        tags$hr(style="border-color: black;"),
-        helpText("Use the search boxes to filter for triples that contain parts-of-speech."),
+        # tags$hr(style="border-color: black;"),
+        # helpText("Use the search boxes to filter for triples that contain parts-of-speech."),
         
         textInput(NS(id, "search_subject"), 
-                     "Subject:", ""),
+                  "Subject:", ""),
         textInput(NS(id, "search_verb"), 
                   "Verb:", ""),
         textInput(NS(id, "search_object"), 
-                     "Object:", ""),
+                  "Object:", ""),
         actionButton(NS(id, 'download_network'), 
                      "Download Plot",
                      style = "width: 179px;"),
-        
         width = 2),
       
       mainPanel(visNetworkOutput(NS(id, "network")),
@@ -115,42 +112,40 @@ network_server <- function(id) {
 #  label = paste0("Export as ", type),
 #  background = "#fff")
 #})
-
-
-
-reactive_nodes <- reactive({
-  
-  e2 <- e1 %>%
-    filter(decade == input$decade)
-  
-  e2 <- e2 %>%
-    filter(from_name %in% input$subreddit)
-  
-  e2 <- search_svo(e2, input$search_subject, input$search_verb, input$search_object)
-  
-  # cast these edges to a set
-  edges_from_list <- e2$from_name
-  edges_to_list <- e2$to_name
-  total <- c(edges_from_list, edges_to_list)
-  total <- unique(total)
-  
-  # filter for nodes related to an edge
-  out <- data.table() 
-  for(i in 1:length(total)) {
     
-    keyword <- total[i]
     
-    filtered_nodes <- n1 %>%
-      filter(decade == input$decade) %>%
-      filter(str_detect(label, keyword)) #regex(paste0("^", keyword, "$", ignore_case = TRUE))))
-    
-    out <- rbind(out, filtered_nodes) }
+    reactive_nodes <- reactive({
+      
+      # filter the edges for just those in the chosen decade
+      e2 <- imported_edges %>%
+        filter(decade == input$decade)
+      
+      e2 <- e2 %>%
+        filter(from_name %in% input$speaker_names)
+      
+      e2 <- search_svo(e2, input$search_subject, input$search_verb, input$search_object)
+      
+      # cast these edges to a set
+      edges_from_list <- e2$from_name
+      edges_to_list <- e2$to_name
+      total <- c(edges_from_list, edges_to_list)
+      total <- unique(total)
   
-  # count the number of times the word was mentioned 
-  c <- e2 %>%
-    count(to_name) %>%
-    rename(value = n,
-           label = to_name)
+      # filter for nodes related to an edge
+      out <- data.table() 
+      for(keyword in 1:length(total)) {
+        
+        filtered_nodes <- n1 %>%
+          filter(decade == input$decade) %>%
+          filter(str_detect(label, keyword)) #regex(paste0("^", keyword, "$", ignore_case = TRUE))))
+        
+        out <- rbind(out, filtered_nodes) }
+      
+      # count the number of times the word was mentioned 
+      c <- e2 %>%
+        count(to_name) %>%
+        rename(value = n,
+               label = to_name)
   
   
   out <- left_join(out, c, by = 'label')
@@ -159,8 +154,8 @@ reactive_nodes <- reactive({
 
 
 reactive_edges <- reactive({
-  e3 <- e1 %>%
-    filter(from_name %in% input$subreddit) %>%
+  e3 <- imported_edges %>%
+    filter(from_name %in% input$speaker_names) %>%
     add_count(to_name, from_name) %>%
     rename(weight = n) })
 
@@ -214,7 +209,7 @@ output$tbl <- renderDT({
   
   # This dt might not reflect the correct count -- I need that count function 
   
-  datatable(e1 <- e1 %>% 
+  datatable(imported_edges <- imported_edges %>% 
               filter(from %in% input$current_node_selection | to %in% input$current_node_selection) %>%
               select(-from, -to, -decade),
             options = list(dom = 'ip'),

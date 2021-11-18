@@ -12,7 +12,9 @@ similarity_ui <- function(id) {
                                        padding:4px; 
                                        font-size:90%"),
         p(),
-        textInput(NS(id, "search_similarity"), "Keyword:", value = "harvest"),
+        textInput(NS(id, "search_similarity"), 
+                  "Keyword:", 
+                  value = "harvest"),
         actionButton(NS(id, 'download_similarity'), 
                      "Download Plot",
                      style = "width: 179px;"),
@@ -43,8 +45,10 @@ similarity_server <- function(id) {
     
     output$similarity <- renderPlotly({
       
+      search_word <- tolower(input$search_similarity)
+      
       out <- data.frame()
-      decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
+      decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870, 1880, 1890)
       
       for(d in 1:length(decades)) {
         
@@ -54,9 +58,9 @@ similarity_server <- function(id) {
         word_vectors <- as.matrix(read.table(table, as.is = TRUE))
         
 
-        if(input$search_similarity %in% rownames(word_vectors)) { 
+        if(search_word %in% rownames(word_vectors)) { 
           
-          kw = word_vectors[input$search_similarity, , drop = F]
+          kw = word_vectors[search_word, , drop = F]
           
           cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
           
@@ -83,7 +87,14 @@ similarity_server <- function(id) {
                                         width = 1.5)),
               textposition = "center right",
               height=650) %>%
+        layout(xaxis = list(autotick = F,
+                            tickmode = "array", 
+                            tickvals = c(1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870, 1880, 1890),
+                            dtick = 10,
+                            range = c(1790, 1900)),
+               title = paste0("Words Most Similar to ", "\"", input$search_similarity, "\"")) %>%
         config(displayModeBar = F) })
+    
     
     
     observeEvent(input$about_we_similarity, {

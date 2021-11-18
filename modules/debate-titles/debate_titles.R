@@ -69,28 +69,31 @@ debate_titles_server <- function(id) {
     words_per_year <- fread("~/projects/hansard-shiny/app-data/debates/words_per_year.csv")
     debate_title_year_counts <- fread("~/projects/hansard-shiny/app-data/debates/debate_title_year_counts.csv")
     
+    
+    
     import_debate_titles_data <- reactive( {
-      
       if (input$kw_list != "custom") {
         kw_data <- fread(paste0("~/projects/hansard-shiny/app-data/debates/kw_list_", input$kw_list, ".csv")) } 
       else { 
         kw_data <- data.table() } })
     
+    
+    
     keyword_addition <- function(d, input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6){
       
       keywords <- stri_remove_empty(c(input_keyword_addition, input_keyword_addition_word_2, input_keyword_addition_word_3, input_keyword_addition_word_4, input_keyword_addition_word_5, input_keyword_addition_word_6), TRUE)
       
-      if (length(keywords != 0)) {
-        
-        #words_per_year <- read_csv("~/projects/hansard-shiny/app-data/debates/words_per_year.csv")
-        #debate_title_year_counts <- read_csv("~/projects/hansard-shiny/debate_title_year_counts.csv")
         
         if (input$kw_list != "custom") { 
           all_year_counts <- fread(paste0("~/projects/hansard-shiny/app-data/debates/all_year_counts_", input$kw_list, ".csv")) } 
         else {
           all_year_counts <- fread("~/projects/hansard-shiny/app-data/debates/all_debate_titles_metadata.csv") }
+      
+      if (length(keywords != 0)) {
+        
         
         for (keyword in keywords) {
+          if (! keyword %in% all_year_counts$keywords) {
           
           debate_titles_w_keyword <- debate_title_year_counts %>%
             filter(str_detect(debate, regex(paste0("\\b", keyword, "\\b|^", keyword, "\\b|\\b", keyword, "$"), ignore_case = TRUE)))
@@ -105,7 +108,7 @@ debate_titles_server <- function(id) {
             summarise(debates_per_year = sum(n)) %>%
             mutate(keywords = keyword)
           
-          all_year_counts <- bind_rows(all_year_counts, year_count) }
+          all_year_counts <- bind_rows(all_year_counts, year_count) } }
         
         all_year_counts <- all_year_counts %>%
           left_join(words_per_year, by = "year") %>%

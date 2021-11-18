@@ -28,7 +28,7 @@ library(text2vec)
 library(ggwordcloud)
 library(scales)
 
-source("~/projects/hansard-shiny/global_functions.R")
+source("~/projects/hansard-shiny/preprocess/global_functions.R")
 
 modules_dir <- "~/projects/hansard-shiny/modules/"
 
@@ -106,7 +106,7 @@ ui <- fluidPage(
                                  similarity_ui("similarity")),
                         
                         tabPanel("Difference",
-                                 difference_ui("wv_test"))),
+                                 difference_ui("difference"))),
 
              navbarMenu("About",
                         tabPanel("Purpose",
@@ -133,7 +133,7 @@ server <- function(input, output, session) {
   top_speakers_server("top_speakers")
   collocates_server("collocates")
   speech_lengths_server("speech_lengths")
-  difference_server("wv_test")
+  difference_server("difference")
   speaker_comparison_server("speaker-comparison")
   vector_space_server("vector_space") 
   

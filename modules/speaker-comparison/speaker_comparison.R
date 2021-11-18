@@ -1,3 +1,5 @@
+source("/home/stephbuon/projects/hansard-shiny/modules/speaker-comparison/speaker_comparison_functions.R")
+
 top_vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
 bottom_vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
 
@@ -69,7 +71,6 @@ speaker_comparison_ui <- function(id) {
         actionButton(NS(id, 'download_speaker_comparison'), 
                      "Download Plot",
                      style = "width: 179px;"),
-        
         width = 2),
       
       mainPanel(plotlyOutput(NS(id, "speaker_comparison_top")),
@@ -83,19 +84,13 @@ speaker_comparison_ui <- function(id) {
 speaker_comparison_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-    # import data 
     h <- fread( "~/projects/hansard-shiny/app-data/speakers/speaker_comparison_radio_button_names.csv")
-    
     
     j <- reactive({
       if (input$unit == "tokens") {
         a <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade") }
       else if (input$unit == "adj_noun_collocates") {
-        a <- fread("~/projects/hansard-shiny/app-data/speakers/clean_speaker_adj_noun_collocates.csv", key = "decade")}
-    })
-    #j <- fread("~/projects/hansard-shiny/app-data/speakers/clean_clean_tokenized_hansard_counts.csv", key = "decade")
-    
-    
+        a <- fread("~/projects/hansard-shiny/app-data/speakers/clean_speaker_adj_noun_collocates.csv", key = "decade") } })
     
     observeEvent(input$sc_radio_buttons_top,{
       top_vals_speaker_comparison$btn = TRUE
@@ -125,114 +120,56 @@ speaker_comparison_server <- function(id) {
       updateRadioButtons(session, "sc_radio_buttons_bottom",
                          choices = h$clean_new_speaker,
                          selected = h[2,3] ) })
-
     
-    tf_idf_b <- function(df, dct, dcb) {
-      
-      df <- df %>%
-        filter(clean_new_speaker == dct | clean_new_speaker == dcb) 
-      
-      df <- df %>%
-        ungroup()
-      
-      df <- df %>%
-        bind_tf_idf(ngrams, clean_new_speaker, n)
-      
-      
-      df <- df %>%
-        select(-n) %>%
-        rename(n = tf_idf) 
-      
-      return(df) }
-    
-    
-    binary_search <- function(j, speaker1, speaker2) {
-      j <- j[.(as.numeric(input$sc_decade))]
-      
-      setkey(j, clean_new_speaker)
-      f <- j[.(as.character(speaker1))]
-      m <- j[.(as.character(speaker2))]
-      j <- bind_rows(f, m)
-      
-      if (input$sc_compare == "sc_tf-idf") {
-        j <- tf_idf_b(j, speaker1, speaker2) } # split after the function 
-      
-      return(j) }
+   # xlab<- reactive({
+   #    if (input$sc_compare == "sc_top_words") {
+   #      xlab <- list(title ="Frequency") } 
+   #    else if (input$sc_compare == "sc_tf-idf") {
+   #      xlab <- list(title ="tf-idf") }
+   #    
+   #  })
     
     
     test_2 <- function (j, top_or_bottom) { # search for speakers 
+      
       if (top_vals_speaker_comparison$btn & bottom_vals_speaker_comparison$btn) {
-        j <- binary_search(j, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
-      
+        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+
       else if (top_vals_speaker_comparison$text & bottom_vals_speaker_comparison$btn) {
-        j <- binary_search(j, input$sc_custom_search_top, input$sc_radio_buttons_bottom) }
-      
+        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+
       else if (top_vals_speaker_comparison$btn & bottom_vals_speaker_comparison$text) {
-        j <- binary_search(j, input$sc_radio_buttons_top, input$sc_custom_search_bottom) }
-      
+        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+
       else if (top_vals_speaker_comparison$text & bottom_vals_speaker_comparison$text) {
-        j <- binary_search(j, input$sc_custom_search_top, input$sc_custom_search_bottom) } 
+        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
       
-      
-      
-      
-      # if (paste0(top_or_bottom, "_vals_speaker_comparison$btn")) {
-      #   speaker <- input$sc_radio_buttons_top
-      #   
-      #   j <- j %>%
-      #     filter(clean_new_speaker == speaker) %>%
-      #     distinct(new_speaker, decade, ngrams, n, clean_new_speaker) }
-      # 
-      # else if (paste0(top_or_bottom, "_vals_speaker_comparison$text")) {
-      #   speaker <- input$sc_custom_search_top # maybe I can do paste zero and just take the value of top_or_bottom
-      #   
-      #   j <- j %>%
-      #     filter(clean_new_speaker == speaker) %>%
-      #     distinct(new_speaker, decade, ngrams, n, clean_new_speaker) } 
-      # 
-      # 
-      # 
-      # return(j)} 
-      
-      
-      
+
       if (top_or_bottom == "top") {
-        
+
         if (top_vals_speaker_comparison$btn) {
-          speaker <- input$sc_radio_buttons_top
-          
-          j <- j %>%
-            filter(clean_new_speaker == speaker) %>%
-            distinct(new_speaker, decade, ngrams, n, clean_new_speaker) }
-        
+          speaker <- input$sc_radio_buttons_top }
         else if (top_vals_speaker_comparison$text) {
-          speaker <- input$sc_custom_search_top # maybe I can do paste zero and just take the value of top_or_bottom
-          
-          j <- j %>%
-            filter(clean_new_speaker == speaker) %>%
-            distinct(new_speaker, decade, ngrams, n, clean_new_speaker) } }
-      
-      else if (top_or_bottom == "bottom") {
-        if (bottom_vals_speaker_comparison$btn) {
-          speaker <- input$sc_radio_buttons_bottom
-          
+          speaker <- input$sc_custom_search_top  }
+
           j <- j %>%
             filter(clean_new_speaker == speaker) %>%
             distinct(new_speaker, decade, ngrams, n, clean_new_speaker) }
-        
+
+
+      else if (top_or_bottom == "bottom") {
+
+        if (bottom_vals_speaker_comparison$btn) {
+          speaker <- input$sc_radio_buttons_bottom }
         else if (bottom_vals_speaker_comparison$text) {
-          speaker <- input$sc_custom_search_bottom
-          
+          speaker <- input$sc_custom_search_bottom }
+
           j <- j %>%
             filter(clean_new_speaker == speaker) %>%
-            distinct(new_speaker, decade, ngrams, n, clean_new_speaker) } }
+            distinct(new_speaker, decade, ngrams, n, clean_new_speaker) }
       
-      
-      
-      
-      j <- j[order(j, -n)]
-      top <- j[1:20]  
-      
+      top <- j[order(j, -n)][1:20]
+
       return(top) }
     
     
@@ -245,12 +182,11 @@ speaker_comparison_server <- function(id) {
       else {
         ff <- input$sc_custom_search_top }
       
-      
-      
       if (input$sc_compare == "sc_top_words") {
         xlab <- list(title ="Frequency") } 
       else if (input$sc_compare == "sc_tf-idf") {
         xlab <- list(title ="tf-idf") }
+      
       
       
       plot_ly(ll, 
@@ -265,9 +201,7 @@ speaker_comparison_server <- function(id) {
         layout(title = ff,
                xaxis = list(title = xlab),
                yaxis = list(title = "")) %>%
-        config(displayModeBar = F) 
-      
-    })
+        config(displayModeBar = F)})
     
     
     
@@ -292,8 +226,8 @@ speaker_comparison_server <- function(id) {
       else if (input$sc_compare == "sc_tf-idf") {
         xlab <- list(title ="tf-idf") }
       
-      
-      
+
+
       plot_ly(ll, 
               x = ~n, 
               y = ~reorder(ngrams, n), 
@@ -306,11 +240,7 @@ speaker_comparison_server <- function(id) {
         layout(title = ff,
                xaxis = list(title = xlab),
                yaxis = list(title = "")) %>%
-        config(displayModeBar = F) 
-    })
+        config(displayModeBar = F)})
     
-    
-    
-    
-  } ) }
+    } ) }
 
