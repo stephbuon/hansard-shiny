@@ -10,6 +10,7 @@ input_loop <- function(input, decades, range_start, make_m, add_decade_col, ...)
       kw = word_vectors[input, , drop = F]
       cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
       
+      # come back and change to F 
       forplot <- as.data.frame(sort(cos_sim_rom[,1], decreasing = T)[range_start:nrow(cos_sim_rom)]) 
       
       colnames(forplot)[1] <- paste0("similarity")
@@ -54,8 +55,8 @@ get_button <- function(wv_textbox) {
     return(out) } 
   
   else {
-    out <- out %>%
+    
+    out <- out %>% # take a range of 8 for the buttons
       slice(8:16)
-    #slice(10:18)
     
     return(out) } }

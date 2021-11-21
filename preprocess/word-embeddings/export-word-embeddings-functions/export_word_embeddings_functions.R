@@ -30,7 +30,7 @@ export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar
   for (file in files) {
     data_decade_subset <- read_csv(file)
     
-    data_decade_subset <- clean_data_for_word_embeddings(data_decade, stopwords)
+    data_decade_subset <- clean_data_for_word_embeddings(data_decade_subset, stopwords)
     
     first_year_label <- first(data_decade_subset$year)
     last_year_label <- last(data_decade_subset$year)
@@ -47,7 +47,7 @@ export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar
     # temp <- hansard_decade_subset %>%
     #    count(ngrams)
     
-    vectorizer = vocab_vectorizer(hansard_vocab)
+    vectorizer = vocab_vectorizer(vocab)
     
     # The default suggestion was a window of 10, but I am using a window of 5 because the results seem better
     # for the Hansard data set -- I get less stop words in results
@@ -55,7 +55,7 @@ export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar
     
     glove = GlobalVectors$new(rank = 4, x_max = 100)
     
-    wv_main = glove$fit_transform(hansard_tcm, n_iter = 1000, convergence_tol = 0.00000001, n_threads = 24)
+    wv_main = glove$fit_transform(tcm, n_iter = 1000, convergence_tol = 0.00000001, n_threads = 24)
     
     wv_context = glove$components
     
@@ -76,7 +76,7 @@ export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar
     
     print("Writing word embeddings to disk")
     #write.matrix(hansard_word_vectors, file = fname, sep = ",")
-    write.table(hansard_word_vectors, file = fname)
+    write.table(word_vectors, file = fname)
     
   }
   

@@ -28,6 +28,9 @@ library(text2vec)
 library(ggwordcloud)
 library(scales)
 
+library(purrr)
+
+
 source("~/projects/hansard-shiny/preprocess/global_functions.R")
 
 modules_dir <- "~/projects/hansard-shiny/modules/"
