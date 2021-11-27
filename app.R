@@ -140,7 +140,6 @@ server <- function(input, output, session) {
   speaker_comparison_server("speaker-comparison")
   vector_space_server("vector_space") 
   
-  
   }
 
 shinyApp(ui, server)

@@ -23,9 +23,101 @@ speech_lengths_ui <- function(id) {
                       "Mid-Length Speeches (50-999 words) " = "Mid-Length (50-999 Word)",
                       "Long Speeches (1000+ words)" = "long")),
         
+        conditionalPanel(
+          condition = "input.drop_down_hist == 'overview'", ns = ns,
+          
+          
+          
+          sidebarPanel(
+            HTML("
+<div id='speech_lengths-test' class='form-group shiny-input-radiogroup shiny-input-container shiny-bound-input'>
+     <label class='control-label' for='speech_lengths-test'>Select Keyword:</label>
+<div class='shiny-options-group'>
+     <hr class ='radio'>
+     
+     Property
+     <hr class ='radio'>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='Tenant' checked='checked'>
+               <span>Tenant</span>
+          </label>
+     </div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='Property'>
+               <span>Property</span>
+          </label>
+     </div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='Landlord'>
+               <span>Landlord</span>
+          </label>
+     </div>
+     
+     
+     
+     Concerns
+     <hr class ='radio'>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='ireland'>
+               <span>Ireland</span>
+          </label>
+     </div>
+     
+     Nations
+     <hr class ='radio'>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='ireland'>
+               <span>Ireland</span>
+          </label>
+     </div>
+     
+     
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='Scotland'>
+               <span>Scotland</span>
+          </label>
+     </div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='India'>
+               <span>India</span>
+          </label>
+     </div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='France'>
+               <span>France</span>
+          </label>
+     </div>
+     
+     Cities
+     <hr class = 'radio'>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='four'>
+               <span>four</span>
+          </label>
+     </div>
+     
+</div>
+</div>")),
+          
+          
+          textInput(NS(id, "keyword_search"), 
+                    "Custom Search:", 
+                    value = "")
+          
+          ),
         
         conditionalPanel(
           condition = "input.drop_down_hist != 'overview'", ns = ns,
+          
           sliderTextInput(
             inputId = NS(id, "decade_hist"), 
             label = "Decade: ", 
@@ -53,7 +145,8 @@ speech_lengths_ui <- function(id) {
       
       mainPanel(
         plotlyOutput(NS(id, "speech_lengths")),
-        DTOutput(NS(id, 'speech_lengths_table'))))
+        DTOutput(NS(id, 'speech_lengths_table')),
+        textOutput(NS(id, "selection"))))
     
     
   ) }
@@ -62,14 +155,21 @@ speech_lengths_ui <- function(id) {
 speech_lengths_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
+    output$selection <- renderText({
+      input$test})
+
     viz <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths_overview.csv")
     hansard_speech_lengths <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths.csv") #%>%
     #rename(speech_length = n)
     
     output$speech_lengths <- renderPlotly({
       
+      
       if (input$drop_down_hist == "overview") {
         viz <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths_overview.csv")
+        
+        print(input$test)
+        
 
         splitted_list <- split(viz, viz$decade)
         plot_list <- lapply(splitted_list, 
@@ -87,6 +187,23 @@ speech_lengths_server <- function(id) {
                  height = 650,
                  margin = list(t = 50),
                  showlegend = F,
+                 xaxis = list(showticklabels = FALSE),
+                 xaxis2 = list(showticklabels = FALSE),
+                 xaxis3 = list(showticklabels = FALSE),
+                 xaxis4 = list(showticklabels = FALSE),
+                 xaxis5 = list(showticklabels = FALSE),
+                 xaxis6 = list(showticklabels = FALSE),
+                 xaxis7 = list(showticklabels = FALSE),
+                 xaxis8 = list(showticklabels = FALSE),
+                 xaxis9 = list(title = "Short     Mid     Long",
+                               showticklabels = FALSE),
+                 xaxis10 = list(title = "Short     Mid     Long",
+                                showticklabels = FALSE),
+                 xaxis11 = list(title = "Short     Mid     Long",
+                                showticklabels = FALSE),
+                 xaxis12 = list(title = "Short     Mid     Long",
+                                showticklabels = FALSE),
+                 
                  yaxis = list(range = c(0, 100000)),
                  yaxis2 = list(range = c(0, 100000)),
                  yaxis3 = list(range = c(0, 100000)),
@@ -133,17 +250,64 @@ speech_lengths_server <- function(id) {
           add_count(speech_length) 
         
         render_value_range_hist(d) 
+
         
-        plot_ly(x = d$speech_length, 
+      d %>%
+        plot_ly(x = ~speech_length, 
                 nbinsx = input$bins,
                 type = "histogram",
                 source="YYY",
                 marker = list(color = 'rgb(158,202,225)')) %>%
           layout(title = paste0(input$drop_down_hist, " Speeches In ", input$decade_hist),
                  bargap = 0.1) %>%
-          config(displayModeBar = F) }
+          config(displayModeBar = F) 
+        
+
+        
+        }
       
     })
+    
+    
+    
+    
+    
+    # 
+    # 
+    # number_of_debates_from_1803_1910 %>%
+    #   highlight_key(~decade) %>%
+    #   plot_ly(
+    #     x = ~decade, 
+    #     y = ~no_of_debates, 
+    #     type = 'bar', 
+    #     text = ~paste0("Decade: ", "<b>", decade, "</b>", "\n",
+    #                    "Number of Debates: ", "<b>", no_of_debates, "</b>", "\n"),
+    #     hoverinfo = "text",
+    #     marker = list(color = 'rgb(158,202,225)',
+    #                   line = list(color = 'rgb(8,48,107)',
+    #                               width = 1.5))) %>% 
+    #   highlight(on = "plotly_click", off = "plotly_doubleclick") %>%
+    #   layout(barmode = "overlay",
+    #          title = paste0("The Hansard Parliamentary Debates", "\n", "Debate Count by Decade: 1803—1910"),
+    #          xaxis = list(title = ""),
+    #          yaxis = list(title = "")) %>%
+    #   config(displayModeBar = F) 
+    # 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

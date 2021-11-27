@@ -3,7 +3,7 @@ input_loop <- function(input, decades, range_start, make_m, add_decade_col, ...)
   out <- data.frame()
   
   for(fdecade in decades) {
-    table_dir <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
+    table_dir <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_11222021/hansard_word_vectors_", fdecade, ".txt")
     word_vectors <- as.matrix(read.table(table_dir, as.is = TRUE))
     
     if(input %in% rownames(word_vectors)) {
