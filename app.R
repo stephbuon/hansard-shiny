@@ -76,9 +76,6 @@ ui <- fluidPage(
                         tabPanel("Longest Speeches",
                                  longest_speeches_ui("longest_speeches")),
                         
-                        tabPanel("Speech Lengths",
-                                 speech_lengths_ui("speech_lengths")),
-                        
                         tabPanel("Top Speakers",
                                  top_speakers_ui("top_speakers")),
                         
@@ -88,10 +85,7 @@ ui <- fluidPage(
                         tabPanel("Speaker Comparison",
                                  speaker_comparison_ui("speaker-comparison"))),
              
-             navbarMenu("Debates",
-                        tabPanel("Longest Debates",
-                                 longest_debates_ui("longest_debates")),
-             
+             navbarMenu("Debate Titles",
                         tabPanel("Debate Titles",
                                  debate_titles_ui("debate_titles")),
                         
@@ -100,6 +94,13 @@ ui <- fluidPage(
                         
                         tabPanel("Nation Pairs",
                                  nation_pairs_ui("nation_pairs"))),
+             
+             navbarMenu("Debate Text",
+                        tabPanel("Longest Debates",
+                                 longest_debates_ui("longest_debates")),
+                        
+                        tabPanel("Speech Lengths",
+                                 speech_lengths_ui("speech_lengths"))),
              
              navbarMenu("Language",
                         tabPanel("Vector Space",
@@ -117,7 +118,9 @@ ui <- fluidPage(
                         tabPanel("Code", 
                                  code_ui()),
                         tabPanel("Data",
-                                 data_ui())) 
+                                 data_ui()),
+                        tabPanel("Report a Problem",
+                                 )) 
              
              ) ) 
 

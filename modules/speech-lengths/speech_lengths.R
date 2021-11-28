@@ -18,17 +18,14 @@ speech_lengths_ui <- function(id) {
         p(),
         selectInput(NS(id, "drop_down_hist"), 
                     "Speeches:",
-                    c("Overview" = "overview",
-                      "Short Speeches (1-49 words)" = "Short (1-49 Word)",
-                      "Mid-Length Speeches (50-999 words) " = "Mid-Length (50-999 Word)",
-                      "Long Speeches (1000+ words)" = "long")),
+                    list(Overview = list("overview" = "overview"),
+                         `Speeches Histogram` = list("Short Speeches (1-49 words)" = "Short (1-49 Word)",
+                                                    "Mid-Length Speeches (50-999 words) " = "Mid-Length (50-999 Word)",
+                                                    "Long Speeches (1000+ words)" = "long"))),
         
         conditionalPanel(
           condition = "input.drop_down_hist == 'overview'", ns = ns,
           
-          
-          
-          sidebarPanel(
             HTML("
 <div id='speech_lengths-test' class='form-group shiny-input-radiogroup shiny-input-container shiny-bound-input'>
      <label class='control-label' for='speech_lengths-test'>Select Keyword:</label>
@@ -36,12 +33,13 @@ speech_lengths_ui <- function(id) {
      <hr class ='radio'>
      
      Property
-     <hr class ='radio'>
+     <div>
      <div class='radio'>
           <label>
                <input type='radio' name='speech_lengths-test' value='Tenant' checked='checked'>
                <span>Tenant</span>
           </label>
+     </div>
      </div>
      <div class='radio'>
           <label>
@@ -59,21 +57,23 @@ speech_lengths_ui <- function(id) {
      
      
      Concerns
-     <hr class ='radio'>
+     <div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='Ireland'>
+               <span>Ireland</span>
+          </label>
+     </div>
+     </div>
+     
+     Nations
+     <div>
      <div class='radio'>
           <label>
                <input type='radio' name='speech_lengths-test' value='ireland'>
                <span>Ireland</span>
           </label>
      </div>
-     
-     Nations
-     <hr class ='radio'>
-     <div class='radio'>
-          <label>
-               <input type='radio' name='speech_lengths-test' value='ireland'>
-               <span>Ireland</span>
-          </label>
      </div>
      
      
@@ -97,16 +97,17 @@ speech_lengths_ui <- function(id) {
      </div>
      
      Cities
-     <hr class = 'radio'>
+     <div>
      <div class='radio'>
           <label>
                <input type='radio' name='speech_lengths-test' value='four'>
                <span>four</span>
           </label>
      </div>
+     </div>
      
 </div>
-</div>")),
+</div>"),
           
           
           textInput(NS(id, "keyword_search"), 
@@ -146,6 +147,13 @@ speech_lengths_ui <- function(id) {
       mainPanel(
         plotlyOutput(NS(id, "speech_lengths")),
         DTOutput(NS(id, 'speech_lengths_table')),
+        br(), br(),
+        br(), br(),
+        br(), br(),
+        br(), br(),
+        br(), br(),
+        br(), br(),
+        br(),
         textOutput(NS(id, "selection"))))
     
     
@@ -155,8 +163,6 @@ speech_lengths_ui <- function(id) {
 speech_lengths_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-    output$selection <- renderText({
-      input$test})
 
     viz <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths_overview.csv")
     hansard_speech_lengths <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths.csv") #%>%
@@ -168,9 +174,9 @@ speech_lengths_server <- function(id) {
       if (input$drop_down_hist == "overview") {
         viz <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths_overview.csv")
         
-        print(input$test)
+        render_text(input$test) 
         
-
+        
         splitted_list <- split(viz, viz$decade)
         plot_list <- lapply(splitted_list, 
                             plot_ly, 
@@ -296,6 +302,20 @@ speech_lengths_server <- function(id) {
     
     
     
+    
+    
+    render_text <- function(d){
+       output$selection <- renderText({
+         
+         if (input$drop_down_hist == "overview") {
+           d
+         } else {
+           
+           
+         }
+         
+         
+         })  }
     
     
     
