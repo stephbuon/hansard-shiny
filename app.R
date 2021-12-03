@@ -119,7 +119,7 @@ ui <- fluidPage(
                                  code_ui()),
                         tabPanel("Data",
                                  data_ui()),
-                        tabPanel("Report a Problem",
+                        tabPanel("Report a Bug",
                                  )) 
              
              ) ) 

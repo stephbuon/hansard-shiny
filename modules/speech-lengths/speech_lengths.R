@@ -1,3 +1,47 @@
+# get the count for each keyword
+# show a line chart for frequenty over each decade, waithin the actual debate text
+
+# search_ngrams <- function(input_kw) {
+#   
+#   input_dir <- "/home/stephbuon/projects/hansard-shiny/app-data/debate-text/tokenized_hansard_count"
+#   
+#   files <- list.files(path = input_dir, pattern = "*.csv", full.names = TRUE)
+#   
+#   decades <- c("1800", "1810", "1820", "1830", "1840", "1850", "1860", "1870", "1880",
+#                "1890", "1900", "1910")
+#   
+#   
+#   all <- data.frame()
+#   
+#   for(file in files) {
+#     
+#     tokenized_decade <- fread(file)
+#     
+#     tokenized_decade <- tokenized_decade %>%
+#       filter(ngrams == input_kw)
+#     
+#     all <- bind_rows(all, tokenized_decade) }
+#   
+#   
+#   return(all) }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 source("/home/stephbuon/projects/hansard-shiny/modules/speech-lengths/speech_length_annotations.txt")
 
 speech_lengths_ui <- function(id) {
@@ -36,20 +80,20 @@ speech_lengths_ui <- function(id) {
      <div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='Tenant' checked='checked'>
+               <input type='radio' name='speech_lengths-test' value='tenant' checked='checked'>
                <span>Tenant</span>
           </label>
      </div>
      </div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='Property'>
+               <input type='radio' name='speech_lengths-test' value='property'>
                <span>Property</span>
           </label>
      </div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='Landlord'>
+               <input type='radio' name='speech_lengths-test' value='landlord'>
                <span>Landlord</span>
           </label>
      </div>
@@ -60,11 +104,21 @@ speech_lengths_ui <- function(id) {
      <div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='Ireland'>
-               <span>Ireland</span>
+               <input type='radio' name='speech_lengths-test' value='poor'>
+               <span>Poor</span>
           </label>
      </div>
      </div>
+     <div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='coal'>
+               <span>Coal</span>
+          </label>
+     </div>
+     </div> 
+     
+     
      
      Nations
      <div>
@@ -79,19 +133,19 @@ speech_lengths_ui <- function(id) {
      
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='Scotland'>
+               <input type='radio' name='speech_lengths-test' value='scotland'>
                <span>Scotland</span>
           </label>
      </div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='India'>
+               <input type='radio' name='speech_lengths-test' value='india'>
                <span>India</span>
           </label>
      </div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='France'>
+               <input type='radio' name='speech_lengths-test' value='france'>
                <span>France</span>
           </label>
      </div>
@@ -100,14 +154,35 @@ speech_lengths_ui <- function(id) {
      <div>
      <div class='radio'>
           <label>
-               <input type='radio' name='speech_lengths-test' value='four'>
-               <span>four</span>
+               <input type='radio' name='speech_lengths-test' value='dublin'>
+               <span>Dublin</span>
+          </label>
+     </div>
+     </div>
+     <div>
+     <div class='radio'>
+          <label>
+               <input type='radio' name='speech_lengths-test' value='london'>
+               <span>London</span>
           </label>
      </div>
      </div>
      
+     
+     
+     
+     
+     
+     
+     
 </div>
-</div>"),
+</div>"
+                 
+                 
+                 
+                 
+                 
+                 ),
           
           
           textInput(NS(id, "keyword_search"), 
@@ -153,8 +228,8 @@ speech_lengths_ui <- function(id) {
         br(), br(),
         br(), br(),
         br(), br(),
-        br(),
-        textOutput(NS(id, "selection"))))
+        plotlyOutput(NS(id, "plot_2"))))
+        #textOutput(NS(id, "selection"))))
     
     
   ) }
@@ -174,7 +249,19 @@ speech_lengths_server <- function(id) {
       if (input$drop_down_hist == "overview") {
         viz <- fread("~/projects/hansard-shiny/app-data/speakers/speech_lengths_overview.csv")
         
-        render_text(input$test) 
+        
+        #render_text(input$test) 
+        
+        # aaa <- search_ngrams(input$test)
+        # 
+        # print(aaa)
+        
+        #plot_2_()
+        
+        # mid number / total number 
+        # x 100
+        
+        
         
         
         splitted_list <- split(viz, viz$decade)
@@ -186,7 +273,8 @@ speech_lengths_server <- function(id) {
                             marker = list(color = c('rgb(135, 206, 235)', 'rgb(70, 130, 180)', 'rgb(15, 82, 186)'))) 
         fig <- subplot(plot_list, nrows = 3, margin = c(.02, .02, .03, .03)) %>%
           layout(title = "Speech Lengths from 1800 to 1910",
-                 plot_bgcolor='#e5ecf6')
+                 plot_bgcolor='#e5ecf6') %>%
+          config(displayModeBar = F)
         
         fig %>%
           layout(annotations = annotations,
@@ -221,8 +309,7 @@ speech_lengths_server <- function(id) {
                  yaxis9 = list(range = c(0, 100000)),
                  yaxis10 = list(range = c(0, 100000)),    
                  yaxis11 = list(range = c(0, 100000)),    
-                 yaxis12 = list(range = c(0, 100000))) %>%
-          config(displayModeBar = F)
+                 yaxis12 = list(range = c(0, 100000))) 
         
         
          
@@ -278,46 +365,94 @@ speech_lengths_server <- function(id) {
     
     
     
-    # 
-    # 
-    # number_of_debates_from_1803_1910 %>%
-    #   highlight_key(~decade) %>%
-    #   plot_ly(
-    #     x = ~decade, 
-    #     y = ~no_of_debates, 
-    #     type = 'bar', 
-    #     text = ~paste0("Decade: ", "<b>", decade, "</b>", "\n",
-    #                    "Number of Debates: ", "<b>", no_of_debates, "</b>", "\n"),
-    #     hoverinfo = "text",
-    #     marker = list(color = 'rgb(158,202,225)',
-    #                   line = list(color = 'rgb(8,48,107)',
-    #                               width = 1.5))) %>% 
-    #   highlight(on = "plotly_click", off = "plotly_doubleclick") %>%
-    #   layout(barmode = "overlay",
-    #          title = paste0("The Hansard Parliamentary Debates", "\n", "Debate Count by Decade: 1803—1910"),
-    #          xaxis = list(title = ""),
-    #          yaxis = list(title = "")) %>%
-    #   config(displayModeBar = F) 
-    # 
-    
-    
-    
-    
     
     render_text <- function(d){
        output$selection <- renderText({
          
          if (input$drop_down_hist == "overview") {
            d
-         } else {
-           
-           
-         }
-         
-         
-         })  }
+         } })  }
     
     
+    
+
+      
+    
+      output$plot_2 <- renderPlotly({
+        
+        if (input$drop_down_hist == "overview") {
+          
+          word <- input$test
+          
+          a <- fread("/home/stephbuon/projects/hansard-shiny/app-data/debate-text/tokenized_hansard_count/tokenized_hansard_count_all_decades_speech_length_type_0.csv") %>%
+            filter(ngrams == word)
+          
+          
+          b <- fread("/home/stephbuon/projects/hansard-shiny/app-data/debate-text/tokenized_hansard_count/tokenized_hansard_count_all_decades_speech_length_type_1.csv") %>%
+            filter(ngrams == word)
+          
+          
+          c <- fread("/home/stephbuon/projects/hansard-shiny/app-data/debate-text/tokenized_hansard_count/tokenized_hansard_count_all_decades_speech_length_type_2.csv") %>%
+            filter(ngrams == word)
+          
+          
+          all <- bind_rows(a, b, c)
+          
+        f <-  all %>%
+            group_by(decade, speech_length_type) %>%
+            summarise(n = sum(token_count)) %>%
+            mutate(prop = n / sum(n)) %>%
+            ungroup()
+          
+        
+        q <- f %>%
+          filter(speech_length_type == "0")
+        
+        w <- f %>%
+          filter(speech_length_type == "1")
+        
+        e <- f %>%
+          filter(speech_length_type == "2")
+        
+        
+        fig <- plot_ly(q, 
+                       x = ~decade, 
+                       y = ~prop, 
+                       type = 'scatter', 
+                       mode = 'lines') %>%
+          add_trace(data=w, name="line1", x = ~decade, y = ~prop) %>%
+          add_trace(data=e, name="line2", x = ~decade, y = ~prop) %>%
+          config(displayModeBar = F)
+        
+          
+          
+          # fig <- plot_ly(a, 
+          #                x = ~decade, 
+          #                y = ~token_count, 
+          #                type = 'scatter', 
+          #                mode = 'lines') %>%
+          #   add_trace(data=b, name="line1", x = ~decade, y = ~token_count) %>%
+          #   add_trace(data=c, name="line2", x = ~decade, y = ~token_count) %>%
+          #   config(displayModeBar = F)
+          # 
+          fig
+          
+          
+          
+          
+          
+        
+        
+        }
+        
+        
+        
+        
+      })
+      
+    #}
+    
+   
     
     
     

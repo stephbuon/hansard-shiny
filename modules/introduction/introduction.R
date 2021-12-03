@@ -33,11 +33,12 @@ introduction_server <- function(id) {
   moduleServer(id, function(input, output, session) {
 
 number_of_debates_from_1803_1910 <- fread("~/projects/hansard-shiny/app-data/introduction/number_of_debates_from_1803_1910.csv")
+number_of_debates_from_1803_1910$decade <- as.factor(number_of_debates_from_1803_1910$decade)
 
 output$ndbs <- renderPlotly({
   
   number_of_debates_from_1803_1910 %>%
-    highlight_key() %>%
+    highlight_key(~decade) %>%
     plot_ly(
           x = ~decade, 
           y = ~no_of_debates, 
@@ -48,7 +49,7 @@ output$ndbs <- renderPlotly({
           marker = list(color = 'rgb(158,202,225)',
                         line = list(color = 'rgb(8,48,107)',
                                     width = 1.5))) %>% 
-    highlight(on = "plotly_click", off = "plotly_doubleclick") %>%
+    highlight(~decade, on = "plotly_click", off = "plotly_doubleclick") %>%
     layout(barmode = "overlay",
            title = paste0("The Hansard Parliamentary Debates", "\n", "Debate Count by Decade: 1803—1910"),
            xaxis = list(title = ""),
@@ -59,8 +60,6 @@ output$ndbs <- renderPlotly({
   
   
 })
-
-
 
 
 
