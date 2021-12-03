@@ -1,9 +1,15 @@
+source("/home/stephbuon/projects/hansard-shiny/modules/kwic/kwic_functions.R")
 
+#library(shinyjs)
 
 similarity_ui <- function(id) {
   tagList(
     sidebarLayout(
       sidebarPanel(
+        
+        #useShinyjs(),
+        #extendShinyjs(text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click', 'null'); }", functions = c("resetClick")),
+        
         actionButton(NS(id, "about_we_similarity"), 
                      "About This Page",
                      style="color: #fff; background-color: #337ab7; 
@@ -12,13 +18,42 @@ similarity_ui <- function(id) {
                                        padding:4px; 
                                        font-size:90%"),
         p(),
-        textInput(NS(id, "search_similarity"), "Keyword:", value = "harvest"),
+        textInput(NS(id, "search_similarity"), 
+                  "Keyword:", 
+                  value = "harvest"),
+        
+        sliderTextInput(
+          inputId = NS(id,"window_size"),
+          label = "Window Size: ",
+          grid = TRUE,
+          force_edges = TRUE,
+          choices = c("1",
+                      "2", 
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "7",
+                      "8",
+                      "9",
+                      "10",
+                      "Full"),
+          selected = "5"),
+        
         actionButton(NS(id, 'download_similarity'), 
                      "Download Plot",
                      style = "width: 179px;"),
         width = 2),
       
       mainPanel(plotlyOutput(NS(id, "similarity")),
+                br(), br(),
+                br(), br(),
+                br(), br(),
+                br(), br(),
+                br(), br(),
+                br(), br(),
+                dataTableOutput(NS(id, 'aab')),
+                
                 tags$script('document.getElementById("similarity-download_similarity").onclick = function() {
                                      var gd = document.getElementById("similarity-similarity");
                                      Plotly.Snapshot.toImage(gd, {format: "png"}).once("success", function(url) {
@@ -43,20 +78,25 @@ similarity_server <- function(id) {
     
     output$similarity <- renderPlotly({
       
+      # observeEvent(input$search_similarity, {
+      #   js$resetClick()
+      # })
+      
+      search_word <- tolower(input$search_similarity)
+      
       out <- data.frame()
-      decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860)
+      decades <- c(1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870, 1880, 1890)
       
       for(d in 1:length(decades)) {
         
         fdecade <- decades[d] 
         
-        table <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_10192021/hansard_word_vectors_", fdecade, ".txt")
+        table <- paste0("~/projects/hansard-shiny/app-data/word_embeddings/hansard_decades_wordvectors_11222021/hansard_word_vectors_", fdecade, ".txt")
         word_vectors <- as.matrix(read.table(table, as.is = TRUE))
         
-
-        if(input$search_similarity %in% rownames(word_vectors)) { 
+        if(search_word %in% rownames(word_vectors)) { 
           
-          kw = word_vectors[input$search_similarity, , drop = F]
+          kw = word_vectors[search_word, , drop = F]
           
           cos_sim_rom = sim2(x = word_vectors, y = kw, method = "cosine", norm = "l2")
           
@@ -71,19 +111,61 @@ similarity_server <- function(id) {
           
           out <- bind_rows(out, forplot) } }
       
+      
+      out <- out %>%
+        mutate(row_id = seq(along.with = out$word, from = 0)) # could be any column
+      
+      render_value_8(out) # added 
+    
       plot_ly(data = out, 
               x = ~decade, 
               y = ~similarity,
               mode = "markers+text",
               text = ~word,
               type = "scatter",
+              source = "aa", # added
               marker = list(color = 'rgb(158,202,225)',
                             size = 15,
                             line = list(color = 'rgb(8,48,107)',
                                         width = 1.5)),
               textposition = "center right",
               height=650) %>%
+        layout(xaxis = list(autotick = F,
+                            tickmode = "array", 
+                            tickvals = c(1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870, 1880, 1890),
+                            dtick = 10,
+                            range = c(1790, 1900)),
+               title = paste0("Words Most Similar to ", "\"", input$search_similarity, "\"")) %>%
         config(displayModeBar = F) })
+    
+    
+    render_value_8 = function(NN){
+      output$aab <- renderDataTable({
+        s <- event_data("plotly_click", source = "aa")  # change on click, not on shiny input change
+        
+        validate(need(!is.null(s), "Click on a point to see PLACEHOLDER"))
+        
+        jkl <- NN %>%
+          filter(row_id == s$pointNumber)
+        
+        word <- jkl$word
+        
+        # what if I filter -- then make corpus?? 
+        
+        #j <- as.data.table(memo_quanteda_kwic(cached_hansard_1800, word))
+        #j <- set_window_size(j, input$window_size)
+        #j <- select(j, -docname, -to, -from, -pattern) 
+        
+        j <- memo_quanteda_kwic(cached_hansard_1800, word)
+        
+        
+        j <- set_window_size(j, input$window_size)
+        
+        return(datatable(j,
+                         options = list(dom = 'ip'),
+                         filter = list(position = "top")))
+        }) }
+    
     
     
     observeEvent(input$about_we_similarity, {
@@ -104,14 +186,14 @@ similarity_server <- function(id) {
 
   }) }
 
-# 
-#    ui <- fluidPage(
-#      similarity_ui("similarity")
-#    )
-#    server <- function(input, output, session) {
-#      similarity_server("similarity")
-#    }
-#    shinyApp(ui, server)  
-#    
+
+   # ui <- fluidPage(
+   #   similarity_ui("similarity")
+   # )
+   # server <- function(input, output, session) {
+   #   similarity_server("similarity")
+   # }
+   # shinyApp(ui, server)
+
 
 

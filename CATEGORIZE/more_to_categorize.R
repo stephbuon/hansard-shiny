@@ -13,8 +13,6 @@ speaker_count <- out %>%
 write_csv(speaker_count, "~/speaker_comparison_speaker_count.csv")
 
 
-
-
 stopwords <- read_csv("/scratch/group/pract-txt-mine/sbuongiorno/stopwords_text2vec.csv") %>%
   rename(ngrams = stop_word)
 
@@ -22,7 +20,6 @@ stopwords <- stopwords %>%
   summarise(all = paste0(ngrams, collapse="|"))
 
 stopwords <- stopwords$all
-
 
 
 speaker_count_2 <- speaker_count %>%
