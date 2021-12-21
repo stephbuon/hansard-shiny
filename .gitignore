@@ -1,12 +1,8 @@
-.Rproj
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-*.csv
+# app directories
+app/app-data/
+app/cache/
 
-# directories
-app-data/
-archive/
-cache/
+# other directories
 questions_about_accuracy/
+origin-data/
+CATEGORIZE/
