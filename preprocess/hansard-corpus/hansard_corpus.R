@@ -5,6 +5,14 @@ source(paste0(code_dir, "add_decade_col.R"))
 source(paste0(code_dir, "remove_symbols.R"))
 source(paste0(code_dir, "standardize_speaker_cols.R"))
 
+
+#
+# remove <- c("\\[", "\\]", "\\(", "\\)", "—", "-", "\\.$", "\\*", "\"", "\\,", "\'", "\\>", "^ ", "\\.", " $", "  $")
+# remove <- paste0(remove, collapse = '|' )
+#
+# df$debate <- str_replace_all(df$debate, remove, "")
+
+
 data_dir <- ""
 hansard_speakers <- read_csv("/scratch/group/pract-txt-mine/hansard_c19_improved_speaker_names_2.csv")
 hansard <- read_csv("~/hansard_justnine_w_year.csv")
