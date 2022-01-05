@@ -1,6 +1,6 @@
 # Hansard Viewer
 
-The Hansard Viewer is a public-facing web application (enter).
+The Hansard Viewer is a prototype public-facing web application (enter).
 
 
 an early version 
@@ -13,6 +13,9 @@ To serve as an instructional model for (enter).
 Reflects the current version of the app 
 
 ### Directory
+
+The app is compartmentalized into six sections,  
+
 
 Introduction 
 
