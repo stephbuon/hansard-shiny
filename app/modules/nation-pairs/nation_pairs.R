@@ -59,7 +59,7 @@ nation_pairs_server <- function(id) {
   moduleServer(id, function(input, output, session) {
 
     #nations_count <- fread(paste0(data_dir, "nations/hansard_c19_debate_title_nation_count.csv"))
-    nations_count <- fread("/home/stephbuon/projects/hansard-shiny/hansard_nation_counts.csv")
+    nations_count <- fread(paste0(data_dir, "nations/hansard_nation_counts.csv"))
 
 
     nations_count$decade <- as.character(nations_count$decade)

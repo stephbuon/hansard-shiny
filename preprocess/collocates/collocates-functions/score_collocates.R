@@ -15,24 +15,23 @@ collocates <- collocates %>% # row-wise sum
 neutral <- 0
 
 positive <- collocates %>%
-  filter(combined_score > neutral)
-
+  filter(combined_score > sum(neutral, .8))
 positive$sentiment <- "Positive"
 
 negative <- collocates %>%
-  filter(combined_score < neutral)
-
+  filter(combined_score < sum(neutral, -.8))
 negative$sentiment <- "Negative"
 
 neutral <- collocates %>%
-  filter(combined_score == neutral)
+  filter(combined_score < sum(neutral, .8),
+         combined_score > sum(neutral, -.8))
 
 neutral$sentiment <- "Neutral"
 
 total <- bind_rows(positive, negative, neutral)
 
 total <- total %>%
-  select(n, sentiment, decade, grammatical_collocates, new_speaker, clean_new_speaker)
+  select(n, sentiment, decade, grammatical_collocates)#, new_speaker, clean_new_speaker)
 
 # if (keyword == "speakers"){
 #   total <- total %>%

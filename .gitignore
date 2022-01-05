@@ -2,7 +2,10 @@
 app/app-data/
 app/cache/
 
+archive/
+
 # other directories
 questions_about_accuracy/
 origin-data/
 CATEGORIZE/
+.Rproj.user

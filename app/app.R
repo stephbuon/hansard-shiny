@@ -9,9 +9,15 @@
 
 # I don't keep ambig like saint johns nation or church
 
+server <- FALSE
 
-data_dir <- "~/projects/hansard-shiny/app/app-data/"
-modules_dir <- "~/projects/hansard-shiny/app/modules/"
+if (server == TRUE) {
+  data_dir <- "./app-data/"
+  modules_dir <- "/.modules/" 
+  } else {
+  data_dir <- "~/projects/hansard-shiny/app/app-data/"
+  modules_dir <- "~/projects/hansard-shiny/app/modules/" }
+
 
 
 library(shiny)
@@ -32,7 +38,9 @@ library(reshape2)
 library(text2vec)
 library(ggwordcloud)
 library(scales)
-#library(purrr)
+library(memoise)
+library(quanteda)
+
 
 # load functions
 source(paste0(modules_dir, "global_functions.R"))
@@ -42,6 +50,9 @@ source(paste0(modules_dir, "difference/difference_functions.R"))
 source(paste0(modules_dir, "kwic/kwic_functions.R"))
 source(paste0(modules_dir, "speaker-comparison/speaker_comparison_functions.R"))
 source(paste0(modules_dir, "speech-lengths/speech_length_annotations.txt"))
+
+# enable caching 
+source(paste0(modules_dir, "kwic/kwic_cache.R"))
 
 # load apps
 source(paste0(modules_dir, "introduction/introduction.R"))

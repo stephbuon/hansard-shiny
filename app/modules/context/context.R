@@ -309,11 +309,12 @@ context_server <- function(id) {
       }
 
       })
-
-
+    
     render_value_8 = function(NN){
       output$aab <- renderDataTable({
         s <- event_data("plotly_click", source = "aa")  # change on click, not on shiny input change
+        
+        print(s)
 
         validate(need(!is.null(s), "Click on a point to see PLACEHOLDER"))
 
@@ -322,16 +323,28 @@ context_server <- function(id) {
 
         word <- jkl$word
 
-        # what if I filter -- then make corpus??
+        
+        
+        cached_hansard_1800 <- cache(s$x)
+        
+        j <- cached_hansard_1800[cached_hansard_1800 %like% word]
+        
+        #j <- quanteda_kwic(cached_hansard_1800, word)
+        
+        # I've decided to use phrase() irregardless of whether the word is 1 or more
+        # I suspect this will make my code more veristile 
+        
+        #validate(need(!is.null(j), "placeholder"))
+        
+        j <- as.data.table(kwic(j, pattern = phrase(word), window = 300, valuetype = "fixed", separator = " ", case_insensitive = TRUE))
+        j <- select(j, -docname, -to, -from, -pattern)
 
-        #j <- as.data.table(memo_quanteda_kwic(cached_hansard_1800, word))
-        #j <- set_window_size(j, input$window_size)
-        #j <- select(j, -docname, -to, -from, -pattern)
-
-        j <- memo_quanteda_kwic(cached_hansard_1800, word)
+        
+        #j <- memo_quanteda_kwic(cached_hansard_1800, word)
 
 
         j <- set_window_size(j, input$window_size)
+
 
         return(datatable(j,
                          options = list(dom = 'ip'),
@@ -416,14 +429,14 @@ context_server <- function(id) {
 
 
 
-#
-# ui <- fluidPage(
-#   collocates_ui("collocates")
-# )
-# server <- function(input, output, session) {
-#   collocates_server("collocates")
-# }
-# shinyApp(ui, server)
+
+ ui <- fluidPage(
+   context_ui("context")
+ )
+ server <- function(input, output, session) {
+   context_server("context")
+ }
+ shinyApp(ui, server)
 
 
 
