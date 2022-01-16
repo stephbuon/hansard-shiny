@@ -10,7 +10,9 @@ This repository stores our open source code used by our app. See a link in the d
 What can you view with Hansard Viewer?
 
 Time
-    • Use to compare two decades
+* Use to compare two decades 
+   - The default view are the raw word counts. Not very useful. 
+
         ◦ The default view are the raw word counts. Not very useful
         ◦ Tf-idf more interesting
     • Use a controlled vocabulary
@@ -20,6 +22,12 @@ Time
         ◦ Adjust time
     • Custom search
         ◦ Try ‘terror’
+
+1. Item
+2. Item
+   * Mixed
+   * Mixed  
+3. Item
 
 Speakers
     • Longest speakers
