@@ -9,37 +9,32 @@ This repository stores our open source code used by our app. See a link in the d
 
 What can you view with Hansard Viewer?
 
-Time
+### Langauge -> Word Context 
 * Use to compare two decades 
    - The default view are the raw word counts. Not very useful. 
+   - TF-IDF is more interesting
+* Use a controlled vocabulary
+   - Try "concerns"
+* Search for a word
+   - Try "coal"
+   - Adjust time
+* Custom search
+   - Try "terror" 
 
-        ◦ The default view are the raw word counts. Not very useful
-        ◦ Tf-idf more interesting
-    • Use a controlled vocabulary
-        ◦ Try ‘concerns’
-    • Search for a word
-        ◦ Try ‘coal’
-        ◦ Adjust time
-    • Custom search
-        ◦ Try ‘terror’
+### Speakers
+* Longest Speakers
+  - We wanted to understand who the most important speakers are. So here they are - by who spoke the most. 
+  - Try mousing over: Mr. Brougham, 1820
+* Top speakers
+  - All their words per year
+  - Bar charts below showing their favorite words
+* Speaker comparison
+  - Default: raw count
+  - Try: TF-IDF measure
+  - Pull-down: adjective-noun collocates (will hang for a second)
 
-1. Item
-2. Item
-   * Mixed
-   * Mixed  
-3. Item
 
-Speakers
-    • Longest speakers
-        ◦ We wanted to understand who the most important speakers are. So here they are – by who spoke the most. 
-        ◦ Try mousing over: Mr. Brougham, 1820 
-    • Top speakers
-        ◦ All their words per year
-        ◦ Bar charts below showing their favorite words
-    • Speaker comparison
-        ◦ Default: raw count
-        ◦ Try: tf-idf measure
-        ◦ Pull-down: adjective-noun collocates (will hang for a second)
+
     • Debate titles
         ◦ Default: property list
         ◦ Add your own words
