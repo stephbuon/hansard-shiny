@@ -41,7 +41,7 @@ What can you view with Hansard Viewer?
  - Try zooming in on Denmark
 * Nation pairs 
 
-## Debate Text 
+### Debate Text 
 * Length of debate: hypothesis is that the longest speeches are important
   - Click on a dot to see a wordcloud
 * Speech length: tests how long the debate is on different subjects
