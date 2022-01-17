@@ -9,19 +9,6 @@ This repository stores our open source code used by our app. See a link in the d
 
 What can you view with Hansard Viewer?
 
-### Langauge 
-* Word Context 
-   - The default view are the raw word counts. Not very useful. 
-   - TF-IDF is more interesting
-   - Use a controlled vocabulary
-   - Try "concerns"
-   - Search for a word
-   - Try "coal"
-   - Adjust time
-   - change measure to "word embeddings/similarity"
-* Difference
-   - word embeddings over time 
-
 ### Speakers
 * Longest Speakers
   - We wanted to understand who the most important speakers are. So here they are - by who spoke the most. 
@@ -47,4 +34,17 @@ What can you view with Hansard Viewer?
 * Speech length: tests how long the debate is on different subjects
   - Small, medium, large
   - Graph over time
-  - Select controlled vocab. 
+  - Select controlled vocab
+
+### Langauge 
+* Word Context 
+   - The default view are the raw word counts. Not very useful. 
+   - TF-IDF is more interesting
+   - Use a controlled vocabulary
+   - Try "concerns"
+   - Search for a word
+   - Try "coal"
+   - Adjust time
+   - change measure to "word embeddings/similarity"
+* Difference
+   - word embeddings over time 
