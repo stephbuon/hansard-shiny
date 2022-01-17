@@ -9,17 +9,18 @@ This repository stores our open source code used by our app. See a link in the d
 
 What can you view with Hansard Viewer?
 
-### Langauge -> Word Context 
-* Use to compare two decades 
+### Langauge 
+* Word Context 
    - The default view are the raw word counts. Not very useful. 
    - TF-IDF is more interesting
-* Use a controlled vocabulary
+   - Use a controlled vocabulary
    - Try "concerns"
-* Search for a word
+   - Search for a word
    - Try "coal"
    - Adjust time
-* Custom search
-   - Try "terror" 
+   - change measure to "word embeddings/similarity"
+* Difference
+   - word embeddings over time 
 
 ### Speakers
 * Longest Speakers
@@ -33,25 +34,17 @@ What can you view with Hansard Viewer?
   - Try: TF-IDF measure
   - Pull-down: adjective-noun collocates (will hang for a second)
 
+### Debate Titles
+* Default: property list
+* Add your own words
+* Nation concerns 
+ - Try zooming in on Denmark
+* Nation pairs 
 
-
-    • Debate titles
-        ◦ Default: property list
-        ◦ Add your own words
-        ◦ Nation concerns
-            ▪ Try zooming in on Denmark
-        ◦ Nation pairs
-    • Debate text
-        ◦ Length of debate: hypothesis is that the longest speeches are the most important
-            ▪ Click on dot to see wordcloud
-        ◦ Speech length: testing how long the debate is on different subjets
-            ▪ Small, medium, large. 
-            ▪ Graph over time
-            ▪ Select controlled vocab
-
-Language
-        ◦ PCA vector space
-        ◦ Similarity: word embeddings over time
-            ▪ Try changing the keyword
-            ▪ Try changing window size
-            ▪ Zoom in
+## Debate Text 
+* Length of debate: hypothesis is that the longest speeches are important
+  - Click on a dot to see a wordcloud
+* Speech length: tests how long the debate is on different subjects
+  - Small, medium, large
+  - Graph over time
+  - Select controlled vocab. 
