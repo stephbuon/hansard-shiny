@@ -1,7 +1,7 @@
 # Hansard Viewer
 A new app for understanding historical change in the annals of parliamentary democracies
 
-This app belongs to a series of preliminary public-facing web applications Users of our prototype application can use an array of data-mining and statistical tools to explore the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts. 
+Users of our prototype application can use an array of data-mining and statistical tools to explore the evolution and nature of political language as it occurs in different time periods, across different speakers, and in different national contexts. 
 
 Citizens and scholars using our toolset can navigate from an overview showing change over time, to a depiction of how different candidates talk about the same issue, to the in-text mentions of word use that a computer has used to produce the visualizations in question. 
 
