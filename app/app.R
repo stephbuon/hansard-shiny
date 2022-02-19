@@ -13,7 +13,7 @@ server <- FALSE
 
 if (server == TRUE) {
   data_dir <- "./app-data/"
-  modules_dir <- "/.modules/" 
+  modules_dir <- "./modules/" 
   } else {
   data_dir <- "~/projects/hansard-shiny/app/app-data/"
   modules_dir <- "~/projects/hansard-shiny/app/modules/" }

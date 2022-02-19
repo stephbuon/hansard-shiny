@@ -1,6 +1,7 @@
 library(tidyverse)
 library(data.table)
 
+
 import_stopwords_as_regex <- function() {
   
   stopwords <- read_csv("/scratch/group/pract-txt-mine/sbuongiorno/stopwords_text2vec.csv") 
@@ -29,8 +30,6 @@ clean_data_for_word_embeddings <- function(data_decade_subset) {
 
 
 
-
-
 input_dir <- "/scratch/group/pract-txt-mine/sbuongiorno/tokenized_hansard_w_metadata"
 export_dir <- "/scratch/group/pract-txt-mine/sbuongiorno/tokenized_hansard_count"
 
@@ -38,8 +37,7 @@ dir.create(file.path(export_dir))
 
 files <- list.files(path = input_dir, pattern = "*.csv", full.names = TRUE)
 
-decades <- c("1803", "1810", "1820", "1830", "1840", "1850", "1860", "1870", "1880",
-             "1890", "1900", "1910")
+decades <- c("1803", "1810", "1820", "1830", "1840", "1850", "1860", "1870", "1880", "1890", "1900", "1910")
 
 for(file in files) {
   

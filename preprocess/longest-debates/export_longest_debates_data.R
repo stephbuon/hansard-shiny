@@ -1,18 +1,13 @@
-library(tidyverse)
+source(paste0(preprocess_code_dir, "longest-debates/export-longest-debate-data-functions/export_longest_debates.R"))
+source(paste0(preprocess_code_dir, "longest-debates/export-longest-debate-data-functions/export_wordcloud_data.R"))
 
-code_dir <- "/home/stephbuon/projects/hansard-shiny/preprocess/longest-debates/export-longest-debate-data-functions/"
-source(paste0(code_dir, "export_longest_debates.R"))
-source(paste0(code_dir, "export_wordcloud_data.R"))
+hansard_tokens <- fread(paste0(preprocess_data_dir, "hansard_tokens_c19_improved_speaker_names_app_data.csv"))
 
-data_dir <- "/scratch/group/pract-txt-mine/"
-tokenized_hansard <- read_csv(paste0(data_dir, "tokenized_hansard.csv"))
-stopwords <- read_csv(paste0(data_dir, "stopwords.csv"))
+longest_debates <- export_longest_debates(hansard_tokens)
 
-export_dir <- paste0(data_dir, "longest_debates_data/")
-dir.create(file.path(export_dir))
+fwrite(longest_debates, paste0(preprocess_data_dir, "longest_debates.csv"))
 
-longest_debates <- export_longest_debates(tokenized_hansard, export_dir)
-export_wordcloud_data(tokenized_hansard, stopwords, longest_debates, export_dir)
+export_wordcloud_data(hansard_tokens, longest_debates)
 
 
 

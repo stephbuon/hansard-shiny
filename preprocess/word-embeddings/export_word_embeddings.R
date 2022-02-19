@@ -1,5 +1,3 @@
-library(tidyverse)
-library(text2vec)
 
 source("/home/stephbuon/projects/hansard-shiny/preprocess/global_functions.R")
 

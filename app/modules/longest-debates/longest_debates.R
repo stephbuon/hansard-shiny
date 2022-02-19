@@ -37,7 +37,7 @@ longest_debates_server <- function(id) {
                 line = list(
                   color = 'black',
                   width = 1 )),
-              text = ~paste0('Name: ',  "<b>", debate, "</b>", '\n',
+              hovertext = ~paste0('Name: ',  "<b>", debate, "</b>", '\n',
                              'Speech Date: ', "<b>", speechdate, "</b>", '\n',
                              'Word Count ', "<b>",words_per_debate, "</b>"),
               hoverinfo = 'text') %>%

@@ -1,6 +1,3 @@
-library(tidyverse)
-library(lubridate)
-
 export_longest_speeches <- function(tokenized_hansard) {
   
   tokenized_hansard <- read_csv(tokenized_hansard)
@@ -29,6 +26,5 @@ export_longest_speeches <- function(tokenized_hansard) {
     ungroup() %>%
     inner_join(metadata) 
   
-  write_csv(longest_speech_decade, "longest_speeches.csv") }
-
-export_longest_speeches("/scratch/group/pract-txt-mine/tokenized_hansard.csv")
+  
+  return(longest_speech_decade) }

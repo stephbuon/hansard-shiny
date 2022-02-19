@@ -1,6 +1,3 @@
-library(tidyverse)
-library(lubridate)
-
 export_longest_debates <- function(tokenized_hansard) {
   
   metadata <- tokenized_hansard %>%

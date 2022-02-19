@@ -2,14 +2,12 @@ library(tidyverse)
 library(quanteda)
 library(spacyr)
 
-export_wordcloud_data <- function(tokenized_hansard, stopwords, longest_debates) {
-  
-  spacy_initialize(virtualenv="/hpc/applications/python_environments/spacy")
+export_wordcloud_data <- function(tokenized_hansard, longest_debates) {
   
   tokenized_hansard <- tokenized_hansard %>%
-    select(debate, debate_id, speechdate, ngrams)
+    select(debate, debate_id, speechdate)
 
-  stopwords <- stopwords %>%
+  stopwords <- stopwords %>% # be able to get rid of this 
     rename(ngrams = stop_word)
   
   longest_debates <- left_join(longest_debates, tokenized_hansard, by = c("debate", "debate_id", "speechdate"))
@@ -58,5 +56,5 @@ export_wordcloud_data <- function(tokenized_hansard, stopwords, longest_debates)
   arrange(desc(token_count)) %>%
   slice(1:60)
   
-  write_csv(all, paste0(export_dir, "clean_longest_debates_wordcloud.csv")) }
+  fwrite(all, paste0(export_dir, "clean_longest_debates_wordcloud.csv")) }
 

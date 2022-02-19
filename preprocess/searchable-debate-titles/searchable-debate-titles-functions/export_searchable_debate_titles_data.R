@@ -1,7 +1,3 @@
-library(tidyverse)
-library(viridis)
-library(plotly)
-
 curate_searchable_debate_titles_data <- function(hansard, export_dir, visualize) {
   
   hansard <- hansard %>%
@@ -64,6 +60,9 @@ curate_searchable_debate_titles_data <- function(hansard, export_dir, visualize)
     write_csv(all_year_counts, paste0(export_dir, "kw_list_", subject, ".csv"))
     
     if (visualize == TRUE) {
+      
+      library(viridis)
+      library(plotly)
       
       plot <- ggplot(data = all_year_counts) +
         geom_col(aes(x = year, 

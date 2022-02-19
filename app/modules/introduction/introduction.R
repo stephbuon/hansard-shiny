@@ -43,7 +43,7 @@ output$ndbs <- renderPlotly({
           x = ~decade, 
           y = ~no_of_debates, 
           type = 'bar', 
-          text = ~paste0("Decade: ", "<b>", decade, "</b>", "\n",
+          hovertext = ~paste0("Decade: ", "<b>", decade, "</b>", "\n",
                          "Number of Debates: ", "<b>", no_of_debates, "</b>", "\n"),
           hoverinfo = "text",
           marker = list(color = 'rgb(158,202,225)',

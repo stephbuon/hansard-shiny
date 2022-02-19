@@ -1,8 +1,6 @@
-library(tidyverse)
-
 remove_symbols <- function(hansard) {
   
-  remove <- c("\\[", "\\]", "\\(", "\\)", "—", "-", "\\.$", "\\*", "\"", "\\,", "\'", "\\>", "^ ")
+  remove <- c("\\[", "\\]", "\\(", "\\)", "—", "-", "\\.$", "\\*", "\"", "\\,", "\'", "\\>", "^ ", "\\.", " $", "  $")
   remove <- paste0(remove, collapse = '|' )
     
   hansard$debate <- str_replace_all(hansard$debate, remove, "")

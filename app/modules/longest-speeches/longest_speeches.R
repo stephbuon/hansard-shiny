@@ -26,7 +26,7 @@ longest_speeches_server <- function(id) {
                 line = list(
                   color = 'black',
                   width = 1 )),
-              text = ~paste0('Name: ', "<b>", speaker, "</b>", '\n',
+              hovertext = ~paste0('Name: ', "<b>", speaker, "</b>", '\n',
                              'Speech Date: ', "<b>", speechdate, "</b>", '\n',
                              'Speech Word Count ', "<b>", count_per_speech, "</b>"),
               hoverinfo = 'text') %>%

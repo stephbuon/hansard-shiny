@@ -1,3 +1,6 @@
+library(tidyverse)
+library(data.table)
+
 
 import_stopwords_as_regex <- function() {
   

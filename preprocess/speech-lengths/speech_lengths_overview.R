@@ -28,20 +28,20 @@ viz <- all_labeled_speeches %>%
   count(decade, `Speech Length`, speech_length_type)
 
 write_csv(viz, "~/projects/hansard-shiny/speech_lengths_overview.csv")
+# 
+# labs <- c("Short", "Mid-Range", "Long")
 
-labs <- c("Short", "Mid-Range", "Long")
-
-plot <- ggplot(viz, 
-       aes(x = speech_length_type,
-           y = n,
-           fill = `Speech Length`,
-           show.legend = FALSE)) + 
-  geom_bar(stat="identity") + 
-  scale_x_discrete(labels = labs) +
-  scale_y_continuous(labels = comma) +
-  facet_wrap(~decade) +
-  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-  theme_bw() 
-
-ggplotly(plot) %>%
-  config(displayModeBar = F)
+# plot <- ggplot(viz, 
+#        aes(x = speech_length_type,
+#            y = n,
+#            fill = `Speech Length`,
+#            show.legend = FALSE)) + 
+#   geom_bar(stat="identity") + 
+#   scale_x_discrete(labels = labs) +
+#   scale_y_continuous(labels = comma) +
+#   facet_wrap(~decade) +
+#   scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+#   theme_bw() 
+# 
+# ggplotly(plot) %>%
+#   config(displayModeBar = F)

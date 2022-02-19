@@ -1,24 +1,19 @@
-library(tidyverse)
+export_unique_debate_titles <- function (hansard) {
 
-export_unique_debate_titles <- function (df) {
+  hansard <- hansard %>%
+    select(debate_id, debate, year)
 
-  df <- df %>%
-  select(debate_id, debate, year)
-
-  df$debate <- str_to_title(df$debate)
+  hansard$debate <- str_to_title(hansard$debate)
   
-  df <- df %>%
+  hansard <- hansard %>%
     count(debate_id, debate, year, decade) %>%
-    rename(unique_debate_year_count = n)
-  
-  df <- df %>%
+    rename(unique_debate_year_count = n) %>%
     group_by(debate, year) %>%
     summarise(n_debates_w_shared_title = sum(unique_debate_year_count))
   
-  df <- df %>%
+  hansard <- hansard %>%
     drop_na(debate) 
   
-  return (df) }
+  return (hansard) }
   
-  #write_csv(b, "~/hansard_c19_debate_titles_w_year.csv") }
 

@@ -1,4 +1,3 @@
-
 #library(shinyjs)
 vals = reactiveValues(btn = FALSE, text = FALSE)
 
@@ -195,6 +194,3 @@ word_context_server <- function(id) {
    #   similarity_server("similarity")
    # }
    # shinyApp(ui, server)
-
-
-

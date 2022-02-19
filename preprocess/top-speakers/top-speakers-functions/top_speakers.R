@@ -1,14 +1,11 @@
-library(tidyverse)
-library(lubridate)
-
-export_top_speakers <- function(tidyhans) {
+top_speakers <- function(tidyhans) {
   
-  tidy_hans <- read_csv(tidyhans) %>%
-    filter(!str_detect(new_speaker, "^NA$")) %>%
-    select(-speechdate)
+  tidy_hans <- fread(tidyhans) %>%
+    select(sentence_id, disambig_speaker, year, decade, speechdate, ngram) %>%
+    filter(!str_detect(disambig_speaker, "^NA$")) 
   
   words_per_day <- tidy_hans %>%
-    group_by(speechdate, speaker) %>%
+    group_by(speechdate, disambig_speaker) %>%
     summarize(words_per_day = n())
   
   words_per_day <- words_per_day %>%
@@ -25,10 +22,10 @@ export_top_speakers <- function(tidyhans) {
   top_speakers <- words_per_day %>%
     filter(sp_ranking_decade <= b)
 
-  write_csv(top_speakers, "top_speakers_by_year.csv")
+  write_csv(top_speakers, "top_speakers_by_year.csv") # why? 
   
   words_per_day <- tidy_hans %>%
-    group_by(decade, new_speaker) %>%
+    group_by(decade, disambig_speaker) %>%
     summarize(words_per_day = n())
   
   words_per_day <- words_per_day %>%
@@ -42,7 +39,5 @@ export_top_speakers <- function(tidyhans) {
 
   top_speakers <- words_per_day %>%
     filter(sp_ranking_decade <= 5) 
-  
-  write_csv(top_speakers, "/scratch/group/pract-txt-mine/sbuongiorno/top_speakers_by_decade_improved_speaker_names.csv") 
   
   return(top_speakers) }

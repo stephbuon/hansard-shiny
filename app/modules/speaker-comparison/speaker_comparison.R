@@ -192,7 +192,7 @@ speaker_comparison_server <- function(id) {
               x = ~n, 
               y = ~reorder(ngrams, n), 
               type = 'bar', 
-              text = n,
+              hovertext = n,
               orientation = "h",
               marker = list(color = 'rgb(158,202,225)',
                             line = list(color = 'rgb(8,48,107)',

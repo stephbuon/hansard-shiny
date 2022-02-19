@@ -54,7 +54,7 @@ top_speakers_server <- function(id) {
                 line = list(
                   color = 'black',
                   width = 1 )),
-              text = ~paste0('Name: ', "<b>", speaker, "</b>", '\n',
+              hovertext = ~paste0('Name: ', "<b>", speaker, "</b>", '\n',
                              'Speech Date: ', "<b>", speechdate, "</b>", '\n',
                              'Word Count ', "<b>", words_per_day, "</b>"),
               hoverinfo = 'text') %>%

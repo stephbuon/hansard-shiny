@@ -79,7 +79,7 @@ nation_pairs_server <- function(id) {
               x = ~n,
               y = ~reorder(nation_pair, n),
               type = 'bar',
-              text = ~paste0("Nation Pair: ", "<b>", nation_pair, "</b>", "\n",
+              hovertext = ~paste0("Nation Pair: ", "<b>", nation_pair, "</b>", "\n",
                              "Frequency: ", "<b>", n, "</b>", "\n"),
               hoverinfo = "text",
               orientation = 'h',
