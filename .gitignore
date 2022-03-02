@@ -2,10 +2,13 @@
 app/app-data/
 app/cache/
 
-archive/
+# temp files
+app.zip
 
 # other directories
 questions_about_accuracy/
-origin-data/
-CATEGORIZE/
+preprocess-data-dir
+
+# ext
+*.Rproj
 .Rproj.user

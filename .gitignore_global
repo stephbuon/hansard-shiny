@@ -1,4 +1,6 @@
+# file extentions
 *.csv
+*.zip
 
 .Rproj
 .Rproj.user

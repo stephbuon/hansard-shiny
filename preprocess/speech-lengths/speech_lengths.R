@@ -1,20 +1,11 @@
-library(tidyverse)
-library(lubridate)
+source(paste0(preprocess_code_dir, "/speech-lengths/speech-lengths-functions/find_speech_length.R"))
 
-dir <- "/scratch/group/pract-txt-mine/sbuongiorno/"
+hansard <- fread(paste0(preproces_data_dir, "hansard_tokens_c19_improved_speaker_names_app_data.csv"))
 
-export_speech_lengths_data <- function() {
-  
-  tokenized_hansard <- read_csv(paste0(dir, "tokenized_hansard.csv")) %>%
-    select(speechdate, speech_id, ngrams)
-  
-  tokenized_hansard <- tokenized_hansard %>%
-    mutate(year = year(speechdate)) %>%
-    mutate(decade =10* floor(year/10)) %>%
-    select(-year, -speechdate)
-  
-  tokenized_hansard_count <- tokenized_hansard %>%
-    count(speech_id, decade)
-  
-  write_csv(tokenized_hansard_count, paste0(dir, "speech_lengths.csv")) }
+speech_lengths <- find_speech_length(hansard)
+export_speech_lengths_overview(preprocess_data_dir, speech_lengths)
+export_speech_length_type_data(preprocess_data_dir)
+
+fwrite(longest_speeches, "longest_speeches.csv")
+
 

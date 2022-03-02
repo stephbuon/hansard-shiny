@@ -4,6 +4,8 @@ library(text2vec)
 
 clean_data_for_word_embeddings <- function(data_decade_subset) {
   
+  source("/home/stephbuon/projects/hansard-shiny/preprocess/global_functions.R")
+  
   data_decade_subset <- data_decade_subset %>%
     filter(!str_detect(ngrams, "[[:digit:]]"))
   
@@ -25,14 +27,19 @@ view_most_similar_words <- function(word_vectors, keyword, n_view) {
   print(head(sort(cos_sim_rom[,1], decreasing = TRUE), n_view)) }
 
 
-export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar) {
+#export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar) {
+export_word_embeddings <- function(preprocess_data_dir, view_most_similar) {
   
-  files <- list.files(path = dir, pattern = "hansard_decades_text2vec", full.names = TRUE)
+  #files <- list.files(path = dir, pattern = "hansard_decades_text2vec", full.names = TRUE)
+  files <- list.files(path = dir, pattern = "hansard_tokens_subset_", full.names = TRUE)
   
   for (file in files) {
-    data_decade_subset <- read_csv(file)
+    data_decade_subset <- fread(file)
     
-    data_decade_subset <- clean_data_for_word_embeddings(data_decade_subset, stopwords)
+    data_decade_subset <- data_decade_subset %>%
+      select(year, ngram) # added
+    
+    data_decade_subset <- clean_data_for_word_embeddings(data_decade_subset)
     
     first_year_label <- first(data_decade_subset$year)
     last_year_label <- last(data_decade_subset$year)

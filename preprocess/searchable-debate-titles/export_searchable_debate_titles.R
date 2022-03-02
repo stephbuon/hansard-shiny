@@ -1,4 +1,4 @@
-library(tidyverse)
+library(dplyr)
 
 source(paste0(root_dir, preprocess_code_dir, "searchable-debate-titles/export_unique_debate_titles.R"))
 source(paste0(root_dir, preprocess_code_dir, "searchable-debate-titles/export_searchable_debate_titles_data"))

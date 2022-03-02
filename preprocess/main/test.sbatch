@@ -6,13 +6,13 @@
 
 PREPROCESS_CODE_DIR = "$HOME/preprocess/"
 
-firstList = "export_hansard_corpus.sbatch "
+code = "export_hansard_corpus.sbatch "
 
 module purge
 module load r
 module load python/3
 
-for i in $firstList; 
+for c in $code; 
 do
-    sbatch $PREPROCESS_CODE_DIR +  ${i}
+    sbatch $PREPROCESS_CODE_DIR +  ${c}
 done

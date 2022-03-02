@@ -1,4 +1,7 @@
-source(paste0(preprocess_code_dir, "hansard-tokens/hansard-tokens-functions/hansard_tokensR"))
+library(dplyr)
+library(tidytext)
+
+source(paste0(preprocess_code_dir, "hansard-tokens/hansard-tokens-functions/hansard_tokens.R"))
 source(paste0(preprocess_code_dir, "hansard-tokens/hansard-tokens-functions/count_hansard_tokens.R"))
 source(paste0(preprocess_code_dir, "hansard-tokens/hansard-tokens-functions/clean_hansard_tokens.R"))
 source(paste0(preprocess_code_dir, "hansard-tokens/hansard-tokens-functions/subset_hansard_tokens.R"))
