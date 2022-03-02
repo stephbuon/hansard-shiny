@@ -16,3 +16,6 @@ order:
 - nations
 - collocates
 - network
+
+Notes:
+- At the moment I do not use speaker-stats/speaker_stats.R 

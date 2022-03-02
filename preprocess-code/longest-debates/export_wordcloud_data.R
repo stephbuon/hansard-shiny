@@ -58,3 +58,9 @@ export_wordcloud_data <- function(tokenized_hansard, longest_debates) {
   
   fwrite(all, paste0(export_dir, "clean_longest_debates_wordcloud.csv")) }
 
+
+hansard_tokens <- fread(paste0(preprocess_data_dir, "hansard_tokens_c19_improved_speaker_names_app_data.csv"))
+
+longest_debates <- fread(paste0(preprocess_data_dir, "longest_debates.csv"))
+export_wordcloud_data(hansard_tokens, longest_debates)
+

@@ -30,3 +30,9 @@ export_longest_debates <- function(tokenized_hansard) {
   
   return(longest_debates_in_decade) }
 
+
+hansard_tokens <- fread(paste0(preprocess_data_dir, "hansard_tokens_c19_improved_speaker_names_app_data.csv"))
+
+longest_debates <- export_longest_debates(hansard_tokens)
+
+fwrite(longest_debates, paste0(preprocess_data_dir, "longest_debates.csv"))

@@ -26,5 +26,9 @@ export_longest_speeches <- function(tokenized_hansard) {
     ungroup() %>%
     inner_join(metadata) 
   
-  
-  return(longest_speech_decade) }
+  fwrite(longest_speech_decade, "longest_speeches.csv") }
+
+
+hansard <- fread(paste0(preproces_data_dir, "hansard_tokens_c19_improved_speaker_names_app_data.csv"))
+
+export_longest_speeches(hansard)

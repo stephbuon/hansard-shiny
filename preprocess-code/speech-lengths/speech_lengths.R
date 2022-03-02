@@ -6,6 +6,3 @@ speech_lengths <- find_speech_length(hansard)
 export_speech_lengths_overview(preprocess_data_dir, speech_lengths)
 export_speech_length_type_data(preprocess_data_dir)
 
-fwrite(longest_speeches, "longest_speeches.csv")
-
-

@@ -6,8 +6,8 @@ app/cache/
 app.zip
 
 # other directories
-questions_about_accuracy/
-preprocess-data-dir
+check-accuracy
+preprocess-data
 
 # ext
 *.Rproj
