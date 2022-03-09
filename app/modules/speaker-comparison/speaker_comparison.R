@@ -1,3 +1,4 @@
+# compare units of speech for any two speakers for a given decade
 
 top_vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
 bottom_vals_speaker_comparison = reactiveValues(btn = FALSE, text = FALSE)
@@ -19,10 +20,10 @@ speaker_comparison_ui <- function(id) {
                     "Unit:",
                     c("Tokens" = "tokens",
                       "Adjective-Noun Collocates" = "adj_noun_collocates")),
-        selectInput(NS(id, "sc_compare"), 
+        selectInput(NS(id, "measurement"), 
                     "Measure:",
                     c("Top Words" = "sc_top_words",
-                      "tf-idf" = "sc_tf-idf",
+                      "tf-idf" = "tf-idf",
                       "Speech Lengths" = "sc_speech_lengths")),
         
         sliderTextInput(
@@ -43,7 +44,6 @@ speaker_comparison_ui <- function(id) {
         
         radioButtons(NS(id, "sc_radio_buttons_top"), 
                      "Top Speakers:",
-                     #choices = NULL),
                      c("1" = "1",
                        "2" = "2",
                        "3" = "3",
@@ -56,7 +56,6 @@ speaker_comparison_ui <- function(id) {
         
         radioButtons(NS(id, "sc_radio_buttons_bottom"), 
                      "Top Speakers:",
-                     #choices = NULL),
                      c("1" = "1",
                        "2" = "2",
                        "3" = "3",
@@ -75,22 +74,39 @@ speaker_comparison_ui <- function(id) {
       mainPanel(plotlyOutput(NS(id, "speaker_comparison_top")),
                 plotlyOutput(NS(id, "speaker_comparison_bottom"))))
     
-    
-    
   ) }
 
 
 speaker_comparison_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-    h <- fread(paste0(data_dir, "speakers/speaker_comparison_radio_button_names.csv"))
+    # import radio button names
+    radio_button_names <- fread(paste0(data_dir, "speakers/speaker_comparison_radio_button_names.csv"))
     
-    j <- reactive({
+    
+    # update radio button names if decade changes
+    observe({
+      radio_button_names <- radio_button_names %>% 
+        filter(decade == input$sc_decade) 
+      
+      updateRadioButtons(session, "sc_radio_buttons_top",
+                         choices = radio_button_names$clean_new_speaker,
+                         selected = radio_button_names[1,3])
+      
+      updateRadioButtons(session, "sc_radio_buttons_bottom",
+                         choices = radio_button_names$clean_new_speaker,
+                         selected = radio_button_names[2,3] ) })
+    
+    
+    # import data for visualization and set the decade column as index
+    data_for_visualization <- reactive({
       if (input$unit == "tokens") {
-        a <- fread(paste0(data_dir, "speakers/clean_clean_tokenized_hansard_counts.csv"), key = "decade") }
+        df <- fread(paste0(data_dir, "speakers/clean_clean_tokenized_hansard_counts.csv"), key = "decade") }
       else if (input$unit == "adj_noun_collocates") {
-        a <- fread(paste0(data_dir, "speakers/clean_speaker_adj_noun_collocates.csv"), key = "decade") } })
+        df <- fread(paste0(data_dir, "speakers/clean_speaker_adj_noun_collocates.csv"), key = "decade") } })
     
+    
+    # switch between using the value of a radio button or the value of the text box 
     observeEvent(input$sc_radio_buttons_top,{
       top_vals_speaker_comparison$btn = TRUE
       top_vals_speaker_comparison$text = FALSE })
@@ -108,87 +124,98 @@ speaker_comparison_server <- function(id) {
       bottom_vals_speaker_comparison$text = TRUE })
     
     
-    observe({
-       h <- h %>% 
-         filter(decade == input$sc_decade) 
+    # return count or tf-idf values for top and bottom speakers
+    apply_measurement <- function(data_for_visualization) { 
       
-      updateRadioButtons(session, "sc_radio_buttons_top",
-                         choices = h$clean_new_speaker,
-                         selected = h[1,3])
-      
-      updateRadioButtons(session, "sc_radio_buttons_bottom",
-                         choices = h$clean_new_speaker,
-                         selected = h[2,3] ) })
-    
-   # xlab<- reactive({
-   #    if (input$sc_compare == "sc_top_words") {
-   #      xlab <- list(title ="Frequency") } 
-   #    else if (input$sc_compare == "sc_tf-idf") {
-   #      xlab <- list(title ="tf-idf") }
-   #    
-   #  })
-    
-    
-    test_2 <- function (j, top_or_bottom) { # search for speakers 
-      
-      if (top_vals_speaker_comparison$btn & bottom_vals_speaker_comparison$btn) {
-        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+      if(top_vals_speaker_comparison$btn & bottom_vals_speaker_comparison$btn) {
+        
+        data_for_visualization <- calculate_results(data_for_visualization, 
+                                                    input$sc_decade, 
+                                                    input$measurement, 
+                                                    input$sc_radio_buttons_top, 
+                                                    input$sc_radio_buttons_bottom) }
 
-      else if (top_vals_speaker_comparison$text & bottom_vals_speaker_comparison$btn) {
-        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+      else if(top_vals_speaker_comparison$text & bottom_vals_speaker_comparison$btn) {
+        
+        data_for_visualization <- calculate_results(data_for_visualization, 
+                                                    input$sc_decade, 
+                                                    input$measurement, 
+                                                    input$sc_radio_buttons_top, 
+                                                    input$sc_radio_buttons_bottom) }
 
       else if (top_vals_speaker_comparison$btn & bottom_vals_speaker_comparison$text) {
-        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+        
+        data_for_visualization <- calculate_results(data_for_visualization, 
+                                                    input$sc_decade, 
+                                                    input$measurement, 
+                                                    input$sc_radio_buttons_top, 
+                                                    input$sc_radio_buttons_bottom) }
 
       else if (top_vals_speaker_comparison$text & bottom_vals_speaker_comparison$text) {
-        j <- binary_search(j, input$sc_decade, input$sc_compare, input$sc_radio_buttons_top, input$sc_radio_buttons_bottom) }
+        
+        data_for_visualization <- calculate_results(data_for_visualization, 
+                                                    input$sc_decade, 
+                                                    input$measurement, 
+                                                    input$sc_radio_buttons_top, 
+                                                    input$sc_radio_buttons_bottom) }
       
-
-      if (top_or_bottom == "top") {
-
-        if (top_vals_speaker_comparison$btn) {
-          speaker <- input$sc_radio_buttons_top }
-        else if (top_vals_speaker_comparison$text) {
-          speaker <- input$sc_custom_search_top  }
-
-          j <- j %>%
+      return(data_for_visualization) }
+    
+      
+      # return results based for either top plot of bottom plot 
+      which_plot <- function(data_for_visualization, is_top_or_bottom_plot) {
+        
+        # split the data so the top speaker is viualized on the top plot, and the bottom speaker is visualized on the bottom plot
+        if(is_top_or_bottom_plot == "top") {
+          
+          if(top_vals_speaker_comparison$btn) {
+            speaker <- input$sc_radio_buttons_top }
+          else if (top_vals_speaker_comparison$text) {
+            speaker <- input$sc_custom_search_top  }
+          
+          data_for_visualization <- data_for_visualization %>%
             filter(clean_new_speaker == speaker) %>%
             distinct(new_speaker, decade, ngrams, n, clean_new_speaker) }
-
-
-      else if (top_or_bottom == "bottom") {
-
-        if (bottom_vals_speaker_comparison$btn) {
-          speaker <- input$sc_radio_buttons_bottom }
-        else if (bottom_vals_speaker_comparison$text) {
-          speaker <- input$sc_custom_search_bottom }
-
-          j <- j %>%
+        
+        
+        else if(is_top_or_bottom_plot == "bottom") {
+          
+          if (bottom_vals_speaker_comparison$btn) {
+            speaker <- input$sc_radio_buttons_bottom }
+          else if (bottom_vals_speaker_comparison$text) {
+            speaker <- input$sc_custom_search_bottom }
+          
+          data_for_visualization <- data_for_visualization %>%
             filter(clean_new_speaker == speaker) %>%
             distinct(new_speaker, decade, ngrams, n, clean_new_speaker) }
-      
-      top <- j[order(j, -n)][1:20]
+        
+        filtered_data <- data_for_visualization[order(data_for_visualization, -n)][1:20]
+        
+        return(filtered_data) }
 
-      return(top) }
+                
+      
     
     
     output$speaker_comparison_top <- renderPlotly({
       
-      ll <- test_2(j(), "top") 
+      data_for_visualization <- apply_measurement(data_for_visualization())
+      
+      top_plot <- which_plot(data_for_visualization, "top")
       
       if(top_vals_speaker_comparison$btn){
-        ff <- input$sc_radio_buttons_top } 
+        title <- input$sc_radio_buttons_top } 
       else {
-        ff <- input$sc_custom_search_top }
+        title <- input$sc_custom_search_top }
       
-      if (input$sc_compare == "sc_top_words") {
+      if (input$measurement == "sc_top_words") {
         xlab <- list(title ="Frequency") } 
-      else if (input$sc_compare == "sc_tf-idf") {
+      else if (input$measurement == "tf-idf") {
         xlab <- list(title ="tf-idf") }
       
       
       
-      plot_ly(ll, 
+      plot_ly(top_plot, 
               x = ~n, 
               y = ~reorder(ngrams, n), 
               type = 'bar', 
@@ -197,37 +224,34 @@ speaker_comparison_server <- function(id) {
               marker = list(color = 'rgb(158,202,225)',
                             line = list(color = 'rgb(8,48,107)',
                                         width = 1.5))) %>%
-        layout(title = ff,
+        layout(title = title,
                xaxis = list(title = xlab),
                yaxis = list(title = "")) %>%
         config(displayModeBar = F)})
     
     
     
-    
-    
-    # IF TEXT IS TRUE GET RID OF RADIO BOX 
-    
-    
-    
     output$speaker_comparison_bottom <- renderPlotly({
       
-      ll <- test_2(j(), "bottom") 
+      data_for_visualization <- apply_measurement(data_for_visualization()) 
+      
+      bottom_plot <- which_plot(data_for_visualization, "bottom")
+      
       
       
       if(bottom_vals_speaker_comparison$btn){
-        ff <- input$sc_radio_buttons_bottom } 
+        title <- input$sc_radio_buttons_bottom } 
       else {
-        ff <- input$sc_custom_search_bottom }
+        title <- input$sc_custom_search_bottom }
       
-      if (input$sc_compare == "sc_top_words") {
+      if (input$measurement == "sc_top_words") {
         xlab <- list(title ="Frequency") } 
-      else if (input$sc_compare == "sc_tf-idf") {
+      else if (input$measurement == "tf-idf") {
         xlab <- list(title ="tf-idf") }
       
 
 
-      plot_ly(ll, 
+      plot_ly(bottom_plot, 
               x = ~n, 
               y = ~reorder(ngrams, n), 
               type = 'bar', 
@@ -236,7 +260,7 @@ speaker_comparison_server <- function(id) {
               marker = list(color = 'rgb(158,202,225)',
                             line = list(color = 'rgb(8,48,107)',
                                         width = 1.5))) %>%
-        layout(title = ff,
+        layout(title = title,
                xaxis = list(title = xlab),
                yaxis = list(title = "")) %>%
         config(displayModeBar = F)})
