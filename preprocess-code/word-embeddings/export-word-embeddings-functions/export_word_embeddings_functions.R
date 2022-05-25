@@ -28,7 +28,7 @@ view_most_similar_words <- function(word_vectors, keyword, n_view) {
 
 
 #export_word_embeddings <- function(dir, target_dir, stopwords, view_most_similar) {
-export_word_embeddings <- function(preprocess_data_dir, view_most_similar) {
+export_word_embeddings <- function(dir, view_most_similar) {
   
   #files <- list.files(path = dir, pattern = "hansard_decades_text2vec", full.names = TRUE)
   files <- list.files(path = dir, pattern = "hansard_tokens_subset_", full.names = TRUE)
@@ -37,7 +37,7 @@ export_word_embeddings <- function(preprocess_data_dir, view_most_similar) {
     data_decade_subset <- fread(file)
     
     data_decade_subset <- data_decade_subset %>%
-      select(year, ngram) # added
+      select(year, ngrams) # added
     
     data_decade_subset <- clean_data_for_word_embeddings(data_decade_subset)
     
