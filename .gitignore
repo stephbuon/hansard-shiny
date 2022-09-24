@@ -1,6 +1,7 @@
 # app directories
 app/app-data/
 app/cache/
+duncan/
 
 # temp files
 app.zip
